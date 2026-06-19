@@ -1,0 +1,22 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local env
+.env
+.env.local
+
+# Logs
+*.log
+
+# Static server artifacts
+__pycache__/
+
+# Local Claude Code settings (machine-specific)
+.claude/settings.local.json
