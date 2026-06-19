@@ -1,111 +1,44 @@
 # WordGuess
 
-A Wordle-style word-guessing game built in plain HTML, CSS, and JavaScript —
-no framework, no build step, no dependencies.
+A Wordle-style word-guessing game — built in plain HTML/CSS/JS with no framework and no build step.
 
-**Live:** https://nyeinchan-lwin.github.io/wordguess/
-
----
-
-## How to play
-
-Guess the hidden **5-letter English word** in **6 tries**.
-
-After each guess, every tile flips to show per-letter feedback:
-
-| Colour | Meaning |
-|--------|---------|
-| Green | Correct letter, correct position |
-| Yellow | Correct letter, wrong position |
-| Gray | Letter not in the word at all |
-
-Use the feedback to narrow down the answer. The keyboard below the grid
-tracks which letters you have already evaluated.
-
-**Input — physical keyboard:** type letters, press Enter to submit,
-Backspace to delete.
-
-**Input — on-screen keyboard:** tap letter keys to type, the wide Enter
-and ⌫ keys to submit or delete. Works on mobile with no extra setup.
-
-A new word is chosen at random each time you load or reload the page.
+**▶️ Play: https://nyeinchan-lwin.github.io/wordguess/**
 
 ---
 
-## Run locally
+## How to Play
 
-Any static file server works — no build step required:
+Guess the hidden **5-letter word** in **6 tries**. After each guess the tiles reveal your feedback:
 
-```bash
-python3 -m http.server 8080
-# then open http://localhost:8080
-```
+| | Meaning |
+|---|---------|
+| 🟩 Green | Right letter, right spot |
+| 🟨 Yellow | Right letter, wrong spot |
+| ⬜ Gray | Not in the word |
+
+Type with your keyboard or tap the on-screen keys. A new word is chosen every page load.
 
 ---
 
 ## Built with Claude Code
 
-This project was built end-to-end using [Claude Code](https://claude.ai/code),
-Anthropic's CLI for AI-assisted software engineering. Below is exactly where
-each Claude Code feature was used.
+This project was built end-to-end using [Claude Code](https://claude.ai/code) across four vertical slices — each one a playable, committed increment.
 
-### Skill — `design-system`
+| Slice | Deliverable |
+|-------|-------------|
+| 1 | Menu screen + screen-switching |
+| 2 | Full game — grid, keyboard, win/lose modal |
+| 3 | Polish — flip animation, responsive layout, full token audit |
+| 4 | Design-review fixes — contrast, dead code, new tokens |
 
-Defined in `.claude/skills/design-system/SKILL.md`. The skill encodes the
-complete visual language for the project: CSS custom-property names and
-their values, the spacing scale, tile and keyboard-key dimensions, animation
-timings, state-colour mappings, and WCAG accessibility requirements.
+**Design-system skill** (`design-system/SKILL.md`) — encodes every CSS token, colour, spacing value, and WCAG requirement. Claude Code invoked it before touching any UI file, so there are zero hardcoded values outside `:root`.
 
-Claude Code invoked this skill automatically before every slice that touched
-`index.html` or `style.css`. The result is that all CSS rules reference
-`var(--token)` — there are zero hardcoded colour, size, or timing values
-outside the `:root` token block.
+**Design-reviewer subagent** (`design-reviewer.md`) — a read-only agent that audited UI files after each slice for token compliance, accessibility gaps, and dead code. It caught a real WCAG AA failure: `--color-present` was 2.7 : 1 contrast at 12 px and was darkened to clear 4.5 : 1.
 
-### Subagent — `design-reviewer`
-
-Defined in `.claude/agents/design-reviewer.md`. This read-only subagent
-reads UI files and audits them for design-system compliance, accessibility
-gaps, and dead code. It was launched after each UI slice and reported
-findings grouped by severity.
-
-Its most significant catch (Slice 5 review): `--color-present` (`#b59f3b`)
-produced only **2.7 : 1** contrast between keyboard-key text and background
-at 12 px — a genuine WCAG AA failure. The fix darkened it to `#8a7000`,
-raising contrast to **4.8 : 1**. The same review pass removed a dead
-`window.WG = {}` stub and replaced seven hardcoded `#ffffff` literals with
-a new `--color-state-text` token.
-
-### MCP — `.mcp.json` GitHub server
-
-`.mcp.json` at the project root wires the GitHub MCP server:
-
-```json
-{ "mcpServers": { "github": { "type": "http", "url": "https://api.githubcopilot.com/mcp/" } } }
-```
-
-This was used at project setup to list repositories and confirm that GitHub
-authentication was live before any code was pushed. Later, `gh` CLI commands
-(backed by the same auth) created the remote repository, pushed all commits,
-and enabled GitHub Pages in a single session.
-
-### Slice methodology
-
-Development followed a **vertical-slice plan** defined in `CLAUDE.md`.
-Each slice is a self-contained, playable or reviewable increment — nothing
-is left half-finished between commits.
-
-| Slice | Commit | Deliverable |
-|-------|--------|-------------|
-| 1 | `b4f63cf` | Static HTML shell, menu screen, screen-switching logic |
-| 2 | `a7b3be7` | Full English game — grid, on-screen keyboard, win/lose modal |
-| 4 | `5e011bc` | Polish — tile-flip animation, responsive layout, hover states, full token pass |
-| 5 | `0eca5ad` | Design-review fixes — contrast, dead code, seven new tokens |
-
-Slices 3 (Japanese game) and 6–7 (accessibility, hard mode, share button)
-are planned but not yet implemented.
+**GitHub MCP** (`.mcp.json`) — wired the GitHub MCP server to confirm auth, then used `gh` CLI to create the remote, push commits, and enable GitHub Pages in one session.
 
 ---
 
-## Repo
+## Tech
 
-https://github.com/nyeinchan-lwin/wordguess
+Plain HTML · CSS custom properties · vanilla JS — no framework, no build step, no dependencies.
