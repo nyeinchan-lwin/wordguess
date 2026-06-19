@@ -31,6 +31,7 @@
   --duration-pop:    100ms;
   --duration-flip:   250ms;
   --duration-shake:  400ms;
+  --duration-bounce: 500ms;
 
   --tile-size:      62px;
   --tile-size-sm:   52px;
@@ -227,8 +228,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-2);
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-2);
   max-width: 500px;
   width: 100%;
   margin: 0 auto;
@@ -379,6 +381,32 @@ body {
   text-align: center;
 }
 
+.modal-word {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tile);
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.modal-card[data-result='win'] .modal-message {
+  color: var(--color-correct);
+  font-size: var(--font-size-xl);
+}
+
+.modal-card[data-result='lose'] .modal-message {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+}
+
+.btn-play-again {
+  padding: var(--space-3) var(--space-8);
+  font-size: var(--font-size-base);
+}
+
 /* ── Toast ──────────────────────────────────────────────────────── */
 .toast {
   position: fixed;
@@ -418,9 +446,16 @@ body {
   80%       { transform: translateX(4px); }
 }
 
-.tile--pop        { animation: tile-pop  var(--duration-pop)   ease; }
-.tile--flip       { animation: tile-flip var(--duration-flip)  ease; }
-.grid-row--shake  { animation: row-shake var(--duration-shake) ease; }
+@keyframes tile-bounce {
+  0%, 100% { transform: translateY(0); }
+  40%       { transform: translateY(-20px); }
+  70%       { transform: translateY(-8px); }
+}
+
+.tile--pop        { animation: tile-pop    var(--duration-pop)    ease; }
+.tile--flip       { animation: tile-flip   var(--duration-flip)   ease; }
+.tile--bounce     { animation: tile-bounce var(--duration-bounce) ease; }
+.grid-row--shake  { animation: row-shake   var(--duration-shake)  ease; }
 
 /* ── Accessibility ──────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -429,6 +464,7 @@ body {
   .tile                          { transition: none; }
   .tile--pop,
   .tile--flip,
+  .tile--bounce,
   .grid-row--shake               { animation: none; }
 }
 

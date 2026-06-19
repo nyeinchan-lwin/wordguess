@@ -49,9 +49,11 @@
   // ── English game ───────────────────────────────────────────────
   const ROWS = 6;
   const COLS = 5;
-  const FLIP_MS = 250;
-  const FLIP_STAGGER = 50;
-  const POST_FLIP_MS = 400;
+  const FLIP_MS        = 250;
+  const FLIP_STAGGER   = 50;
+  const POST_FLIP_MS   = 400;
+  const BOUNCE_MS      = 500;
+  const BOUNCE_STAGGER = 80;
 
   const KB_LAYOUT = [
     ['Q','W','E','R','T','Y','U','I','O','P'],
@@ -166,14 +168,17 @@
 
     const won        = states.every(s => s === 'correct');
     const lastRow    = eng.currentRow === ROWS - 1;
-    const postReveal = (COLS - 1) * FLIP_STAGGER + FLIP_MS + POST_FLIP_MS;
+    const flipDone   = (COLS - 1) * FLIP_STAGGER + FLIP_MS;
+    const postReveal = flipDone + POST_FLIP_MS;
 
     if (won) {
       eng.gameOver = true;
-      setTimeout(() => setModal('You got it!'), postReveal);
+      setTimeout(() => bounceRow(eng.currentRow), flipDone);
+      const winDelay = flipDone + (COLS - 1) * BOUNCE_STAGGER + BOUNCE_MS + 200;
+      setTimeout(() => setModal(`Solved in ${eng.currentRow + 1}!`, 'win'), winDelay);
     } else if (lastRow) {
       eng.gameOver = true;
-      setTimeout(() => setModal(`The word was ${eng.answer}`), postReveal);
+      setTimeout(() => setModal('The answer was', 'lose', eng.answer), postReveal);
     } else {
       eng.currentRow++;
       eng.currentInput = '';
@@ -240,6 +245,17 @@
     }
   }
 
+  // ── Win bounce ─────────────────────────────────────────────────
+  function bounceRow(rowIdx) {
+    for (let i = 0; i < COLS; i++) {
+      const t = getTile(rowIdx, i);
+      setTimeout(() => {
+        t.classList.add('tile--bounce');
+        t.addEventListener('animationend', () => t.classList.remove('tile--bounce'), { once: true });
+      }, i * BOUNCE_STAGGER);
+    }
+  }
+
   // ── Row shake ──────────────────────────────────────────────────
   function shakeRow(r) {
     const rowEl = getRow(r);
@@ -251,14 +267,22 @@
   }
 
   // ── End-game modal ─────────────────────────────────────────────
-  function setModal(message) {
+  function setModal(message, result, word) {
     const overlay = qs('[data-modal]');
+    const card    = qs('[data-modal] .modal-card');
     const msgEl   = qs('[data-modal-message]');
+    const wordEl  = qs('[data-modal-word]');
     if (!overlay) return;
-    if (message === null) { overlay.hidden = true; return; }
-    if (msgEl) msgEl.textContent = message;
+    if (message === null) {
+      overlay.hidden = true;
+      if (card) card.removeAttribute('data-result');
+      return;
+    }
+    if (msgEl)  msgEl.textContent = message;
+    if (wordEl) { wordEl.textContent = word || ''; wordEl.hidden = !word; }
+    if (card)   card.dataset.result = result || '';
     overlay.hidden = false;
-    live(message);
+    live(word ? `${message} ${word}` : message);
     const action = overlay.querySelector('[data-modal-action]');
     if (action) setTimeout(() => action.focus(), 50);
   }
