@@ -1,5 +1,3 @@
-window.WG = {};
-
 (function () {
 
   // ── Word list ──────────────────────────────────────────────────
@@ -53,6 +51,7 @@ window.WG = {};
   const COLS = 5;
   const FLIP_MS = 250;
   const FLIP_STAGGER = 50;
+  const POST_FLIP_MS = 400;
 
   const KB_LAYOUT = [
     ['Q','W','E','R','T','Y','U','I','O','P'],
@@ -167,7 +166,7 @@ window.WG = {};
 
     const won        = states.every(s => s === 'correct');
     const lastRow    = eng.currentRow === ROWS - 1;
-    const postReveal = (COLS - 1) * FLIP_STAGGER + FLIP_MS + 400;
+    const postReveal = (COLS - 1) * FLIP_STAGGER + FLIP_MS + POST_FLIP_MS;
 
     if (won) {
       eng.gameOver = true;
