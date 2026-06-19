@@ -29,8 +29,8 @@ window.WG = {};
   }
 
   // ── Screen management ──────────────────────────────────────────
-  const screenLang  = { en: 'en', ja: 'ja', menu: 'en' };
-  const screenLabel = { menu: 'Language selection', en: 'English game', ja: '日本語ゲーム' };
+  const screenLang  = { en: 'en', menu: 'en' };
+  const screenLabel = { menu: 'Select game', en: 'English game' };
 
   function showScreen(name) {
     document.querySelectorAll('[data-screen]').forEach(el => {
