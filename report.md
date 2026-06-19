@@ -1,7 +1,16 @@
 # WordGuess — Project Report
 
+slides_url: slides/pitch.md
+personal_repo_url: https://github.com/nyeinchan-lwin/wordguess
+
+Evidence:
+- path: .mcp.json
+- path: .claude/skills/design-system/SKILL.md
+- path: .claude/agents/design-reviewer.md
+- path: slides/pitch.md
+- path: CLAUDE.md
+
 **Live:** https://nyeinchan-lwin.github.io/wordguess/
-**Repo:** https://github.com/nyeinchan-lwin/wordguess
 
 A Wordle-style word-guessing game built in plain HTML, CSS, and JavaScript
 with no framework, no build step, and no runtime dependencies. Built
