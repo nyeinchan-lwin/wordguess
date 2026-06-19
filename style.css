@@ -161,11 +161,51 @@ body {
   padding: var(--space-8);
 }
 
-.menu-tagline {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--font-size-base);
+.how-to-play {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: var(--menu-max-width);
+  width: 100%;
 }
+
+.htp-rule {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.htp-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.htp-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.htp-swatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.htp-swatch--correct { background: var(--color-correct); }
+.htp-swatch--present { background: var(--color-present); }
+.htp-swatch--absent  { background: var(--color-absent); }
 
 .menu-buttons {
   display: flex;
