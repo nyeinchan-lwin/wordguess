@@ -52,15 +52,4 @@ handled via `gh` CLI in the same authenticated session.
 
 ### Methodology — vertical slices
 
-`CLAUDE.md` defines a seven-slice delivery plan; each slice is a playable
-or reviewable increment that ships as its own commit.
-
-| Slice | Deliverable |
-|-------|-------------|
-| 1 | Menu screen and screen-switching logic |
-| 2 | Full English game — grid, keyboard, win/lose modal |
-| 4 | Polish — flip animation, responsive layout, full token audit |
-| 5 | Design-review fixes — contrast, dead code, new tokens |
-
-The design-reviewer subagent ran after each UI slice, closing the loop
-between implementation and spec on every increment.
+I built WordGuess in vertical slices with Claude Code, where each slice was a playable increment — starting with the menu screen and screen-switching logic, then the full English game (grid, keyboard, win/lose modal), and finally a polish pass covering flip animations, responsive layout, and a full token audit. After completing each slice I committed the result, using the design-system skill throughout to keep every CSS value flowing through named tokens and maintain a consistent UI without hardcoded numbers. Before deploying, I ran the design-reviewer subagent to catch accessibility issues, which surfaced a real WCAG AA contrast failure and removed dead code. Finally, I used the GitHub MCP server to confirm authentication and publish the project to GitHub Pages.
