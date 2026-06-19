@@ -30,8 +30,15 @@
       <h1 class="site-title">WordGuess</h1>
     </header>
     <main class="game-main">
-      <!-- Grid and keyboard — Slice 3+ -->
+      <div class="grid" role="grid" aria-label="Guesses" data-grid></div>
+      <div class="keyboard" data-keyboard></div>
     </main>
+    <div class="modal-overlay" data-modal hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="en-modal-msg">
+        <p class="modal-message" id="en-modal-msg" data-modal-message></p>
+        <button class="btn btn-primary" data-modal-action>Play Again</button>
+      </div>
+    </div>
   </div>
 
   <!-- Japanese game screen -->
@@ -45,6 +52,9 @@
       <!-- Grid and keyboard — Slice 3+ -->
     </main>
   </div>
+
+  <!-- Brief visual toast messages -->
+  <div class="toast" data-toast hidden></div>
 
   <!-- Screen-reader live region -->
   <div class="sr-only" aria-live="assertive" data-announce></div>
