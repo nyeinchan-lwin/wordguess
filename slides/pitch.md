@@ -1,71 +1,58 @@
-# WordGuess
+---
+marp: true
+paginate: true
+transition: fade
+auto-advance: 20
+---
 
-A Wordle-style word game built in plain HTML, CSS, and JavaScript —
-no framework, no build step, no dependencies.
+# Who's my person?
+
+Casual players and language learners who want a quick word game they can open right now — no app store, no account, no download.
+
+Just a browser tab and a spare two minutes.
+
+---
+
+# Their problem
+
+Every popular word game needs an app, an account, or a paywall.
+
+There's no instant, lightweight Wordle you can just send someone a link to and have them playing in seconds — on any device, offline-capable, with nothing to install.
+
+---
+
+# What I built
+
+**WordGuess** — a Wordle-style game in plain HTML, CSS, and JS. No framework. No build step.
+
+Guess a hidden 5-letter word in 6 tries. Each guess flips to green / yellow / gray. Physical keyboard and on-screen keyboard both work.
 
 **Live:** https://nyeinchan-lwin.github.io/wordguess/
 
 ---
 
-## What the Game Does
+# How I built it
 
-Players get **6 attempts** to guess a hidden **5-letter word**.
+**MCP** — `.mcp.json` wired the GitHub MCP server; used to verify auth and publish the repo without leaving the editor.
 
-After each guess, tiles flip to reveal per-letter feedback:
+**Skill** — `design-system` defined every colour token, spacing value, tile/key spec, and WCAG rule. Invoked before every UI slice.
 
-- **Green** — correct letter, correct position
-- **Yellow** — correct letter, wrong position
-- **Gray** — letter not in the word
-
-An on-screen QWERTY keyboard tracks used letters across guesses.
+**Agent** — `design-reviewer` audited each slice for compliance. Caught a real contrast failure (2.7 : 1 → 4.8 : 1) and removed dead code.
 
 ---
 
-## Skill: `design-system`
+# Why it matters
 
-`.claude/skills/design-system/SKILL.md` defines the complete visual language:
-colour tokens, spacing scale, tile and key dimensions, animation timings,
-and WCAG contrast requirements.
+Zero install. Instant link. Runs on any device.
 
-Invoked before every slice that touched `index.html` or `style.css`.
-All CSS values use `var(--token)` — zero hardcoded numbers in rules outside
-the `:root` token block.
+Built in vertical slices with Claude Code — each slice a shippable increment reviewed by a subagent before the next one started.
+
+Accessible by default: WCAG AA contrast enforced by tooling, not by hand.
 
 ---
 
-## Subagent: `design-reviewer`
+# Done
 
-A read-only subagent (`.claude/agents/design-reviewer.md`) reviewed every
-UI slice for design-system compliance, accessibility gaps, and dead code.
-
-Its Slice 5 report caught a real WCAG AA failure: `--color-present`
-(`#b59f3b`) rendered keyboard key text at only **2.7 : 1** contrast.
-The fix darkened it to `#8a7000` — **4.8 : 1** — passing AA at 12 px.
-
----
-
-## MCP + Slice Methodology
-
-`.mcp.json` wired the **GitHub MCP server**, used to verify authentication
-and list repositories during setup.
-
-Development used **vertical slices** — each a playable, reviewable increment:
-
-| Slice | Deliverable |
-|-------|-------------|
-| 1 | Menu screen + screen switching |
-| 2 | Full English game (grid, keyboard, win/lose) |
-| 4 | Polish — animations, responsive layout, tokens |
-| 5 | Design-review fixes — contrast, dead code, new tokens |
-
----
-
-## Demo + Repo
-
-Open the live site and play a round — the on-screen keyboard and physical
-keyboard both work. Try a wrong guess to see the shake animation; a correct
-one to see the flip reveal.
-
-**Play:** https://nyeinchan-lwin.github.io/wordguess/
-
-**Source:** https://github.com/nyeinchan-lwin/wordguess
+- [x] Repo public on GitHub
+- [x] MCP + skill + agent used and documented
+- [x] `report.md` committed to team repo
