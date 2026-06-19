@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WordGuess</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Language selection screen -->
+  <div data-screen="menu">
+    <header class="site-header">
+      <h1 class="site-title">WordGuess</h1>
+    </header>
+    <main class="menu-main">
+      <p class="menu-tagline">Choose your language to play</p>
+      <div class="menu-buttons">
+        <button class="btn btn-primary btn-lang" data-target="en">English</button>
+        <button class="btn btn-primary btn-lang" data-target="ja">日本語</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- English game screen -->
+  <div data-screen="en" hidden>
+    <header class="site-header">
+      <button class="btn btn-ghost btn-back" data-back
+              aria-label="Back to language selection">← Back</button>
+      <h1 class="site-title">WordGuess</h1>
+    </header>
+    <main class="game-main">
+      <!-- Grid and keyboard — Slice 3+ -->
+    </main>
+  </div>
+
+  <!-- Japanese game screen -->
+  <div data-screen="ja" hidden>
+    <header class="site-header">
+      <button class="btn btn-ghost btn-back" data-back
+              aria-label="言語選択に戻る">← 戻る</button>
+      <h1 class="site-title">WordGuess</h1>
+    </header>
+    <main class="game-main">
+      <!-- Grid and keyboard — Slice 3+ -->
+    </main>
+  </div>
+
+  <!-- Screen-reader live region -->
+  <div class="sr-only" aria-live="assertive" data-announce></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
