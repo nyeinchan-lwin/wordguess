@@ -24,6 +24,7 @@
       </section>
       <div class="menu-buttons">
         <button class="btn btn-primary btn-lang" data-target="en">English</button>
+        <button class="btn btn-ghost btn-lang" data-stats-open>Stats</button>
       </div>
     </main>
   </div>
@@ -43,11 +44,55 @@
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="en-modal-msg">
         <p class="modal-message" id="en-modal-msg" data-modal-message></p>
         <p class="modal-word" data-modal-word hidden></p>
+        <div class="stats-row" data-modal-stats>
+          <div class="stat-box">
+            <span class="stat-num" data-stat="played">0</span>
+            <span class="stat-label">Played</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num" data-stat="win-pct">0</span>
+            <span class="stat-label">Win %</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num" data-stat="streak">0</span>
+            <span class="stat-label">Streak</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-num" data-stat="best">0</span>
+            <span class="stat-label">Best</span>
+          </div>
+        </div>
         <div class="modal-actions">
           <button class="btn btn-primary btn-play-again" data-modal-action>Play Again</button>
           <button class="btn btn-ghost btn-share" data-modal-share>Share result</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Statistics overlay (accessible from menu and game modal) -->
+  <div class="modal-overlay" data-stats-overlay hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="stats-title">
+      <p class="modal-message" id="stats-title">Statistics</p>
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-num" data-stat="played">0</span>
+          <span class="stat-label">Played</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num" data-stat="win-pct">0</span>
+          <span class="stat-label">Win %</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num" data-stat="streak">0</span>
+          <span class="stat-label">Streak</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num" data-stat="best">0</span>
+          <span class="stat-label">Best</span>
+        </div>
+      </div>
+      <button class="btn btn-ghost" data-stats-close>Close</button>
     </div>
   </div>
 

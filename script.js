@@ -194,6 +194,44 @@
     ['Enter','Z','X','C','V','B','N','M','⌫'],
   ];
 
+  // ── Stats (localStorage) ───────────────────────────────────────
+  const STATS_KEY = 'wg_stats';
+
+  function defaultStats() {
+    return { played: 0, won: 0, currentStreak: 0, bestStreak: 0 };
+  }
+
+  function loadStats() {
+    try { return Object.assign(defaultStats(), JSON.parse(localStorage.getItem(STATS_KEY))); }
+    catch { return defaultStats(); }
+  }
+
+  function saveStats(s) {
+    localStorage.setItem(STATS_KEY, JSON.stringify(s));
+  }
+
+  function updateStats(won) {
+    const s = loadStats();
+    s.played++;
+    if (won) {
+      s.won++;
+      s.currentStreak++;
+      if (s.currentStreak > s.bestStreak) s.bestStreak = s.currentStreak;
+    } else {
+      s.currentStreak = 0;
+    }
+    saveStats(s);
+    return s;
+  }
+
+  function renderStats(s) {
+    const pct = s.played ? Math.round((s.won / s.played) * 100) : 0;
+    document.querySelectorAll('[data-stat="played"]').forEach(el => { el.textContent = s.played; });
+    document.querySelectorAll('[data-stat="win-pct"]').forEach(el => { el.textContent = pct; });
+    document.querySelectorAll('[data-stat="streak"]').forEach(el => { el.textContent = s.currentStreak; });
+    document.querySelectorAll('[data-stat="best"]').forEach(el => { el.textContent = s.bestStreak; });
+  }
+
   const SHARE_EMOJI = { correct: '🟩', present: '🟨', absent: '⬛' };
   const SHARE_URL   = 'https://nyeinchan-lwin.github.io/wordguess/';
 
@@ -317,12 +355,14 @@
 
     if (won) {
       eng.gameOver = true;
+      const stats = updateStats(true);
       setTimeout(() => bounceRow(eng.currentRow), flipDone);
       const winDelay = flipDone + (COLS - 1) * BOUNCE_STAGGER + BOUNCE_MS + 200;
-      setTimeout(() => setModal(`Solved in ${eng.currentRow + 1}!`, 'win'), winDelay);
+      setTimeout(() => { renderStats(stats); setModal(`Solved in ${eng.currentRow + 1}!`, 'win'); }, winDelay);
     } else if (lastRow) {
       eng.gameOver = true;
-      setTimeout(() => setModal('The answer was', 'lose', eng.answer), postReveal);
+      const stats = updateStats(false);
+      setTimeout(() => { renderStats(stats); setModal('The answer was', 'lose', eng.answer); }, postReveal);
     } else {
       eng.currentRow++;
       eng.currentInput = '';
@@ -479,8 +519,27 @@
     if (e.target.closest('[data-modal-share]')) shareResult();
   });
 
+  // ── Stats overlay ──────────────────────────────────────────────
+  document.addEventListener('click', e => {
+    const overlay = document.querySelector('[data-stats-overlay]');
+    if (!overlay) return;
+    if (e.target.closest('[data-stats-open]')) {
+      renderStats(loadStats());
+      overlay.hidden = false;
+      const close = overlay.querySelector('[data-stats-close]');
+      if (close) setTimeout(() => close.focus(), 50);
+    }
+    if (e.target.closest('[data-stats-close]')) {
+      overlay.hidden = true;
+    }
+  });
+
   // ── Physical keyboard ──────────────────────────────────────────
   document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      const statsOverlay = document.querySelector('[data-stats-overlay]');
+      if (statsOverlay && !statsOverlay.hidden) { statsOverlay.hidden = true; return; }
+    }
     const enScreen = document.querySelector('[data-screen="en"]');
     if (!enScreen || enScreen.hidden) return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
