@@ -194,6 +194,9 @@
     ['Enter','Z','X','C','V','B','N','M','⌫'],
   ];
 
+  const SHARE_EMOJI = { correct: '🟩', present: '🟨', absent: '⬛' };
+  const SHARE_URL   = 'https://nyeinchan-lwin.github.io/wordguess/';
+
   let eng = {};
 
   function initGame() {
@@ -203,6 +206,7 @@
       currentInput: '',
       gameOver:     false,
       toastTimer:   null,
+      history:      [],
     };
     buildGrid();
     buildKeyboard();
@@ -303,6 +307,7 @@
 
     const guess   = eng.currentInput;
     const states  = evaluate(guess, eng.answer);
+    eng.history.push(states);
     revealRow(eng.currentRow, guess, states);
 
     const won        = states.every(s => s === 'correct');
@@ -442,6 +447,37 @@
     const el = document.querySelector('[data-announce]');
     if (el) el.textContent = msg;
   }
+
+  // ── Share result ───────────────────────────────────────────────
+  function buildShareText() {
+    const won   = eng.history.length > 0 &&
+                  eng.history[eng.history.length - 1].every(s => s === 'correct');
+    const score = won ? eng.history.length : 'X';
+    const grid  = eng.history
+      .map(states => states.map(s => SHARE_EMOJI[s]).join(''))
+      .join('\n');
+    return `WordGuess ${score}/6\n\n${grid}\n\nPlay: ${SHARE_URL}`;
+  }
+
+  function shareResult() {
+    const text = buildShareText();
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => toast('Copied!'));
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      toast('Copied!');
+    }
+  }
+
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-modal-share]')) shareResult();
+  });
 
   // ── Physical keyboard ──────────────────────────────────────────
   document.addEventListener('keydown', e => {
