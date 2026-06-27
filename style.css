@@ -33,15 +33,24 @@
   --duration-shake:  400ms;
   --duration-bounce: 500ms;
 
-  --tile-size:      62px;
-  --tile-size-sm:   52px;
-  --key-height:     58px;
+  --tile-size:         62px;
+  --tile-size-sm:      52px;
+  --key-height:        58px;
   --key-height-sm:     48px;
   --menu-max-width:    280px;
+  --layout-max-width:  500px;
+  --modal-max-width:   380px;
+  --header-height:     50px;
   --key-min-w:         43px;
   --key-min-w-wide:    65px;
-  --key-min-w-sm:      32px;
-  --key-min-w-wide-sm: 50px;
+  --border-width:      1px;
+  --border-width-tile: 2px;
+  --radius-xs:         2px;
+  --radius-sm:         4px;
+  --radius-md:         8px;
+  --perspective-tile:  250px;
+  --z-toast:           50;
+  --z-modal:           100;
 
   --space-1:  0.25rem;
   --space-2:  0.5rem;
@@ -94,8 +103,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 50px;
-  border-bottom: 1px solid var(--color-border);
+  height: var(--header-height);
+  border-bottom: var(--border-width) solid var(--color-border);
   padding: 0 var(--space-4);
   position: relative;
   flex-shrink: 0;
@@ -119,7 +128,7 @@ body {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -143,7 +152,7 @@ body {
 .btn-ghost {
   background: transparent;
   color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
+  border: var(--border-width) solid var(--color-border);
 }
 
 /* Back button sits at the left edge of the header */
@@ -200,9 +209,9 @@ body {
 
 .htp-swatch {
   display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border-radius: 2px;
+  width: var(--space-4);
+  height: var(--space-4);
+  border-radius: var(--radius-xs);
   flex-shrink: 0;
 }
 
@@ -233,7 +242,7 @@ body {
   justify-content: center;
   gap: var(--space-6);
   padding: var(--space-6) var(--space-2);
-  max-width: 500px;
+  max-width: var(--layout-max-width);
   width: 100%;
   margin: 0 auto;
 }
@@ -273,7 +282,7 @@ body {
   font-weight: var(--font-weight-bold);
   letter-spacing: var(--letter-spacing-tile);
   text-transform: uppercase;
-  border: 2px solid var(--color-border);
+  border: var(--border-width-tile) solid var(--color-border);
   color: var(--color-text-primary);
   user-select: none;
   transition: border-color var(--duration-border) ease;
@@ -328,7 +337,7 @@ body {
   background: var(--color-key-bg);
   color: var(--color-key-text);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   padding: 0 var(--space-2);
   user-select: none;
@@ -362,16 +371,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: var(--z-modal);
 }
 
 .modal-overlay[hidden] { display: none; }
 
 .modal-card {
   background: var(--color-surface);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: var(--space-8);
-  max-width: 380px;
+  max-width: var(--modal-max-width);
   width: 90%;
   display: flex;
   flex-direction: column;
@@ -428,7 +437,7 @@ body {
   justify-content: center;
   width: 100%;
   padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border);
+  border-top: var(--border-width) solid var(--color-border);
 }
 
 .stat-box {
@@ -460,13 +469,13 @@ body {
   transform: translateX(-50%);
   background: var(--color-text-primary);
   color: var(--color-bg);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   white-space: nowrap;
   pointer-events: none;
-  z-index: 50;
+  z-index: var(--z-toast);
 }
 
 .toast[hidden] { display: none; }
@@ -478,9 +487,9 @@ body {
 }
 
 @keyframes tile-flip {
-  0%   { transform: perspective(250px) rotateX(0deg); }
-  50%  { transform: perspective(250px) rotateX(-90deg); }
-  100% { transform: perspective(250px) rotateX(0deg); }
+  0%   { transform: perspective(var(--perspective-tile)) rotateX(0deg); }
+  50%  { transform: perspective(var(--perspective-tile)) rotateX(-90deg); }
+  100% { transform: perspective(var(--perspective-tile)) rotateX(0deg); }
 }
 
 @keyframes row-shake {

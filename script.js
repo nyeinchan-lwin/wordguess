@@ -34,7 +34,7 @@
     'NEVER','NEWER','NOBLE','NOISE','NORTH','NOVEL','NURSE','NYMPH',
     'OCCUR','OCEAN','OFFER','OFTEN','OLIVE','ONION','ORDER','ORGAN',
     'OTHER','OUTER','OWNED','OWNER','OXIDE','OZONE','PAINT','PANEL',
-    'PANIC','PAPER','PARK','PARSE','PARTY','PASTE','PATCH','PAUSE',
+    'PANIC','PAPER','PARSE','PARTY','PASTE','PATCH','PAUSE',
     'PEACE','PEARL','PENAL','PENNY','PERCH','PHASE','PHONE','PHOTO',
     'PIANO','PILOT','PITCH','PIXEL','PIZZA','PLAZA','PLEAD','PLUCK',
     'PLUMB','PLUME','PLUMP','PLUNK','PLUSH','POINT','POKER','POLAR',
@@ -160,7 +160,7 @@
   }
 
   // ── Screen management ──────────────────────────────────────────
-  const screenLang  = { en: 'en', menu: 'en' };
+  const screenLang  = { en: 'en' };
   const screenLabel = { menu: 'Select game', en: 'English game' };
 
   function showScreen(name) {
@@ -520,10 +520,13 @@
   });
 
   // ── Stats overlay ──────────────────────────────────────────────
+  let statsOpener = null;
+
   document.addEventListener('click', e => {
     const overlay = document.querySelector('[data-stats-overlay]');
     if (!overlay) return;
     if (e.target.closest('[data-stats-open]')) {
+      statsOpener = e.target.closest('[data-stats-open]');
       renderStats(loadStats());
       overlay.hidden = false;
       const close = overlay.querySelector('[data-stats-close]');
@@ -531,6 +534,7 @@
     }
     if (e.target.closest('[data-stats-close]')) {
       overlay.hidden = true;
+      if (statsOpener) { statsOpener.focus(); statsOpener = null; }
     }
   });
 
@@ -538,7 +542,13 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       const statsOverlay = document.querySelector('[data-stats-overlay]');
-      if (statsOverlay && !statsOverlay.hidden) { statsOverlay.hidden = true; return; }
+      if (statsOverlay && !statsOverlay.hidden) {
+        statsOverlay.hidden = true;
+        if (statsOpener) { statsOpener.focus(); statsOpener = null; }
+        return;
+      }
+      const gameModal = qs('[data-modal]');
+      if (gameModal && !gameModal.hidden) { gameModal.hidden = true; return; }
     }
     const enScreen = document.querySelector('[data-screen="en"]');
     if (!enScreen || enScreen.hidden) return;
