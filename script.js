@@ -159,6 +159,37 @@
     return ANSWERS[Math.floor(Math.random() * ANSWERS.length)];
   }
 
+  // ── Daily challenge (date-seeded) ───────────────────────────────
+  const DAILY_KEY = 'wg_daily';
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  function pickDailyWord() {
+    const dateStr = todayStr();
+    let hash = 0;
+    for (let i = 0; i < dateStr.length; i++) {
+      hash = ((hash << 5) - hash + dateStr.charCodeAt(i)) | 0;
+    }
+    return ANSWERS[Math.abs(hash) % ANSWERS.length];
+  }
+
+  function loadDaily() {
+    try { return JSON.parse(localStorage.getItem(DAILY_KEY)); }
+    catch { return null; }
+  }
+
+  function saveDaily(data) {
+    localStorage.setItem(DAILY_KEY, JSON.stringify(data));
+  }
+
+  function isDailyComplete() {
+    const d = loadDaily();
+    return d && d.date === todayStr() && d.done;
+  }
+
   // ── Screen management ──────────────────────────────────────────
   const screenLang  = { en: 'en' };
   const screenLabel = { menu: 'Select game', en: 'English game' };
@@ -169,11 +200,19 @@
     });
     document.documentElement.lang = screenLang[name] || 'en';
     live(screenLabel[name] || '');
-    if (name === 'en') initGame();
+    if (name === 'en') {
+      initGame(pendingDaily);
+      pendingDaily = false;
+    }
   }
 
+  let pendingDaily = false;
+
   document.querySelectorAll('[data-target]').forEach(btn => {
-    btn.addEventListener('click', () => showScreen(btn.dataset.target));
+    btn.addEventListener('click', () => {
+      pendingDaily = !!btn.dataset.daily;
+      showScreen(btn.dataset.target);
+    });
   });
   document.querySelectorAll('[data-back]').forEach(btn => {
     btn.addEventListener('click', () => showScreen('menu'));
@@ -194,11 +233,71 @@
     ['Enter','Z','X','C','V','B','N','M','⌫'],
   ];
 
+  // ── Settings (localStorage) ─────────────────────────────────────
+  const SETTINGS_KEY = 'wg_settings';
+
+  function defaultSettings() {
+    return { dark: false, hc: false };
+  }
+
+  function loadSettings() {
+    try { return Object.assign(defaultSettings(), JSON.parse(localStorage.getItem(SETTINGS_KEY))); }
+    catch { return defaultSettings(); }
+  }
+
+  function saveSettings(s) {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  }
+
+  function applySettings() {
+    const s = loadSettings();
+    document.body.classList.toggle('dark', s.dark);
+    document.body.classList.toggle('hc', s.hc);
+    document.querySelectorAll('[data-setting]').forEach(el => {
+      el.checked = s[el.dataset.setting] || false;
+    });
+  }
+
+  function toggleSetting(key) {
+    const s = loadSettings();
+    s[key] = !s[key];
+    saveSettings(s);
+    applySettings();
+  }
+
+  // Apply on load
+  applySettings();
+
+  // Settings overlay open/close
+  let settingsOpener = null;
+
+  document.addEventListener('click', e => {
+    const overlay = document.querySelector('[data-settings-overlay]');
+    if (!overlay) return;
+    if (e.target.closest('[data-settings-open]')) {
+      settingsOpener = e.target.closest('[data-settings-open]');
+      applySettings();
+      overlay.hidden = false;
+      const close = overlay.querySelector('[data-settings-close]');
+      if (close) setTimeout(() => close.focus(), 50);
+    }
+    if (e.target.closest('[data-settings-close]')) {
+      overlay.hidden = true;
+      if (settingsOpener) { settingsOpener.focus(); settingsOpener = null; }
+    }
+  });
+
+  document.addEventListener('change', e => {
+    if (e.target.matches('[data-setting]')) {
+      toggleSetting(e.target.dataset.setting);
+    }
+  });
+
   // ── Stats (localStorage) ───────────────────────────────────────
   const STATS_KEY = 'wg_stats';
 
   function defaultStats() {
-    return { played: 0, won: 0, currentStreak: 0, bestStreak: 0 };
+    return { played: 0, won: 0, currentStreak: 0, bestStreak: 0, distribution: [0, 0, 0, 0, 0, 0] };
   }
 
   function loadStats() {
@@ -217,6 +316,8 @@
       s.won++;
       s.currentStreak++;
       if (s.currentStreak > s.bestStreak) s.bestStreak = s.currentStreak;
+      const guessNum = eng.history.length;
+      if (guessNum >= 1 && guessNum <= 6) s.distribution[guessNum - 1]++;
     } else {
       s.currentStreak = 0;
     }
@@ -230,6 +331,19 @@
     document.querySelectorAll('[data-stat="win-pct"]').forEach(el => { el.textContent = pct; });
     document.querySelectorAll('[data-stat="streak"]').forEach(el => { el.textContent = s.currentStreak; });
     document.querySelectorAll('[data-stat="best"]').forEach(el => { el.textContent = s.bestStreak; });
+    // Distribution chart
+    const maxDist = Math.max(...s.distribution, 1);
+    document.querySelectorAll('[data-dist]').forEach(container => {
+      container.innerHTML = '';
+      for (let i = 0; i < 6; i++) {
+        const count = s.distribution[i] || 0;
+        const pctBar = Math.round((count / maxDist) * 100);
+        const row = document.createElement('div');
+        row.className = 'dist-row';
+        row.innerHTML = `<span class="dist-label">${i + 1}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${pctBar}%"></div></div><span class="dist-count">${count}</span>`;
+        container.appendChild(row);
+      }
+    });
   }
 
   const SHARE_EMOJI = { correct: '🟩', present: '🟨', absent: '⬛' };
@@ -237,18 +351,52 @@
 
   let eng = {};
 
-  function initGame() {
+  function initGame(daily) {
+    const isDaily = !!daily;
+    const alreadyDone = isDaily && isDailyComplete();
     eng = {
-      answer:       pickWord(),
+      answer:       isDaily ? pickDailyWord() : pickWord(),
+      daily:        isDaily,
       currentRow:   0,
       currentInput: '',
-      gameOver:     false,
+      gameOver:     alreadyDone,
       toastTimer:   null,
       history:      [],
     };
     buildGrid();
     buildKeyboard();
     setModal(null);
+
+    // If daily already completed today, show result
+    if (alreadyDone) {
+      const saved = loadDaily();
+      eng.history = saved.history || [];
+      eng.currentRow = eng.history.length;
+      // Replay tiles visually
+      eng.history.forEach((states, r) => {
+        const guess = saved.guesses[r];
+        if (guess) revealRowSilent(r, guess, states);
+      });
+      const won = eng.history.length > 0 &&
+                  eng.history[eng.history.length - 1].every(s => s === 'correct');
+      if (won) {
+        setTimeout(() => setModal(`Solved in ${eng.history.length}!`, 'win'), 300);
+      } else {
+        setTimeout(() => setModal('The answer was', 'lose', eng.answer), 300);
+      }
+    }
+  }
+
+  // Silent row reveal (no animation, used for daily replay)
+  function revealRowSilent(rowIdx, guess, states) {
+    for (let i = 0; i < COLS; i++) {
+      const t = getTile(rowIdx, i);
+      if (!t) continue;
+      t.textContent = guess[i];
+      t.dataset.state = states[i];
+      t.setAttribute('aria-label', `${guess[i]} ${states[i]}`);
+      updateKey(guess[i], states[i]);
+    }
   }
 
   // Scoped DOM helpers
@@ -356,12 +504,14 @@
     if (won) {
       eng.gameOver = true;
       const stats = updateStats(true);
-      setTimeout(() => bounceRow(eng.currentRow), flipDone);
+      if (eng.daily) saveDaily({ date: todayStr(), done: true, won: true, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
+      setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); }, flipDone);
       const winDelay = flipDone + (COLS - 1) * BOUNCE_STAGGER + BOUNCE_MS + 200;
       setTimeout(() => { renderStats(stats); setModal(`Solved in ${eng.currentRow + 1}!`, 'win'); }, winDelay);
     } else if (lastRow) {
       eng.gameOver = true;
       const stats = updateStats(false);
+      if (eng.daily) saveDaily({ date: todayStr(), done: true, won: false, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
       setTimeout(() => { renderStats(stats); setModal('The answer was', 'lose', eng.answer); }, postReveal);
     } else {
       eng.currentRow++;
@@ -396,6 +546,14 @@
   }
 
   // ── Tile reveal animation ──────────────────────────────────────
+  function getGuessText(rowIdx) {
+    let word = '';
+    for (let c = 0; c < COLS; c++) {
+      const t = getTile(rowIdx, c);
+      word += t ? t.textContent : '';
+    }
+    return word;
+  }
   function revealRow(rowIdx, guess, states) {
     for (let i = 0; i < COLS; i++) {
       const t = getTile(rowIdx, i);
@@ -482,6 +640,36 @@
     eng.toastTimer = setTimeout(() => { el.hidden = true; }, 1200);
   }
 
+  // ── Confetti ───────────────────────────────────────────────────
+  const CONFETTI_COLORS = ['#538d4e', '#8a7000', '#d4a017', '#e85d3a', '#4a90d9', '#9b59b6'];
+
+  function fireConfetti() {
+    const container = document.querySelector('[data-confetti]');
+    if (!container) return;
+    container.hidden = false;
+    container.innerHTML = '';
+    for (let i = 0; i < 60; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+      const left = Math.random() * 100;
+      const delay = Math.random() * 0.8;
+      const duration = 1.5 + Math.random() * 1.5;
+      const size = 6 + Math.random() * 8;
+      const shape = Math.random() > 0.5 ? '50%' : '0';
+      piece.style.cssText = `
+        left: ${left}%;
+        width: ${size}px;
+        height: ${size}px;
+        background: ${color};
+        border-radius: ${shape};
+        animation: confetti-fall ${duration}s ease-out ${delay}s forwards;
+      `;
+      container.appendChild(piece);
+    }
+    setTimeout(() => { container.hidden = true; }, 3500);
+  }
+
   // ── Screen-reader live region ──────────────────────────────────
   function live(msg) {
     const el = document.querySelector('[data-announce]');
@@ -541,6 +729,12 @@
   // ── Physical keyboard ──────────────────────────────────────────
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
+      const settingsOverlay = document.querySelector('[data-settings-overlay]');
+      if (settingsOverlay && !settingsOverlay.hidden) {
+        settingsOverlay.hidden = true;
+        if (settingsOpener) { settingsOpener.focus(); settingsOpener = null; }
+        return;
+      }
       const statsOverlay = document.querySelector('[data-stats-overlay]');
       if (statsOverlay && !statsOverlay.hidden) {
         statsOverlay.hidden = true;
@@ -558,7 +752,13 @@
 
   // ── Play Again ─────────────────────────────────────────────────
   document.addEventListener('click', e => {
-    if (e.target.closest('[data-modal-action]')) initGame();
+    if (e.target.closest('[data-modal-action]')) {
+      if (eng.daily) {
+        showScreen('menu');
+      } else {
+        initGame();
+      }
+    }
   });
 
 }());

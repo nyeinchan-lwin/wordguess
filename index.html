@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WordGuess</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#538d4e">
 </head>
 <body>
 
@@ -12,6 +14,8 @@
   <div data-screen="menu">
     <header class="site-header">
       <h1 class="site-title">WordGuess</h1>
+      <button class="btn btn-ghost btn-settings" data-settings-open
+              aria-label="Settings">⚙</button>
     </header>
     <main class="menu-main">
       <section class="how-to-play" aria-label="How to play">
@@ -23,7 +27,8 @@
         </ul>
       </section>
       <div class="menu-buttons">
-        <button class="btn btn-primary btn-lang" data-target="en">English</button>
+        <button class="btn btn-primary btn-lang" data-target="en">Random</button>
+        <button class="btn btn-primary btn-lang btn-daily" data-target="en" data-daily>Daily Challenge</button>
         <button class="btn btn-ghost btn-lang" data-stats-open>Stats</button>
       </div>
     </main>
@@ -35,6 +40,8 @@
       <button class="btn btn-ghost btn-back" data-back
               aria-label="Back to language selection">← Back</button>
       <h1 class="site-title">WordGuess</h1>
+      <button class="btn btn-ghost btn-settings" data-settings-open
+              aria-label="Settings">⚙</button>
     </header>
     <main class="game-main">
       <div class="grid" role="grid" aria-label="Guesses" data-grid></div>
@@ -62,6 +69,7 @@
             <span class="stat-label">Best</span>
           </div>
         </div>
+        <div class="distribution" data-dist aria-label="Win distribution"></div>
         <div class="modal-actions">
           <button class="btn btn-primary btn-play-again" data-modal-action>Play Again</button>
           <button class="btn btn-ghost btn-share" data-modal-share>Share result</button>
@@ -92,6 +100,7 @@
           <span class="stat-label">Best</span>
         </div>
       </div>
+      <div class="distribution" data-dist aria-label="Win distribution"></div>
       <button class="btn btn-ghost" data-stats-close>Close</button>
     </div>
   </div>
@@ -99,9 +108,35 @@
   <!-- Brief visual toast messages -->
   <div class="toast" data-toast hidden></div>
 
+  <!-- Confetti container -->
+  <div class="confetti-container" data-confetti hidden></div>
+
+  <!-- Settings overlay -->
+  <div class="modal-overlay" data-settings-overlay hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <p class="modal-message" id="settings-title">Settings</p>
+      <div class="settings-list">
+        <label class="setting-row">
+          <span class="setting-label">Dark Mode</span>
+          <input type="checkbox" class="toggle" data-setting="dark">
+        </label>
+        <label class="setting-row">
+          <span class="setting-label">High Contrast</span>
+          <input type="checkbox" class="toggle" data-setting="hc">
+        </label>
+      </div>
+      <button class="btn btn-ghost" data-settings-close>Close</button>
+    </div>
+  </div>
+
   <!-- Screen-reader live region -->
   <div class="sr-only" aria-live="assertive" data-announce></div>
 
   <script src="script.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
 </body>
 </html>
