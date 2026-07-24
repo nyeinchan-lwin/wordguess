@@ -219,7 +219,6 @@
   });
 
   // ── English game ───────────────────────────────────────────────
-  const ROWS = 6;
   const COLS = 5;
   const FLIP_MS        = 250;
   const FLIP_STAGGER   = 50;
@@ -237,7 +236,7 @@
   const SETTINGS_KEY = 'wg_settings';
 
   function defaultSettings() {
-    return { dark: false, hc: false };
+    return { dark: false, hc: false, easy: false };
   }
 
   function loadSettings() {
@@ -317,7 +316,12 @@
       s.currentStreak++;
       if (s.currentStreak > s.bestStreak) s.bestStreak = s.currentStreak;
       const guessNum = eng.history.length;
-      if (guessNum >= 1 && guessNum <= 6) s.distribution[guessNum - 1]++;
+      const maxGuesses = eng.rows || 6;
+      if (guessNum >= 1 && guessNum <= maxGuesses) {
+        // Ensure distribution array is large enough
+        while (s.distribution.length < maxGuesses) s.distribution.push(0);
+        s.distribution[guessNum - 1]++;
+      }
     } else {
       s.currentStreak = 0;
     }
@@ -335,7 +339,8 @@
     const maxDist = Math.max(...s.distribution, 1);
     document.querySelectorAll('[data-dist]').forEach(container => {
       container.innerHTML = '';
-      for (let i = 0; i < 6; i++) {
+      const distLen = s.distribution.length;
+      for (let i = 0; i < distLen; i++) {
         const count = s.distribution[i] || 0;
         const pctBar = Math.round((count / maxDist) * 100);
         const row = document.createElement('div');
@@ -354,18 +359,23 @@
   function initGame(daily) {
     const isDaily = !!daily;
     const alreadyDone = isDaily && isDailyComplete();
+    const settings = loadSettings();
+    const rows = (isDaily || !settings.easy) ? 6 : 8;
     eng = {
       answer:       isDaily ? pickDailyWord() : pickWord(),
       daily:        isDaily,
+      rows:         rows,
       currentRow:   0,
       currentInput: '',
       gameOver:     alreadyDone,
       toastTimer:   null,
       history:      [],
+      hintUsed:     false,
     };
     buildGrid();
     buildKeyboard();
     setModal(null);
+    updateHintButton();
 
     // If daily already completed today, show result
     if (alreadyDone) {
@@ -408,7 +418,8 @@
     const grid = qs('[data-grid]');
     if (!grid) return;
     grid.innerHTML = '';
-    for (let r = 0; r < ROWS; r++) {
+    const rows = eng.rows || 6;
+    for (let r = 0; r < rows; r++) {
       const rowEl = document.createElement('div');
       rowEl.className = 'grid-row';
       rowEl.setAttribute('role', 'row');
@@ -497,12 +508,13 @@
     revealRow(eng.currentRow, guess, states);
 
     const won        = states.every(s => s === 'correct');
-    const lastRow    = eng.currentRow === ROWS - 1;
+    const lastRow    = eng.currentRow === (eng.rows || 6) - 1;
     const flipDone   = (COLS - 1) * FLIP_STAGGER + FLIP_MS;
     const postReveal = flipDone + POST_FLIP_MS;
 
     if (won) {
       eng.gameOver = true;
+      updateHintButton();
       const stats = updateStats(true);
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: true, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
       setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); }, flipDone);
@@ -510,6 +522,7 @@
       setTimeout(() => { renderStats(stats); setModal(`Solved in ${eng.currentRow + 1}!`, 'win'); }, winDelay);
     } else if (lastRow) {
       eng.gameOver = true;
+      updateHintButton();
       const stats = updateStats(false);
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: false, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
       setTimeout(() => { renderStats(stats); setModal('The answer was', 'lose', eng.answer); }, postReveal);
@@ -684,7 +697,8 @@
     const grid  = eng.history
       .map(states => states.map(s => SHARE_EMOJI[s]).join(''))
       .join('\n');
-    return `WordGuess ${score}/6\n\n${grid}\n\nPlay: ${SHARE_URL}`;
+    const maxG = eng.rows || 6;
+    return `WordGuess ${score}/${maxG}\n\n${grid}\n\nPlay: ${SHARE_URL}`;
   }
 
   function copyToClipboard(text) {
@@ -717,6 +731,46 @@
 
   document.addEventListener('click', e => {
     if (e.target.closest('[data-modal-share]')) shareResult();
+  });
+
+  // ── Hint function ────────────────────────────────────────────────
+  function updateHintButton() {
+    const btn = document.querySelector('[data-hint]');
+    if (!btn) return;
+    if (eng.gameOver || eng.hintUsed) {
+      btn.disabled = true;
+      btn.textContent = eng.hintUsed ? '💡 Hint used' : '💡 Hint';
+    } else {
+      btn.disabled = false;
+      btn.textContent = '💡 Hint';
+    }
+  }
+
+  function giveHint() {
+    if (eng.gameOver || eng.hintUsed) return;
+
+    // Find positions not yet known to be correct from past guesses
+    const candidates = [];
+    for (let c = 0; c < COLS; c++) {
+      const alreadyCorrect = eng.history.some(states => states[c] === 'correct');
+      if (!alreadyCorrect) candidates.push(c);
+    }
+
+    if (candidates.length === 0) {
+      toast('All letters already revealed!');
+      return;
+    }
+
+    const pickIdx = candidates[Math.floor(Math.random() * candidates.length)];
+    const hintLetter = eng.answer[pickIdx];
+    eng.hintUsed = true;
+
+    toast(`💡 Hint: "${hintLetter}" is in position ${pickIdx + 1}`);
+    updateHintButton();
+  }
+
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-hint]')) giveHint();
   });
 
   // ── Stats overlay ──────────────────────────────────────────────
