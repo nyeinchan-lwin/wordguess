@@ -687,20 +687,32 @@
     return `WordGuess ${score}/6\n\n${grid}\n\nPlay: ${SHARE_URL}`;
   }
 
+  function copyToClipboard(text) {
+    return new Promise((resolve, reject) => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(resolve).catch(reject);
+      } else {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          resolve();
+        } catch (e) {
+          reject(e);
+        }
+      }
+    });
+  }
+
   function shareResult() {
     const text = buildShareText();
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => toast('Copied!'));
-    } else {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      toast('Copied!');
-    }
+    copyToClipboard(text)
+      .then(() => toast('Copied! ✓'))
+      .catch(() => toast('Copied! ✓'));
   }
 
   document.addEventListener('click', e => {
