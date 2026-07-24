@@ -248,11 +248,35 @@ body {
 }
 
 /* ── Game-screen colour legend ───────────────────────────────────── */
+.game-toolbar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
 .game-legend {
   display: flex;
   gap: var(--space-3);
   justify-content: center;
   flex-shrink: 0;
+}
+
+.game-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mode-badge {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-xs);
+  line-height: 1.4;
 }
 
 .legend-item {
@@ -745,6 +769,7 @@ body {
   .key        { height: var(--key-height-sm); min-width: 0; flex: 1; }
   .key--wide  { flex: 1.5; }
 
+  .game-toolbar { gap: var(--space-1); }
   .game-legend { gap: var(--space-2); }
   .legend-item { font-size: 0.65rem; }
   .legend-swatch { width: 10px; height: 10px; }

@@ -44,11 +44,16 @@
               aria-label="Settings">⚙</button>
     </header>
     <main class="game-main">
-      <div class="game-legend" aria-label="Colour legend" data-legend>
-        <span class="legend-item"><span class="legend-swatch legend-swatch--correct" aria-hidden="true"></span> Correct</span>
-        <span class="legend-item"><span class="legend-swatch legend-swatch--present" aria-hidden="true"></span> Present</span>
-        <span class="legend-item"><span class="legend-swatch legend-swatch--absent" aria-hidden="true"></span> Absent</span>
-        <button class="btn-hint" data-hint aria-label="Get a hint">💡 Hint</button>
+      <div class="game-toolbar">
+        <div class="game-legend" aria-label="Colour legend" data-legend>
+          <span class="legend-item"><span class="legend-swatch legend-swatch--correct" aria-hidden="true"></span> Correct</span>
+          <span class="legend-item"><span class="legend-swatch legend-swatch--present" aria-hidden="true"></span> Present</span>
+          <span class="legend-item"><span class="legend-swatch legend-swatch--absent" aria-hidden="true"></span> Absent</span>
+        </div>
+        <div class="game-actions">
+          <span class="mode-badge" data-mode-badge hidden aria-live="polite"></span>
+          <button class="btn-hint" data-hint aria-label="Get a hint">💡 Hint</button>
+        </div>
       </div>
       <div class="grid" role="grid" aria-label="Guesses" data-grid></div>
       <div class="keyboard" data-keyboard role="group" aria-label="On-screen keyboard"></div>

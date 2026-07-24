@@ -376,6 +376,16 @@
     buildKeyboard();
     setModal(null);
     updateHintButton();
+    // Show mode badge
+    const badge = document.querySelector('[data-mode-badge]');
+    if (badge) {
+      if (settings.easy && !isDaily) {
+        badge.textContent = 'Easy (8/8)';
+        badge.hidden = false;
+      } else {
+        badge.hidden = true;
+      }
+    }
 
     // If daily already completed today, show result
     if (alreadyDone) {

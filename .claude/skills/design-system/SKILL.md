@@ -16,7 +16,7 @@ All colours are defined as CSS custom properties on `:root`.
 | `--color-text-primary` | `#1a1a1b` | `#ffffff` | Body copy, labels |
 | `--color-text-muted` | `#787c7e` | `#818384` | Secondary / hint text |
 | `--color-correct` | `#538d4e` | `#538d4e` | Correct letter (green) |
-| `--color-present` | `#b59f3b` | `#b59f3b` | Wrong position (yellow) |
+| `--color-present` | `#8a7000` | `#8a7000` | Wrong position (yellow/amber) |
 | `--color-absent` | `#787c7e` | `#3a3a3c` | Not in word (gray) |
 | `--color-key-bg` | `#d3d6da` | `#818384` | Keyboard key default |
 | `--color-key-text` | `#1a1a1b` | `#ffffff` | Keyboard key label |
