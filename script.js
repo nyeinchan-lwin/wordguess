@@ -783,6 +783,17 @@
     if (e.target.closest('[data-hint]')) giveHint();
   });
 
+  // ── How-to-play toggle ───────────────────────────────────────────
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-howto-toggle]');
+    if (!btn) return;
+    const details = document.querySelector('[data-howto-details]');
+    if (!details) return;
+    details.open = !details.open;
+    btn.setAttribute('aria-expanded', details.open);
+    btn.textContent = details.open ? 'How to Play ▴' : 'How to Play ▾';
+  });
+
   // ── Stats overlay ──────────────────────────────────────────────
   let statsOpener = null;
 

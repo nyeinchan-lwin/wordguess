@@ -45,7 +45,17 @@
     </header>
     <main class="game-main">
       <div class="game-toolbar">
-        <p class="game-rule">Guess the 5-letter word in 6 tries.</p>
+        <button class="btn-howto" data-howto-toggle aria-expanded="false" aria-controls="howto-details">How to Play ▾</button>
+        <details class="howto-details" id="howto-details" data-howto-details>
+          <summary class="sr-only">How to play</summary>
+          <p class="howto-text">Guess the hidden 5-letter word in 6 tries. After each guess, the tiles change colour to show how close you are.</p>
+          <ul class="howto-list">
+            <li><span class="legend-swatch legend-swatch--correct" aria-hidden="true"></span> <strong>Green</strong> — right letter, right spot</li>
+            <li><span class="legend-swatch legend-swatch--present" aria-hidden="true"></span> <strong>Yellow</strong> — right letter, wrong spot</li>
+            <li><span class="legend-swatch legend-swatch--absent"  aria-hidden="true"></span> <strong>Gray</strong> — letter not in the word</li>
+          </ul>
+          <p class="howto-text">Use your keyboard or tap the on-screen keys. Stuck? Press 💡 <strong>Hint</strong> to reveal one letter.</p>
+        </details>
         <div class="game-legend" aria-label="Colour legend" data-legend>
           <span class="legend-item"><span class="legend-swatch legend-swatch--correct" aria-hidden="true"></span> Correct</span>
           <span class="legend-item"><span class="legend-swatch legend-swatch--present" aria-hidden="true"></span> Present</span>

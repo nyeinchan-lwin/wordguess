@@ -256,6 +256,61 @@ body {
   flex-shrink: 0;
 }
 
+/* ── How-to-play (collapsible in game screen) ────────────────────── */
+.btn-howto {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  padding: 2px var(--space-2);
+  line-height: 1.4;
+  transition: filter var(--duration-btn) ease;
+}
+.btn-howto:hover  { filter: brightness(1.1); }
+.btn-howto:active { filter: brightness(0.95); }
+.btn-howto:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+.howto-details {
+  width: 100%;
+  max-width: 340px;
+}
+
+.howto-details[open] {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.howto-text {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.howto-list {
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.howto-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
 .game-rule {
   margin: 0;
   font-size: var(--font-size-xs);
@@ -806,4 +861,6 @@ body {
   .key       { height: 40px; font-size: 0.6rem; }
   .game-legend { display: none; }
   .game-rule   { display: none; }
+  .btn-howto   { display: none; }
+  .howto-details { display: none; }
 }
