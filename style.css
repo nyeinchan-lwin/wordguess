@@ -256,6 +256,13 @@ body {
   flex-shrink: 0;
 }
 
+.game-rule {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
 .game-legend {
   display: flex;
   gap: var(--space-3);
@@ -798,4 +805,5 @@ body {
   .tile      { width: 44px; height: 44px; font-size: var(--font-size-base); }
   .key       { height: 40px; font-size: 0.6rem; }
   .game-legend { display: none; }
+  .game-rule   { display: none; }
 }
