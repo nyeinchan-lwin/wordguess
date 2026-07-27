@@ -189,6 +189,14 @@ body {
   text-align: center;
 }
 
+.htp-desc {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
 .htp-legend {
   list-style: none;
   margin: 0;

@@ -19,12 +19,14 @@
     </header>
     <main class="menu-main">
       <section class="how-to-play" aria-label="How to play">
-        <p class="htp-rule">Guess the 5-letter word in 6 tries.</p>
+        <p class="htp-rule">Guess the hidden 5-letter word in 6 tries.</p>
+        <p class="htp-desc">After each guess, the tiles change colour to show how close you are.</p>
         <ul class="htp-legend">
-          <li><span class="htp-swatch htp-swatch--correct" aria-hidden="true"></span>Right letter, right spot</li>
-          <li><span class="htp-swatch htp-swatch--present" aria-hidden="true"></span>Right letter, wrong spot</li>
-          <li><span class="htp-swatch htp-swatch--absent"  aria-hidden="true"></span>Not in the word</li>
+          <li><span class="htp-swatch htp-swatch--correct" aria-hidden="true"></span><strong>Green</strong> — right letter, right spot</li>
+          <li><span class="htp-swatch htp-swatch--present" aria-hidden="true"></span><strong>Yellow</strong> — right letter, wrong spot</li>
+          <li><span class="htp-swatch htp-swatch--absent"  aria-hidden="true"></span><strong>Gray</strong> — letter not in the word</li>
         </ul>
+        <p class="htp-desc">Use your keyboard or tap the on-screen keys. Stuck? Press 💡 <strong>Hint</strong> to reveal one letter.</p>
       </section>
       <div class="menu-buttons">
         <button class="btn btn-primary btn-lang" data-target="en">Random</button>
