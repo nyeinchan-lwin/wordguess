@@ -241,6 +241,61 @@ body {
   font-size: var(--font-size-lg);
 }
 
+/* ── Language switcher ─────────────────────────────────────────── */
+.lang-switcher {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  margin-top: var(--space-4);
+}
+
+.lang-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: background var(--duration-btn) ease, color var(--duration-btn) ease;
+}
+
+.lang-btn:hover  { filter: brightness(1.1); }
+.lang-btn:active { filter: brightness(0.95); }
+.lang-btn.active {
+  background: var(--color-accent);
+  color: var(--color-state-text);
+  border-color: var(--color-accent);
+}
+
+.lang-switcher-inline {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.lang-btn-sm {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
+  color: var(--color-text-muted);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  padding: 2px var(--space-2);
+  cursor: pointer;
+  transition: background var(--duration-btn) ease, color var(--duration-btn) ease;
+}
+
+.lang-btn-sm:hover  { filter: brightness(1.1); }
+.lang-btn-sm:active { filter: brightness(0.95); }
+.lang-btn-sm.active {
+  background: var(--color-accent);
+  color: var(--color-state-text);
+  border-color: var(--color-accent);
+}
+
 /* ── Game screen ────────────────────────────────────────────────── */
 .game-main {
   flex: 1;

@@ -10,7 +10,7 @@
 </head>
 <body>
 
-  <!-- Language selection screen -->
+  <!-- Menu screen -->
   <div data-screen="menu">
     <header class="site-header">
       <h1 class="site-title">WordGuess</h1>
@@ -19,19 +19,23 @@
     </header>
     <main class="menu-main">
       <section class="how-to-play" aria-label="How to play">
-        <p class="htp-rule">Guess the hidden 5-letter word in 6 tries.</p>
-        <p class="htp-desc">After each guess, the tiles change colour to show how close you are.</p>
+        <p class="htp-rule" data-i18n="htp_rule">Guess the hidden 5-letter word in 6 tries.</p>
+        <p class="htp-desc" data-i18n="htp_desc">After each guess, the tiles change colour to show how close you are.</p>
         <ul class="htp-legend">
-          <li><span class="htp-swatch htp-swatch--correct" aria-hidden="true"></span><strong>Green</strong> — right letter, right spot</li>
-          <li><span class="htp-swatch htp-swatch--present" aria-hidden="true"></span><strong>Yellow</strong> — right letter, wrong spot</li>
-          <li><span class="htp-swatch htp-swatch--absent"  aria-hidden="true"></span><strong>Gray</strong> — letter not in the word</li>
+          <li><span class="htp-swatch htp-swatch--correct" aria-hidden="true"></span><strong data-i18n="green">Green — right letter, right spot</strong></li>
+          <li><span class="htp-swatch htp-swatch--present" aria-hidden="true"></span><strong data-i18n="yellow">Yellow — right letter, wrong spot</strong></li>
+          <li><span class="htp-swatch htp-swatch--absent"  aria-hidden="true"></span><strong data-i18n="gray">Gray — letter not in the word</strong></li>
         </ul>
-        <p class="htp-desc">Use your keyboard or tap the on-screen keys. Stuck? Press 💡 <strong>Hint</strong> to reveal one letter.</p>
+        <p class="htp-desc" data-i18n="htp_hint">Use your keyboard or tap the on-screen keys. Stuck? Press 💡 Hint to reveal one letter.</p>
       </section>
       <div class="menu-buttons">
-        <button class="btn btn-primary btn-lang" data-target="en">Random</button>
-        <button class="btn btn-primary btn-lang btn-daily" data-target="en" data-daily>Daily Challenge</button>
-        <button class="btn btn-ghost btn-lang" data-stats-open>Stats</button>
+        <button class="btn btn-primary btn-lang" data-target="en" data-i18n="random">Random</button>
+        <button class="btn btn-primary btn-lang btn-daily" data-target="en" data-daily data-i18n="daily">Daily Challenge</button>
+        <button class="btn btn-ghost btn-lang" data-stats-open data-i18n="stats">Stats</button>
+      </div>
+      <div class="lang-switcher" data-lang-switcher>
+        <button class="lang-btn active" data-lang="en">English</button>
+        <button class="lang-btn" data-lang="my">မြန်မာ</button>
       </div>
     </main>
   </div>
@@ -40,32 +44,33 @@
   <div data-screen="en" hidden>
     <header class="site-header">
       <button class="btn btn-ghost btn-back" data-back
-              aria-label="Back to language selection">← Back</button>
+              aria-label="Back to language selection" data-i18n="back">← Back</button>
       <h1 class="site-title">WordGuess</h1>
       <button class="btn btn-ghost btn-settings" data-settings-open
               aria-label="Settings">⚙</button>
     </header>
     <main class="game-main">
       <div class="game-toolbar">
-        <button class="btn-howto" data-howto-toggle aria-expanded="false" aria-controls="howto-details">How to Play ▾</button>
+        <button class="btn-howto" data-howto-toggle aria-expanded="false" aria-controls="howto-details" data-i18n="how_to_play">How to Play ▾</button>
         <details class="howto-details" id="howto-details" data-howto-details>
           <summary class="sr-only">How to play</summary>
-          <p class="howto-text">Guess the hidden 5-letter word in 6 tries. After each guess, the tiles change colour to show how close you are.</p>
+          <p class="howto-text" data-i18n="htp_rule">Guess the hidden 5-letter word in 6 tries.</p>
+          <p class="howto-text" data-i18n="htp_desc">After each guess, the tiles change colour to show how close you are.</p>
           <ul class="howto-list">
-            <li><span class="legend-swatch legend-swatch--correct" aria-hidden="true"></span> <strong>Green</strong> — right letter, right spot</li>
-            <li><span class="legend-swatch legend-swatch--present" aria-hidden="true"></span> <strong>Yellow</strong> — right letter, wrong spot</li>
-            <li><span class="legend-swatch legend-swatch--absent"  aria-hidden="true"></span> <strong>Gray</strong> — letter not in the word</li>
+            <li><span class="legend-swatch legend-swatch--correct" aria-hidden="true"></span> <strong data-i18n="green">Green — right letter, right spot</strong></li>
+            <li><span class="legend-swatch legend-swatch--present" aria-hidden="true"></span> <strong data-i18n="yellow">Yellow — right letter, wrong spot</strong></li>
+            <li><span class="legend-swatch legend-swatch--absent"  aria-hidden="true"></span> <strong data-i18n="gray">Gray — letter not in the word</strong></li>
           </ul>
-          <p class="howto-text">Use your keyboard or tap the on-screen keys. Stuck? Press 💡 <strong>Hint</strong> to reveal one letter.</p>
+          <p class="howto-text" data-i18n="htp_hint">Use your keyboard or tap the on-screen keys. Stuck? Press 💡 Hint to reveal one letter.</p>
         </details>
         <div class="game-legend" aria-label="Colour legend" data-legend>
-          <span class="legend-item"><span class="legend-swatch legend-swatch--correct" aria-hidden="true"></span> Correct</span>
-          <span class="legend-item"><span class="legend-swatch legend-swatch--present" aria-hidden="true"></span> Present</span>
-          <span class="legend-item"><span class="legend-swatch legend-swatch--absent" aria-hidden="true"></span> Absent</span>
+          <span class="legend-item"><span class="legend-swatch legend-swatch--correct" aria-hidden="true"></span> <span data-i18n="correct">Correct</span></span>
+          <span class="legend-item"><span class="legend-swatch legend-swatch--present" aria-hidden="true"></span> <span data-i18n="present">Present</span></span>
+          <span class="legend-item"><span class="legend-swatch legend-swatch--absent" aria-hidden="true"></span> <span data-i18n="absent">Absent</span></span>
         </div>
         <div class="game-actions">
           <span class="mode-badge" data-mode-badge hidden aria-live="polite"></span>
-          <button class="btn-hint" data-hint aria-label="Get a hint">💡 Hint</button>
+          <button class="btn-hint" data-hint aria-label="Get a hint">💡 <span data-i18n="hint_label">Hint</span></button>
         </div>
       </div>
       <div class="grid" role="grid" aria-label="Guesses" data-grid></div>
@@ -78,54 +83,54 @@
         <div class="stats-row" data-modal-stats>
           <div class="stat-box">
             <span class="stat-num" data-stat="played">0</span>
-            <span class="stat-label">Played</span>
+            <span class="stat-label" data-i18n="played">Played</span>
           </div>
           <div class="stat-box">
             <span class="stat-num" data-stat="win-pct">0</span>
-            <span class="stat-label">Win %</span>
+            <span class="stat-label" data-i18n="win_pct">Win %</span>
           </div>
           <div class="stat-box">
             <span class="stat-num" data-stat="streak">0</span>
-            <span class="stat-label">Streak</span>
+            <span class="stat-label" data-i18n="streak">Streak</span>
           </div>
           <div class="stat-box">
             <span class="stat-num" data-stat="best">0</span>
-            <span class="stat-label">Best</span>
+            <span class="stat-label" data-i18n="best">Best</span>
           </div>
         </div>
         <div class="distribution" data-dist aria-label="Win distribution"></div>
         <div class="modal-actions">
-          <button class="btn btn-primary btn-play-again" data-modal-action>Play Again</button>
-          <button class="btn btn-ghost btn-share" data-modal-share>Share result</button>
+          <button class="btn btn-primary btn-play-again" data-modal-action data-i18n="play_again">Play Again</button>
+          <button class="btn btn-ghost btn-share" data-modal-share data-i18n="share">Share result</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Statistics overlay (accessible from menu and game modal) -->
+  <!-- Statistics overlay -->
   <div class="modal-overlay" data-stats-overlay hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="stats-title">
-      <p class="modal-message" id="stats-title">Statistics</p>
+      <p class="modal-message" id="stats-title" data-i18n="stats">Statistics</p>
       <div class="stats-row">
         <div class="stat-box">
           <span class="stat-num" data-stat="played">0</span>
-          <span class="stat-label">Played</span>
+          <span class="stat-label" data-i18n="played">Played</span>
         </div>
         <div class="stat-box">
           <span class="stat-num" data-stat="win-pct">0</span>
-          <span class="stat-label">Win %</span>
+          <span class="stat-label" data-i18n="win_pct">Win %</span>
         </div>
         <div class="stat-box">
           <span class="stat-num" data-stat="streak">0</span>
-          <span class="stat-label">Streak</span>
+          <span class="stat-label" data-i18n="streak">Streak</span>
         </div>
         <div class="stat-box">
           <span class="stat-num" data-stat="best">0</span>
-          <span class="stat-label">Best</span>
+          <span class="stat-label" data-i18n="best">Best</span>
         </div>
       </div>
       <div class="distribution" data-dist aria-label="Win distribution"></div>
-      <button class="btn btn-ghost" data-stats-close>Close</button>
+      <button class="btn btn-ghost" data-stats-close data-i18n="close">Close</button>
     </div>
   </div>
 
@@ -138,22 +143,29 @@
   <!-- Settings overlay -->
   <div class="modal-overlay" data-settings-overlay hidden>
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-      <p class="modal-message" id="settings-title">Settings</p>
+      <p class="modal-message" id="settings-title" data-i18n="settings">Settings</p>
       <div class="settings-list">
         <label class="setting-row">
-          <span class="setting-label">Dark Mode</span>
+          <span class="setting-label" data-i18n="dark_mode">Dark Mode</span>
           <input type="checkbox" class="toggle" data-setting="dark">
         </label>
         <label class="setting-row">
-          <span class="setting-label">High Contrast</span>
+          <span class="setting-label" data-i18n="high_contrast">High Contrast</span>
           <input type="checkbox" class="toggle" data-setting="hc">
         </label>
         <label class="setting-row">
-          <span class="setting-label">Easy Mode (8 guesses)</span>
+          <span class="setting-label" data-i18n="easy_mode">Easy Mode (8 guesses)</span>
           <input type="checkbox" class="toggle" data-setting="easy">
         </label>
+        <div class="setting-row">
+          <span class="setting-label" data-i18n="language">Language</span>
+          <div class="lang-switcher-inline" data-lang-switcher>
+            <button class="lang-btn-sm active" data-lang="en">EN</button>
+            <button class="lang-btn-sm" data-lang="my">မြန်မာ</button>
+          </div>
+        </div>
       </div>
-      <button class="btn btn-ghost" data-settings-close>Close</button>
+      <button class="btn btn-ghost" data-settings-close data-i18n="close">Close</button>
     </div>
   </div>
 
@@ -162,6 +174,7 @@
 
   <script data-goatcounter="https://nyeinchan-lwin.goatcounter.com/count"
           async src="//gc.zgo.at/count.js"></script>
+  <script src="i18n.js"></script>
   <script src="script.js"></script>
   <script>
     if ('serviceWorker' in navigator) {

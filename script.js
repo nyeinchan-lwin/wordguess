@@ -266,6 +266,8 @@
 
   // Apply on load
   applySettings();
+  applyTranslations();
+  syncLangButtons();
 
   // Settings overlay open/close
   let settingsOpener = null;
@@ -290,6 +292,28 @@
     if (e.target.matches('[data-setting]')) {
       toggleSetting(e.target.dataset.setting);
     }
+  });
+
+  // ── Language switcher ──────────────────────────────────────────
+  function syncLangButtons() {
+    const lang = getLanguage();
+    document.querySelectorAll('[data-lang]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    // Update how-to-play button text
+    const howtoBtn = document.querySelector('[data-howto-toggle]');
+    if (howtoBtn) {
+      const details = document.querySelector('[data-howto-details]');
+      const expanded = details && details.open;
+      howtoBtn.textContent = t('how_to_play') + (expanded ? ' ▴' : ' ▾');
+    }
+  }
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-lang]');
+    if (!btn) return;
+    setLanguage(btn.dataset.lang);
+    syncLangButtons();
   });
 
   // ── Stats (localStorage) ───────────────────────────────────────
@@ -400,9 +424,9 @@
       const won = eng.history.length > 0 &&
                   eng.history[eng.history.length - 1].every(s => s === 'correct');
       if (won) {
-        setTimeout(() => setModal(`Solved in ${eng.history.length}!`, 'win'), 300);
+        setTimeout(() => setModal(t('solved', { n: eng.history.length }), 'win'), 300);
       } else {
-        setTimeout(() => setModal('The answer was', 'lose', eng.answer), 300);
+        setTimeout(() => setModal(t('answer_was'), 'lose', eng.answer), 300);
       }
     }
   }
@@ -502,13 +526,13 @@
   function submitGuess() {
     if (eng.currentInput.length < COLS) {
       shakeRow(eng.currentRow);
-      toast('Not enough letters');
+      toast(t('not_enough'));
       return;
     }
 
     if (!VALID_SET.has(eng.currentInput)) {
       shakeRow(eng.currentRow);
-      toast('Not a valid word');
+      toast(t('not_valid'));
       return;
     }
 
@@ -529,13 +553,13 @@
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: true, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
       setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); }, flipDone);
       const winDelay = flipDone + (COLS - 1) * BOUNCE_STAGGER + BOUNCE_MS + 200;
-      setTimeout(() => { renderStats(stats); setModal(`Solved in ${eng.currentRow + 1}!`, 'win'); }, winDelay);
+      setTimeout(() => { renderStats(stats); setModal(t('solved', { n: eng.currentRow + 1 }), 'win'); }, winDelay);
     } else if (lastRow) {
       eng.gameOver = true;
       updateHintButton();
       const stats = updateStats(false);
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: false, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
-      setTimeout(() => { renderStats(stats); setModal('The answer was', 'lose', eng.answer); }, postReveal);
+      setTimeout(() => { renderStats(stats); setModal(t('answer_was'), 'lose', eng.answer); }, postReveal);
     } else {
       eng.currentRow++;
       eng.currentInput = '';
@@ -735,8 +759,8 @@
   function shareResult() {
     const text = buildShareText();
     copyToClipboard(text)
-      .then(() => toast('Copied! ✓'))
-      .catch(() => toast('Copied! ✓'));
+      .then(() => toast(t('copied')))
+      .catch(() => toast(t('copied')));
   }
 
   document.addEventListener('click', e => {
@@ -749,10 +773,10 @@
     if (!btn) return;
     if (eng.gameOver || eng.hintUsed) {
       btn.disabled = true;
-      btn.textContent = eng.hintUsed ? '💡 Hint used' : '💡 Hint';
+      btn.innerHTML = eng.hintUsed ? '💡 ' + t('hint_used') : '💡 Hint';
     } else {
       btn.disabled = false;
-      btn.textContent = '💡 Hint';
+      btn.innerHTML = '💡 Hint';
     }
   }
 
@@ -767,7 +791,7 @@
     }
 
     if (candidates.length === 0) {
-      toast('All letters already revealed!');
+      toast(t('all_revealed'));
       return;
     }
 
@@ -775,7 +799,7 @@
     const hintLetter = eng.answer[pickIdx];
     eng.hintUsed = true;
 
-    toast(`💡 Hint: "${hintLetter}" is in position ${pickIdx + 1}`);
+    toast(t('hint_letter', { letter: hintLetter, pos: pickIdx + 1 }));
     updateHintButton();
   }
 
@@ -791,7 +815,7 @@
     if (!details) return;
     details.open = !details.open;
     btn.setAttribute('aria-expanded', details.open);
-    btn.textContent = details.open ? 'How to Play ▴' : 'How to Play ▾';
+    btn.textContent = t('how_to_play') + (details.open ? ' ▴' : ' ▾');
   });
 
   // ── Stats overlay ──────────────────────────────────────────────
