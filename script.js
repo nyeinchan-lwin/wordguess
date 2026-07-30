@@ -245,7 +245,8 @@
   const SETTINGS_KEY = 'wg_settings';
 
   function defaultSettings() {
-    return { dark: false, hc: false, easy: false, hard: false };
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return { dark: prefersDark, hc: false, easy: false, hard: false };
   }
 
   function loadSettings() {
