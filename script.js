@@ -433,6 +433,7 @@
     buildKeyboard();
     setModal(null);
     updateHintButton();
+    updateGuessCounter();
     // Show mode badge
     const badge = document.querySelector('[data-mode-badge]');
     if (badge) {
@@ -643,6 +644,7 @@
     } else {
       eng.currentRow++;
       eng.currentInput = '';
+      updateGuessCounter();
     }
   }
 
@@ -846,6 +848,15 @@
   document.addEventListener('click', e => {
     if (e.target.closest('[data-modal-share]')) shareResult();
   });
+
+  // ── Guess counter ────────────────────────────────────────────────
+  function updateGuessCounter() {
+    const el = document.querySelector('[data-guess-counter]');
+    if (!el) return;
+    const remaining = (eng.rows || 6) - eng.currentRow;
+    el.textContent = `${remaining}/${eng.rows || 6}`;
+    el.toggleAttribute('data-low', remaining <= 1);
+  }
 
   // ── Hint function ────────────────────────────────────────────────
   function updateHintButton() {
