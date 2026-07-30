@@ -406,6 +406,12 @@ body {
   color: var(--color-correct);
 }
 
+.game-timer {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .mode-badge {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);

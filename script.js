@@ -434,6 +434,7 @@
     setModal(null);
     updateHintButton();
     updateGuessCounter();
+    startTimer();
     // Show mode badge
     const badge = document.querySelector('[data-mode-badge]');
     if (badge) {
@@ -629,6 +630,7 @@
 
     if (won) {
       eng.gameOver = true;
+      stopTimer();
       updateHintButton();
       const stats = updateStats(true);
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: true, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
@@ -637,6 +639,7 @@
       setTimeout(() => { renderStats(stats); setModal(t('solved', { n: eng.currentRow + 1 }), 'win'); }, winDelay);
     } else if (lastRow) {
       eng.gameOver = true;
+      stopTimer();
       updateHintButton();
       const stats = updateStats(false);
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: false, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
@@ -848,6 +851,27 @@
   document.addEventListener('click', e => {
     if (e.target.closest('[data-modal-share]')) shareResult();
   });
+
+  // ── Game timer ──────────────────────────────────────────────────
+  let timerInterval = null;
+
+  function startTimer() {
+    stopTimer();
+    eng.startTime = Date.now();
+    const el = document.querySelector('[data-game-timer]');
+    if (!el) return;
+    timerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - eng.startTime) / 1000);
+      const min = Math.floor(elapsed / 60);
+      const sec = elapsed % 60;
+      el.textContent = `${min}:${String(sec).padStart(2, '0')}`;
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
 
   // ── Guess counter ────────────────────────────────────────────────
   function updateGuessCounter() {
