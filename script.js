@@ -196,7 +196,16 @@
 
   function showScreen(name) {
     document.querySelectorAll('[data-screen]').forEach(el => {
-      el.hidden = el.dataset.screen !== name;
+      if (el.dataset.screen === name) {
+        el.hidden = false;
+        el.style.opacity = '0';
+        requestAnimationFrame(() => {
+          el.style.opacity = '1';
+        });
+      } else {
+        el.style.opacity = '0';
+        setTimeout(() => { el.hidden = true; }, 200);
+      }
     });
     document.documentElement.lang = screenLang[name] || 'en';
     live(screenLabel[name] || '');
