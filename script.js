@@ -277,6 +277,10 @@
     saveSettings(s);
     applySettings();
     updateRuleTries();
+    // Show feedback toast
+    const label = t(key + '_mode') || t(key);
+    const state = s[key] ? t('on') : t('off');
+    toast(`${label} ${state}`);
     // Update badge after toggle
     if (key === 'easy' || key === 'hard') {
       const badge = document.querySelector('[data-mode-badge]');
