@@ -592,6 +592,12 @@ body {
   align-items: center;
   justify-content: center;
   z-index: var(--z-modal);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay:not([hidden]) {
+  opacity: 1;
 }
 
 .modal-overlay[hidden] { display: none; }
@@ -606,6 +612,12 @@ body {
   flex-direction: column;
   align-items: center;
   gap: var(--space-6);
+  transform: scale(0.9);
+  transition: transform 0.2s ease;
+}
+
+.modal-overlay:not([hidden]) .modal-card {
+  transform: scale(1);
 }
 
 .modal-message {
