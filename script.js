@@ -561,6 +561,8 @@
   }
 
   // ── Input handling ─────────────────────────────────────────────
+  let submitting = false;
+
   function handleKey(key) {
     if (eng.gameOver) return;
     if (key === '⌫' || key === 'Backspace') return deleteLetter();
@@ -632,6 +634,8 @@
   }
 
   function submitGuess() {
+    if (submitting) return;
+
     if (eng.currentInput.length < COLS) {
       shakeRow(eng.currentRow);
       toast(t('not_enough'));
@@ -649,6 +653,8 @@
       return;
     }
 
+    submitting = true;
+
     const guess   = eng.currentInput;
     const states  = evaluate(guess, eng.answer);
     eng.history.push(states);
@@ -664,6 +670,7 @@
       stopTimer();
       updateHintButton();
       const stats = updateStats(true);
+      submitting = false;
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: true, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
       setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); }, flipDone);
       const winDelay = flipDone + (COLS - 1) * BOUNCE_STAGGER + BOUNCE_MS + 200;
@@ -673,12 +680,14 @@
       stopTimer();
       updateHintButton();
       const stats = updateStats(false);
+      submitting = false;
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: false, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
       setTimeout(() => { renderStats(stats); setModal(t('answer_was'), 'lose', eng.answer); }, postReveal);
     } else {
       eng.currentRow++;
       eng.currentInput = '';
       updateGuessCounter();
+      submitting = false;
     }
   }
 
