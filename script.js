@@ -403,7 +403,9 @@
     const pct = s.played ? Math.round((s.won / s.played) * 100) : 0;
     document.querySelectorAll('[data-stat="played"]').forEach(el => { el.textContent = s.played; });
     document.querySelectorAll('[data-stat="win-pct"]').forEach(el => { el.textContent = pct; });
-    document.querySelectorAll('[data-stat="streak"]').forEach(el => { el.textContent = s.currentStreak; });
+    document.querySelectorAll('[data-stat="streak"]').forEach(el => {
+      el.textContent = s.currentStreak > 0 ? `${s.currentStreak} 🔥` : s.currentStreak;
+    });
     document.querySelectorAll('[data-stat="best"]').forEach(el => { el.textContent = s.bestStreak; });
     // Distribution chart
     const maxDist = Math.max(...s.distribution, 1);
