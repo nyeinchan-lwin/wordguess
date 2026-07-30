@@ -15,6 +15,11 @@ const TRANSLATIONS = {
     dark_mode:     'Dark Mode',
     high_contrast: 'High Contrast',
     easy_mode:     'Easy Mode (8 guesses)',
+    hard_mode:     'Hard Mode',
+    hard_green:    'Position {pos} must be {letter}',
+    hard_yellow:   'Guess must contain {letter}',
+    hard_absent:   '{letter} not in target',
+    hard_mid_game: 'Cannot change Hard Mode during a game',
     close:         'Close',
     play_again:    'Play Again',
     share:         'Share result',
@@ -38,11 +43,11 @@ const TRANSLATIONS = {
   },
   my: {
     htp_rule:      'အက္ခရာ ၅ လုံးပါဝင်သော ဝှက်ထားသည့် စကားလုံးကို ကြိုးစားခန့်မှန်းပါ။',
-    htp_desc:      'တစ်ခါခန့်မှန်းပြီးတိုင်း အက္ခရာပြားများသည် ဘယ်လောက်နီးကပ်ကြောင်းပြရန် အရောင်ပြောင်းပါသည်။',
-    green:         'အစိမ်း — အက္ခရာမှန်၊ နေရာမှန်',
-    yellow:        'အဝါ — အက္ခရာမှန်၊ နေရာမှား',
-    gray:          'မီးခိုးရောင် — အက္ခရာမပါဝင်',
-    htp_hint:      'ကီးဘုတ်ဖြင့်ဖြစ်စေ၊ ဖန်သားပြင်ပေါ်ရှိ ခလုတ်များကို နှိပ်ဖြင့်ဖြစ်စေ ထည့်ပါ။ ညံ့နေလား။ 💡 အကြံပြုချက် ခလုတ်ကို နှိပ်ပြီး အက္ခရာတစ်လုံး ဖော်ပြပါ။',
+    htp_desc:      'တစ်ကြိမ် ခန့်မှန်းပြီးတိုင်း ကွက်လပ်များ၏ အရောင်ပြောင်းသွားမည်ဖြစ်ပြီး၊ သင့်ခန့်မှန်းချက် မည်မျှနီးစပ်ကြောင်း ပြသပေးပါမည်။',
+    green:         'အစိမ်းရောင် — စာလုံးလည်းမှန်၊ နေရာလည်းမှန်သည်',
+    yellow:        'အဝါရောင် — စာလုံးမှန်သော်လည်း နေရာမှားနေသည်',
+    gray:          'မီးခိုးရောင် — ထိုစာလုံးသည် စကားလုံးထဲတွင် မပါဝင်ပါ',
+    htp_hint:      'သင့်ကီးဘုတ်ကို အသုံးပြုပါ သို့မဟုတ် စခရင်ပေါ်ရှိ ခလုတ်များကို နှိပ်ပါ။ မစဉ်းစားနိုင်တော့ပါက စာလုံးတစ်လုံး ဖော်ထုတ်ရန် 💡 Hint ခလုတ်ကို နှိပ်ပါ။',
     random:        'ကျပန်း',
     daily:         'နေ့စဉ် စိန်ခေါ်မှု',
     stats:         'စာရင်းအင်း',
@@ -51,6 +56,11 @@ const TRANSLATIONS = {
     dark_mode:     'အမှောင်မုဒ်',
     high_contrast: 'မြင့်မားသော contrast',
     easy_mode:     'လွယ်ကူသော မုဒ် (ကြိုးစားခန့်မှန်းချက် ၈)',
+    hard_mode:     'ခက်ခဲသော မုဒ်',
+    hard_green:    'နေရာ {pos} တွင် {letter} ဖြစ်ရမည်',
+    hard_yellow:   'ခန့်မှန်းချက်တွင် {letter} ပါဝင်ရမည်',
+    hard_absent:   '{letter} သည် ဖြေရှင်းချက်တွင် မပါဝင်ပါ',
+    hard_mid_game: 'ဂိမ်းအတွင်းတွင် ခက်ခဲသော မုဒ်ကို ပြောင်းလဲ၍ မရပါ',
     close:         'ပိတ်',
     play_again:    'ပြန်ကစား',
     share:         'ရလဒ်မျှဝေ',
@@ -105,4 +115,6 @@ function applyTranslations() {
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     el.placeholder = t(el.dataset.i18nPlaceholder);
   });
+  // Update the tries count in rule text based on current mode
+  if (typeof updateRuleTries === 'function') updateRuleTries();
 }

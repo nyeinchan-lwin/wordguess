@@ -236,7 +236,7 @@
   const SETTINGS_KEY = 'wg_settings';
 
   function defaultSettings() {
-    return { dark: false, hc: false, easy: false };
+    return { dark: false, hc: false, easy: false, hard: false };
   }
 
   function loadSettings() {
@@ -258,10 +258,43 @@
   }
 
   function toggleSetting(key) {
+    // Warn when toggling hard mode mid-game
+    if (key === 'hard' && eng.currentRow > 0 && !eng.gameOver) {
+      toast(t('hard_mid_game'));
+      return;
+    }
     const s = loadSettings();
     s[key] = !s[key];
     saveSettings(s);
     applySettings();
+    updateRuleTries();
+    // Update badge after toggle
+    if (key === 'easy' || key === 'hard') {
+      const badge = document.querySelector('[data-mode-badge]');
+      const settings = loadSettings();
+      if (badge) {
+        if (settings.easy && !eng.daily) {
+          badge.textContent = 'Easy (8/8)';
+          badge.hidden = false;
+        } else if (settings.hard) {
+          badge.textContent = 'Hard';
+          badge.hidden = false;
+        } else {
+          badge.hidden = true;
+        }
+      }
+    }
+  }
+
+  // Update the tries count in rule text based on current mode
+  function updateRuleTries() {
+    const s = loadSettings();
+    const tries = (s.easy) ? 8 : 6;
+    const base = t('htp_rule');
+    // Replace the number before "tries" (handles both "6 tries" and "၆ ကြိုးစားခန့်မှန်းချက်")
+    document.querySelectorAll('[data-i18n="htp_rule"]').forEach(el => {
+      el.textContent = base.replace(/\d+/, tries);
+    });
   }
 
   // Apply on load
@@ -406,6 +439,9 @@
       if (settings.easy && !isDaily) {
         badge.textContent = 'Easy (8/8)';
         badge.hidden = false;
+      } else if (settings.hard) {
+        badge.textContent = 'Hard';
+        badge.hidden = false;
       } else {
         badge.hidden = true;
       }
@@ -523,6 +559,45 @@
     t.setAttribute('aria-label', 'Empty');
   }
 
+  // ── Hard Mode validation ───────────────────────────────────────
+  function validateHardMode(guess) {
+    const s = loadSettings();
+    if (!s.hard) return true;
+
+    for (let r = 0; r < eng.history.length; r++) {
+      const prevGuess = getGuessText(r);
+      const prevStates = eng.history[r];
+
+      for (let c = 0; c < COLS; c++) {
+        if (prevStates[c] === 'correct' && guess[c] !== prevGuess[c]) {
+          toast(t('hard_green', { pos: c + 1, letter: prevGuess[c] }));
+          return false;
+        }
+      }
+
+      for (let c = 0; c < COLS; c++) {
+        if (prevStates[c] === 'present' && !guess.includes(prevGuess[c])) {
+          toast(t('hard_yellow', { letter: prevGuess[c] }));
+          return false;
+        }
+      }
+
+      for (let c = 0; c < COLS; c++) {
+        if (prevStates[c] === 'absent') {
+          const letter = prevGuess[c];
+          const isHinted = eng.history.some((states, ri) =>
+            ri < r && states.some((s, ci) => s !== 'absent' && getGuessText(ri)[ci] === letter)
+          );
+          if (!isHinted && guess.includes(letter)) {
+            toast(t('hard_absent', { letter }));
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
   function submitGuess() {
     if (eng.currentInput.length < COLS) {
       shakeRow(eng.currentRow);
@@ -533,6 +608,11 @@
     if (!VALID_SET.has(eng.currentInput)) {
       shakeRow(eng.currentRow);
       toast(t('not_valid'));
+      return;
+    }
+
+    if (!validateHardMode(eng.currentInput)) {
+      shakeRow(eng.currentRow);
       return;
     }
 
