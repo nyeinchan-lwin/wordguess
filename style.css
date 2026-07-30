@@ -290,7 +290,8 @@ body {
   font-family: var(--font-family);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  padding: 2px var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px;
   cursor: pointer;
   transition: background var(--duration-btn) ease, color var(--duration-btn) ease;
   touch-action: manipulation;
@@ -337,7 +338,8 @@ body {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   cursor: pointer;
-  padding: 2px var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px;
   line-height: 1.4;
   transition: filter var(--duration-btn) ease;
   touch-action: manipulation;
@@ -460,7 +462,8 @@ body {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   cursor: pointer;
-  padding: 2px var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px;
   line-height: 1.4;
   transition: filter var(--duration-btn) ease, opacity var(--duration-btn) ease;
   touch-action: manipulation;
@@ -785,6 +788,7 @@ body {
   -webkit-appearance: none;
   width: 44px;
   height: 24px;
+  min-height: 44px;
   background: var(--color-border);
   border-radius: 12px;
   position: relative;
