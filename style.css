@@ -263,6 +263,7 @@ body {
   font-family: var(--font-family);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
+  touch-action: manipulation;
   padding: var(--space-2) var(--space-4);
   cursor: pointer;
   transition: background var(--duration-btn) ease, color var(--duration-btn) ease;
@@ -292,6 +293,7 @@ body {
   padding: 2px var(--space-2);
   cursor: pointer;
   transition: background var(--duration-btn) ease, color var(--duration-btn) ease;
+  touch-action: manipulation;
 }
 
 .lang-btn-sm:hover  { filter: brightness(1.1); }
@@ -338,6 +340,7 @@ body {
   padding: 2px var(--space-2);
   line-height: 1.4;
   transition: filter var(--duration-btn) ease;
+  touch-action: manipulation;
 }
 .btn-howto:hover  { filter: brightness(1.1); }
 .btn-howto:active { filter: brightness(0.95); }
@@ -460,6 +463,7 @@ body {
   padding: 2px var(--space-2);
   line-height: 1.4;
   transition: filter var(--duration-btn) ease, opacity var(--duration-btn) ease;
+  touch-action: manipulation;
 }
 
 .btn-hint:hover { filter: brightness(1.1); }
@@ -787,6 +791,7 @@ body {
   cursor: pointer;
   transition: background var(--duration-btn) ease;
   flex-shrink: 0;
+  touch-action: manipulation;
 }
 
 .toggle::before {
