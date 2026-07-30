@@ -177,12 +177,11 @@
   }
 
   function loadDaily() {
-    try { return JSON.parse(localStorage.getItem(DAILY_KEY)); }
-    catch { return null; }
+    return safeGet(DAILY_KEY);
   }
 
   function saveDaily(data) {
-    localStorage.setItem(DAILY_KEY, JSON.stringify(data));
+    safeSet(DAILY_KEY, data);
   }
 
   function isDailyComplete() {
@@ -241,6 +240,25 @@
     ['Enter','Z','X','C','V','B','N','M','⌫'],
   ];
 
+  // ── Safe localStorage helpers ─────────────────────────────────
+  function safeGet(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key));
+    } catch {
+      return null;
+    }
+  }
+
+  function safeSet(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch {
+      toast(t('storage_error'));
+      return false;
+    }
+  }
+
   // ── Settings (localStorage) ─────────────────────────────────────
   const SETTINGS_KEY = 'wg_settings';
 
@@ -250,12 +268,11 @@
   }
 
   function loadSettings() {
-    try { return Object.assign(defaultSettings(), JSON.parse(localStorage.getItem(SETTINGS_KEY))); }
-    catch { return defaultSettings(); }
+    return Object.assign(defaultSettings(), safeGet(SETTINGS_KEY));
   }
 
   function saveSettings(s) {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    safeSet(SETTINGS_KEY, s);
   }
 
   function applySettings() {
@@ -370,12 +387,11 @@
   }
 
   function loadStats() {
-    try { return Object.assign(defaultStats(), JSON.parse(localStorage.getItem(STATS_KEY))); }
-    catch { return defaultStats(); }
+    return Object.assign(defaultStats(), safeGet(STATS_KEY));
   }
 
   function saveStats(s) {
-    localStorage.setItem(STATS_KEY, JSON.stringify(s));
+    safeSet(STATS_KEY, s);
   }
 
   function updateStats(won) {
