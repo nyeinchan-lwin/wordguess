@@ -325,8 +325,7 @@
       settingsOpener = e.target.closest('[data-settings-open]');
       applySettings();
       overlay.hidden = false;
-      const close = overlay.querySelector('[data-settings-close]');
-      if (close) setTimeout(() => close.focus(), 50);
+      trapFocus(overlay);
     }
     if (e.target.closest('[data-settings-close]')) {
       overlay.hidden = true;
@@ -772,8 +771,7 @@
     if (card)   card.dataset.result = result || '';
     overlay.hidden = false;
     live(word ? `${message} ${word}` : message);
-    const action = overlay.querySelector('[data-modal-action]');
-    if (action) setTimeout(() => action.focus(), 50);
+    trapFocus(overlay);
   }
 
   // ── Toast notification ─────────────────────────────────────────
@@ -821,6 +819,45 @@
   function live(msg) {
     const el = document.querySelector('[data-announce]');
     if (el) el.textContent = msg;
+  }
+
+  // ── Focus trap for modals ──────────────────────────────────────
+  function trapFocus(modal) {
+    const focusable = modal.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    function handler(e) {
+      if (e.key !== 'Tab') return;
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    modal.addEventListener('keydown', handler);
+    first.focus();
+
+    // Auto-remove trap when modal closes
+    const observer = new MutationObserver(() => {
+      if (modal.hidden) {
+        modal.removeEventListener('keydown', handler);
+        observer.disconnect();
+      }
+    });
+    observer.observe(modal, { attributes: true, attributeFilter: ['hidden'] });
   }
 
   // ── Share result ───────────────────────────────────────────────
@@ -958,8 +995,7 @@
       statsOpener = e.target.closest('[data-stats-open]');
       renderStats(loadStats());
       overlay.hidden = false;
-      const close = overlay.querySelector('[data-stats-close]');
-      if (close) setTimeout(() => close.focus(), 50);
+      trapFocus(overlay);
     }
     if (e.target.closest('[data-stats-close]')) {
       overlay.hidden = true;
