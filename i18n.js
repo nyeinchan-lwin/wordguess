@@ -43,6 +43,13 @@ const TRANSLATIONS = {
     absent:        'Absent',
     how_to_play:   'How to Play',
     language:      'Language',
+    theme_all:     'All',
+    theme_animals: 'Animals',
+    theme_countries: 'Countries',
+    theme_food:    'Food',
+    theme_sports:  'Sports',
+    theme_science: 'Science',
+    theme_nature:  'Nature',
   },
   my: {
     htp_rule:      'အက္ခရာ ၅ လုံးပါဝင်သော ဝှက်ထားသည့် စကားလုံးကို ကြိုးစားခန့်မှန်းပါ။',
@@ -87,6 +94,13 @@ const TRANSLATIONS = {
     absent:        'မပါဝင်',
     how_to_play:   'ဘယ်လိုကစားရမလဲ',
     language:      'ဘာသာစကား',
+    theme_all:     'အားလုံး',
+    theme_animals: 'တိရစ္ဆာန်',
+    theme_countries: 'နိုင်ငံများ',
+    theme_food:    'အစားအစာ',
+    theme_sports:  'အားကစား',
+    theme_science: 'သိပ္ပံ',
+    theme_nature:  'သဘာဝ',
   },
 };
 

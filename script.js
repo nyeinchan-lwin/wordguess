@@ -155,7 +155,20 @@
 
   const VALID_SET = new Set([...ANSWERS, ...EXTRA_VALID]);
 
-  function pickWord() {
+  // ── Themed word lists ───────────────────────────────────────────
+  const THEMES = {
+    animals:   ['TIGER','EAGLE','SHARK','WHALE','SNAKE','HORSE','ZEBRA','WOLF','BEAR','DEER','MOUSE','BIRD','FROG','GOAT','LION','CAMEL','FOX','CRANE','RAVEN','PILOT','MOOSE','OTTER','HAWK','KOALA','PANDA','BUFFALO','JAGUAR','PENGUIN','DOLPHIN','SALMON'],
+    countries: ['FRANCE','JAPAN','KENYA','INDIA','CHINA','EGYPT','BRAZIL','MEXICO','ITALY','SPAIN','TURKEY','NORWAY','SWEDEN','POLAND','GREECE','CUBA','IRAQ','IRAN','LAOS','MALI','OMAN','PERU','FIJI','CHAD','GUAM','NIUE','PALAU','SAMOA','TONGA','NAURU'],
+    food:      ['PASTA','CHEESE','GRAPE','MELON','SPICE','BREAD','BUTTER','CREAM','HONEY','LEMON','OLIVE','PEACH','RICE','SUGAR','TOAST','MANGO','BERRY','MELON','CIDER','COCOA','CURRY','GHERKIN','NOODLE','RADISH','SALSA','STEAK','TOFU','WAFFLE','YOGURT','ZESTY'],
+    sports:    ['TENNIS','GOLF','BOXING','CRICKET','RUGBY','HOCKEY','KARATE','POLO','SQUASH','SURFING','FENCING','ROWING','DIVING','SKIING','ARCHERY','BOWLING','CLIMBING','JAVELIN','LACROSSE','SAILING'],
+    science:   ['ATOM','VIRUS','ORBIT','GENES','LASER','NERVE','CELL','FORCE','GRAVITY','ENERGY','PROTON','NEUTRON','PHOTON','QUARK','GENE','ENZYME','NUCLEUS','PLASMA','VACUUM','SPECTRUM'],
+    nature:    ['RIVER','OCEAN','STORM','CLOUD','FIELD','FLORA','CORAL','FLORA','MEADOW','FOREST','DESERT','ISLAND','PLAINS','TUNDRA','VOLCANO','CANYON','GLACIER','LAGOON','MARSH','TROPIC'],
+  };
+
+  function pickWord(theme) {
+    if (theme && THEMES[theme]) {
+      return THEMES[theme][Math.floor(Math.random() * THEMES[theme].length)];
+    }
     return ANSWERS[Math.floor(Math.random() * ANSWERS.length)];
   }
 
@@ -264,7 +277,7 @@
 
   function defaultSettings() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return { dark: prefersDark, hc: false, easy: false, hard: false };
+    return { dark: prefersDark, hc: false, easy: false, hard: false, theme: 'all' };
   }
 
   function loadSettings() {
@@ -332,6 +345,7 @@
   applySettings();
   applyTranslations();
   syncLangButtons();
+  syncThemeButtons();
 
   // Settings overlay open/close
   let settingsOpener = null;
@@ -371,6 +385,23 @@
       howtoBtn.textContent = t('how_to_play') + (expanded ? ' ▴' : ' ▾');
     }
   }
+
+  // ── Theme selector ─────────────────────────────────────────────
+  function syncThemeButtons() {
+    const settings = loadSettings();
+    document.querySelectorAll('[data-theme]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.theme === settings.theme);
+    });
+  }
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-theme]');
+    if (!btn) return;
+    const s = loadSettings();
+    s.theme = btn.dataset.theme;
+    saveSettings(s);
+    syncThemeButtons();
+  });
 
   document.addEventListener('click', e => {
     const btn = e.target.closest('[data-lang]');
@@ -450,7 +481,7 @@
     const settings = loadSettings();
     const rows = (isDaily || !settings.easy) ? 6 : 8;
     eng = {
-      answer:       isDaily ? pickDailyWord() : pickWord(),
+      answer:       isDaily ? pickDailyWord() : pickWord(settings.theme),
       daily:        isDaily,
       rows:         rows,
       currentRow:   0,
@@ -469,11 +500,14 @@
     // Show mode badge
     const badge = document.querySelector('[data-mode-badge]');
     if (badge) {
-      if (settings.easy && !isDaily) {
-        badge.textContent = 'Easy (8/8)';
-        badge.hidden = false;
-      } else if (settings.hard) {
-        badge.textContent = 'Hard';
+      const parts = [];
+      if (settings.easy && !isDaily) parts.push('Easy (8/8)');
+      if (settings.hard) parts.push('Hard');
+      if (settings.theme && settings.theme !== 'all' && !isDaily) {
+        parts.push(t('theme_' + settings.theme));
+      }
+      if (parts.length > 0) {
+        badge.textContent = parts.join(' · ');
         badge.hidden = false;
       } else {
         badge.hidden = true;
