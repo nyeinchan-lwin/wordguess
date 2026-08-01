@@ -431,13 +431,42 @@
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
+  // Theme of the day — cycles through non-"all" themes
+  const DAILY_THEMES = ['animals', 'countries', 'food', 'sports', 'science', 'nature', 'music', 'movies', 'tech', 'history', 'art'];
+
+  function getDailyTheme() {
+    const dateStr = todayStr();
+    let hash = 0;
+    for (let i = 0; i < dateStr.length; i++) {
+      hash = ((hash << 5) - hash + dateStr.charCodeAt(i)) | 0;
+    }
+    return DAILY_THEMES[Math.abs(hash) % DAILY_THEMES.length];
+  }
+
   function pickDailyWord() {
     const dateStr = todayStr();
     let hash = 0;
     for (let i = 0; i < dateStr.length; i++) {
       hash = ((hash << 5) - hash + dateStr.charCodeAt(i)) | 0;
     }
-    return ANSWERS[Math.abs(hash) % ANSWERS.length];
+    const settings = loadSettings();
+    const len = settings.wordLength || 5;
+    const theme = settings.theme || 'all';
+
+    // Build pool: filter by theme and length
+    let pool;
+    if (theme !== 'all' && THEMES[theme]) {
+      pool = THEMES[theme].filter(w => w.length === len);
+    } else {
+      pool = ANSWERS.filter(w => w.length === len);
+    }
+
+    if (pool.length === 0) {
+      // Fallback: any word of the right length
+      pool = ANSWERS.filter(w => w.length === len);
+    }
+    if (pool.length === 0) return ANSWERS[Math.abs(hash) % ANSWERS.length];
+    return pool[Math.abs(hash) % pool.length];
   }
 
   function loadDaily() {
@@ -630,6 +659,7 @@
   syncLangButtons();
   syncThemeButtons();
   syncWordLengthButtons();
+  updateDailyThemeBanner();
 
   // Settings overlay open/close
   let settingsOpener = null;
@@ -676,6 +706,16 @@
     document.querySelectorAll('[data-theme]').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.theme === settings.theme);
     });
+  }
+
+  // Daily theme banner
+  function updateDailyThemeBanner() {
+    const el = document.querySelector('[data-daily-theme-banner]');
+    if (!el) return;
+    const dailyTheme = getDailyTheme();
+    const emoji = { animals: '🐾', countries: '🌍', food: '🍽️', sports: '⚽', science: '🔬', nature: '🌿', music: '🎵', movies: '🎬', tech: '💻', history: '📜', art: '🎨' }[dailyTheme] || '';
+    el.textContent = `${emoji} ${t('daily_theme')}: ${t('theme_' + dailyTheme)}`;
+    el.hidden = false;
   }
 
   document.addEventListener('click', e => {

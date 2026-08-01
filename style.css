@@ -279,6 +279,21 @@ body {
   border-color: var(--color-accent);
 }
 
+/* ── Daily theme banner ─────────────────────────────────────── */
+.daily-theme-banner {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  max-width: var(--menu-max-width);
+  margin-top: var(--space-2);
+}
+
+.daily-theme-banner[hidden] { display: none; }
+
 /* ── Challenge mode ────────────────────────────────────────── */
 .challenge-banner {
   font-size: var(--font-size-xs);
