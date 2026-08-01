@@ -508,16 +508,19 @@
     document.documentElement.lang = screenLang[name] || 'en';
     live(screenLabel[name] || '');
     if (name === 'en') {
-      initGame(pendingDaily);
+      initGame(pendingDaily, pendingTournament);
       pendingDaily = false;
+      pendingTournament = false;
     }
   }
 
   let pendingDaily = false;
+  let pendingTournament = false;
 
   document.querySelectorAll('[data-target]').forEach(btn => {
     btn.addEventListener('click', () => {
       pendingDaily = !!btn.dataset.daily;
+      pendingTournament = !!btn.dataset.tournament;
       showScreen(btn.dataset.target);
     });
   });
@@ -542,6 +545,64 @@
   function generateChallengeLink(word, theme, len) {
     const base = window.location.origin + window.location.pathname;
     return `${base}?w=${word}&t=${theme || 'all'}&l=${len || 5}`;
+  }
+
+  // ── Tournament mode ───────────────────────────────────────────
+  const TOURNAMENT_KEY = 'wg_tournament';
+
+  // Weekly tournament rotates theme every 7 days
+  function getTournamentTheme() {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const dayOfYear = Math.floor((now - startOfYear) / 86400000);
+    const weekNum = Math.floor(dayOfYear / 7);
+    return DAILY_THEMES[weekNum % DAILY_THEMES.length];
+  }
+
+  function getTournamentWeek() {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const dayOfYear = Math.floor((now - startOfYear) / 86400000);
+    return Math.floor(dayOfYear / 7);
+  }
+
+  function loadTournament() {
+    return safeGet(TOURNAMENT_KEY) || { week: null, played: 0, won: 0, streak: 0 };
+  }
+
+  function saveTournament(data) {
+    safeSet(TOURNAMENT_KEY, data);
+  }
+
+  function resetTournamentIfNewWeek() {
+    const current = getTournamentWeek();
+    const saved = loadTournament();
+    if (saved.week !== current) {
+      saveTournament({ week: current, played: 0, won: 0, streak: 0 });
+    }
+  }
+
+  function updateTournamentStats(won) {
+    resetTournamentIfNewWeek();
+    const t = loadTournament();
+    t.played++;
+    if (won) {
+      t.won++;
+      t.streak++;
+    } else {
+      t.streak = 0;
+    }
+    saveTournament(t);
+    return t;
+  }
+
+  function buildTournamentShareText() {
+    resetTournamentIfNewWeek();
+    const data = loadTournament();
+    const theme = getTournamentTheme();
+    const emoji = { animals: '🐾', countries: '🌍', food: '🍽️', sports: '⚽', science: '🔬', nature: '🌿', music: '🎵', movies: '🎬', tech: '💻', history: '📜', art: '🎨' }[theme] || '';
+    const pct = data.played ? Math.round((data.won / data.played) * 100) : 0;
+    return `WordGuess Tournament ${emoji} ${t('theme_' + theme)}\n📅 Week ${data.week}\n🎮 ${data.played} played · ${pct}% win · 🔥 ${data.streak} streak\n\nPlay: ${SHARE_URL}`;
   }
 
   // ── English game ───────────────────────────────────────────────
@@ -979,8 +1040,9 @@
 
   let eng = {};
 
-  function initGame(daily) {
+  function initGame(daily, tournament) {
     const isDaily = !!daily;
+    const isTournament = !!tournament;
     const challenge = getChallengeParams();
     const isChallenge = isChallengeMode();
     const alreadyDone = isDaily && isDailyComplete();
@@ -990,6 +1052,7 @@
     eng = {
       answer:       isChallenge ? challenge.word.toUpperCase() : (isDaily ? pickDailyWord() : pickWord(settings.theme)),
       daily:        isDaily,
+      tournament:   isTournament,
       challenge:    isChallenge,
       rows:         rows,
       currentRow:   0,
@@ -1011,7 +1074,14 @@
     // Show mode badge
     const badge = document.querySelector('[data-mode-badge]');
     if (badge) {
+      const THEME_EMOJI = { animals: '🐾', countries: '🌍', food: '🍽️', sports: '⚽', science: '🔬', nature: '🌿', music: '🎵', movies: '🎬', tech: '💻', history: '📜', art: '🎨' };
       const parts = [];
+      if (isTournament) {
+        const tTheme = getTournamentTheme();
+        const emoji = THEME_EMOJI[tTheme] || '';
+        parts.push(`🏆 ${t('tournament')} ${emoji}`);
+      }
+      if (isDaily && !isTournament) parts.push(t('daily'));
       if (settings.easy && !isDaily) parts.push('Easy (8/8)');
       if (settings.hard) parts.push('Hard');
       if (settings.theme && settings.theme !== 'all' && !isDaily) {
@@ -1216,6 +1286,7 @@
       updateHintButton();
       const stats = updateStats(true);
       checkAchievements(true);
+      if (eng.tournament) updateTournamentStats(true);
       submitting = false;
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: true, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
       setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); }, flipDone);
@@ -1231,6 +1302,7 @@
       stopTimer();
       updateHintButton();
       const stats = updateStats(false);
+      if (eng.tournament) updateTournamentStats(false);
       submitting = false;
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: false, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
       setTimeout(() => {
@@ -1492,9 +1564,17 @@
       .catch(() => toast(t('copied')));
   }
 
+  function shareTournament() {
+    const text = buildTournamentShareText();
+    copyToClipboard(text)
+      .then(() => toast(t('copied')))
+      .catch(() => toast(t('copied')));
+  }
+
   document.addEventListener('click', e => {
     if (e.target.closest('[data-modal-share]')) shareResult();
     if (e.target.closest('[data-challenge-share]')) shareChallenge();
+    if (e.target.closest('[data-tournament-share]')) shareTournament();
   });
 
   // ── Game timer ──────────────────────────────────────────────────
@@ -1654,7 +1734,7 @@
   // ── Play Again ─────────────────────────────────────────────────
   document.addEventListener('click', e => {
     if (e.target.closest('[data-modal-action]')) {
-      if (eng.daily) {
+      if (eng.daily || eng.tournament) {
         showScreen('menu');
       } else {
         initGame();

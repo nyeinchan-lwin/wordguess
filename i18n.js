@@ -85,6 +85,8 @@ const TRANSLATIONS = {
     challenge_mode:     '🎯 Challenge Mode',
     challenge_friend:   'Challenge a Friend',
     challenge_challenge:'Can you beat my score? Play this word:',
+    tournament:         'Weekly Tournament',
+    share_tournament:   'Share Tournament',
   },
   my: {
     htp_rule:      'အက္ခရာ ၅ လုံးပါဝင်သော ဝှက်ထားသည့် စကားလုံးကို ကြိုးစားခန့်မှန်းပါ။',
@@ -171,6 +173,8 @@ const TRANSLATIONS = {
     challenge_mode:     '🎯 စိန်ခေါ်မှု မုဒ်',
     challenge_friend:   'သူငယ်ချင်းကို စိန်ခေါ်',
     challenge_challenge:'ကျွန်တော့်ရလဒ်ကို ကျော်ဖြတ်နိုင်ပါသလား။ ဒီစကားလုံးကို ကစားပါ:',
+    tournament:         'အပတ်စဉ် ပြိုင်ပွဲ',
+    share_tournament:   'ပြိုင်ပွဲ မျှဝေ',
   },
 };
 
