@@ -50,9 +50,42 @@
 - [x] Focus-trap bug: cached `first`/`last` let Shift+Tab escape the modal once roving tabindex changed which tab was tabbable
 - [x] `test/a11y-check.mjs` — 26 browser assertions covering the above
 
+### Word lists & test wiring (2026-08-02)
+- [x] `npm test` wired to `test/run.mjs` — serves the project and runs every suite, no manual server
+- [x] Game-flow suite now exits nonzero on page errors (it reported failures but still exited 0)
+- [x] Word list cleanup: 23 misfiled-by-length entries rehomed, 5 mixed-case entries fixed
+      (`ARctic`, `Observe`, `Pioneer`, `TRouble`, `Fresco` — all were unmatchable), typo
+      `DEPLOT`→`DEPLOY`, non-word `KNAG` dropped, duplicate `MELON`/`FLORA` removed, new `EXTRA_5`
+- [x] **Themed answers are guessable.** `THEMES` was never merged into `VALID_SET`, so 151 of 250
+      themed answers could not be typed — a Countries game with the answer `FRANCE` rejected
+      `FRANCE` as "Not a valid word". Countries was 29/30 unwinnable, Sports 16/20, Food 18/30
+- [x] `test/wordlists.mjs` — 27 static assertions locking in both fixes
+
 ---
 
 ## 🔲 Remaining Polish
+
+### Submission artifacts — do first (found 2026-08-02)
+
+These drifted behind the code. Nothing here is a code bug; they are things a
+reviewer sees first, and 40–42 are outright wrong in a document being submitted.
+
+| # | Fix | Effort | Notes |
+|---|-----|--------|-------|
+| 38 | **Regenerate screenshots** | Small | `screenshots/*.png` last updated 2026-07-25, before themes, word-length selector, daily-theme banner, achievements and tournament. `report.md` shows the game three features out of date. Regenerate all 5 (3 desktop @ 1280×800 + 2 mobile) — Playwright can drive it |
+| 39 | **Link feedback from `report.md`** | Trivial | `feedback/user-feedback.md` and `feedback/ai-playthrough.md` exist and are tracked, but the rewritten report has no section pointing at either. The templates require the report to link one |
+| 40 | **Fix the one-line summary** | Trivial | `report.md:8` says "a hidden 5-letter word in six tries" — it is now 4–7 letters and 8 tries in easy mode |
+| 41 | **Create `og-image.png`** | Small | 1200×630. `index.html` references it twice in the OG/Twitter tags, so every social preview currently 404s |
+| 42 | **Resolve the license mismatch** | Trivial | `report.md:7` says MIT, `package.json:22` says ISC, and there is a `LICENSE` file — pick one and make all three agree |
+
+### Word content (found 2026-08-02)
+
+| # | Fix | Effort | Notes |
+|---|-----|--------|-------|
+| 43 | **Thin answer pools for 4/6/7 letters** | Medium | `ANSWERS` is 589 words, *all* 5 letters, so the other modes fall through to the themed lists as their entire answer pool: 4→39 answers, 6→73, 7→**31**. A 7-letter player sees the same 31 words cycle. Needs ~100–150 new themed words |
+| 44 | **4 theme×length combos have zero answers** | Small | Countries×7, Tech×7, Nature×4, Art×4. `pickWord` falls back to *any* theme's words of that length while the badge still says the chosen theme, so you get an animal in a Countries game. 20 of the 44 combos have fewer than 5 answers |
+| 45 | **13 themed words can never be picked** | Trivial | No 3/8/9/10-letter mode exists, so these are dead weight: `FOX`, `CLIMBING`, `LACROSSE`, `SPECTRUM`, `SAXOPHONE`, `THRILLER`, `DIRECTOR`, `MEDIEVAL`, `REVOLUTION`, `CONQUEST`, `HERITAGE`, `PORTRAIT`, `WATERCOLOR` |
+| 46 | **`SCIFI` is not a word** | Trivial | In the movies theme. Now that themed words are accepted as guesses it is a valid guess everywhere. `NIUE`, `ZESTY` and `CYBER` are also dictionary-flagged but are legitimate (a country, and two real words) |
 
 ### Gameplay
 | # | Feature | Effort | Notes |
@@ -160,13 +193,12 @@
 
 ## 📝 Notes
 
-- ⚠️ **Nothing above is committed.** Everything from "Polish (16 items)" onward — achievements, tournament,
-  challenge links, sound, per-theme stats, and the a11y fixes — lives only in the working tree
-  (~1,100 lines across 5 files, last commit `920af22`). Commit before starting anything new.
-- `npm test` serves the project on port 8123 (override with `WG_PORT`) and runs both suites.
-  Use `npm run test:flow` / `npm run test:a11y` against an already-running server, and
-  `npm run test:browsers` if Playwright's Chromium is not installed yet.
-- **og-image.png** still needs to be created (1200×630px) for social previews
-- Theme word lists could be expanded (currently ~30 words each, aim for 50+)
+- ✅ All of the above is committed and pushed to `origin/main` (2026-08-02).
+- `npm test` serves the project on port 8123 (override with `WG_PORT`) and runs all three suites.
+  Use `npm run test:words` / `test:flow` / `test:a11y` to run one alone — `test:words` needs no
+  browser and no server. Run `npm run test:browsers` if Playwright's Chromium is not installed yet.
+- `test/wordlists.mjs` guards the word lists: it rebuilds `VALID_SET` from the merge statements
+  actually present in `script.js`, so removing a merge fails the suite. Run it after any list edit.
+- Theme word lists could be expanded (currently ~20–30 words each, aim for 50+) — see 43/44
 - Consider lazy-loading theme word lists to reduce initial bundle size
 - All new features should maintain i18n support (EN + MY)
