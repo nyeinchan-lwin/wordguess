@@ -1,0 +1,27 @@
+{
+  "name": "wordguess",
+  "version": "1.0.0",
+  "description": "A Wordle-style word-guessing game — built in plain HTML/CSS/JS with no framework and no build step.",
+  "main": "script.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nyeinchan-lwin/wordguess.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nyeinchan-lwin/wordguess/issues"
+  },
+  "homepage": "https://github.com/nyeinchan-lwin/wordguess#readme",
+  "dependencies": {
+    "playwright": "^1.61.1"
+  }
+}
