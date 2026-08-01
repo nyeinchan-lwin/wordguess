@@ -409,6 +409,10 @@
     art:       ['PAINT','BRUSH','COLOR','DRAFT','SKETCH','CANVAS','SCULPT','GALLERY','MUSEUM','PORTRAIT','DRAWING','WATERCOLOR','FRESCO','MOSAIC','POTTERY','DESIGN','PATTERN','TEXTILE','MURALS','FRAME'],
   };
 
+  // Themed answers have to be guessable as well, or a themed game cannot be
+  // won: the player is refused the very word they are being asked for.
+  Object.values(THEMES).flat().forEach(w => VALID_SET.add(w));
+
   function pickWord(theme) {
     const settings = loadSettings();
     const len = settings.wordLength || 5;

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "node test/run.mjs",
+    "test:words": "node test/wordlists.mjs",
     "test:flow": "node test/playwright-test.mjs",
     "test:a11y": "node test/a11y-check.mjs",
     "test:browsers": "playwright install chromium"
