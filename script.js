@@ -619,6 +619,53 @@
     ['Enter','Z','X','C','V','B','N','M','⌫'],
   ];
 
+  // ── Sound effects (Web Audio API) ─────────────────────────────
+  let audioCtx = null;
+
+  function getAudioCtx() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch { return null; }
+    }
+    return audioCtx;
+  }
+
+  const Sound = {
+    click() {
+      const ctx = getAudioCtx(); if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.03);
+    },
+    buzz() {
+      const ctx = getAudioCtx(); if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 200;
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
+    },
+    ding() {
+      const ctx = getAudioCtx(); if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(523, ctx.currentTime);       // C5
+      osc.frequency.setValueAtTime(659, ctx.currentTime + 0.12); // E5
+      osc.frequency.setValueAtTime(784, ctx.currentTime + 0.24); // G5
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5);
+    },
+  };
+
   // ── Safe localStorage helpers ─────────────────────────────────
   function safeGet(key) {
     try {
@@ -1197,6 +1244,7 @@
     t.classList.remove('tile--pop');
     void t.offsetWidth;          // reflow to restart animation
     t.classList.add('tile--pop');
+    if (loadSettings().sound) Sound.click();
   }
 
   function deleteLetter() {
@@ -1254,17 +1302,20 @@
     if (eng.currentInput.length < COLS) {
       shakeRow(eng.currentRow);
       toast(t('not_enough'));
+      if (loadSettings().sound) Sound.buzz();
       return;
     }
 
     if (!VALID_SET.has(eng.currentInput)) {
       shakeRow(eng.currentRow);
       toast(t('not_valid'));
+      if (loadSettings().sound) Sound.buzz();
       return;
     }
 
     if (!validateHardMode(eng.currentInput)) {
       shakeRow(eng.currentRow);
+      if (loadSettings().sound) Sound.buzz();
       return;
     }
 
@@ -1289,7 +1340,7 @@
       if (eng.tournament) updateTournamentStats(true);
       submitting = false;
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: true, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
-      setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); }, flipDone);
+      setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); if (loadSettings().sound) Sound.ding(); }, flipDone);
       const winDelay = flipDone + (COLS - 1) * BOUNCE_STAGGER + BOUNCE_MS + 200;
       setTimeout(() => {
         const settings = loadSettings();
