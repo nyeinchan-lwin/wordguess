@@ -7,7 +7,10 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/run.mjs",
+    "test:flow": "node test/playwright-test.mjs",
+    "test:a11y": "node test/a11y-check.mjs",
+    "test:browsers": "playwright install chromium"
   },
   "repository": {
     "type": "git",

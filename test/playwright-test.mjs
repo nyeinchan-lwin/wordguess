@@ -1,7 +1,7 @@
 // Playwright automated click-through test for WordGuess
 import { chromium } from 'playwright';
 
-const URL = 'http://localhost:8080';
+const URL = process.argv[2] || 'http://localhost:8080';
 
 async function run() {
   const browser = await chromium.launch({ headless: true });
@@ -119,6 +119,7 @@ async function run() {
   if (errors.length > 0) {
     console.log(`\n❌ ${errors.length} error(s) found:`);
     errors.forEach(e => console.log(`   - ${e}`));
+    process.exitCode = 1;
   } else {
     console.log('\n✅ All tests passed — no errors!');
   }

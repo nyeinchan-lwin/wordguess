@@ -92,7 +92,7 @@
 | 17 | **Service worker update** | Small | Cache theme word lists for offline play |
 | 18 | **Performance audit** | Medium | Check bundle size, lazy-load themes |
 | 19 | **Unit tests** | Medium | Test theme filtering, validation, stats |
-| 20 | **E2E tests** | Medium | Partial: `test/playwright-test.mjs` (game flow) + `test/a11y-check.mjs` (ARIA). Both need a server on :8080 / :8099 and are run by hand — no `npm test` wiring yet |
+| 20 | ~~**E2E tests**~~ | ~~Medium~~ | ~~`npm test` runs `test/run.mjs`, which serves the project and runs both suites (game flow + ARIA)~~ ✅ |
 
 ---
 
@@ -163,8 +163,9 @@
 - ⚠️ **Nothing above is committed.** Everything from "Polish (16 items)" onward — achievements, tournament,
   challenge links, sound, per-theme stats, and the a11y fixes — lives only in the working tree
   (~1,100 lines across 5 files, last commit `920af22`). Commit before starting anything new.
-- `package.json` still has the placeholder `"test": "echo \"Error: no test specified\" && exit 1"` —
-  wire it to the two Playwright scripts (each needs a static server running first).
+- `npm test` serves the project on port 8123 (override with `WG_PORT`) and runs both suites.
+  Use `npm run test:flow` / `npm run test:a11y` against an already-running server, and
+  `npm run test:browsers` if Playwright's Chromium is not installed yet.
 - **og-image.png** still needs to be created (1200×630px) for social previews
 - Theme word lists could be expanded (currently ~30 words each, aim for 50+)
 - Consider lazy-loading theme word lists to reduce initial bundle size
