@@ -244,8 +244,27 @@
     btn.addEventListener('click', () => showScreen('menu'));
   });
 
+  // ── Challenge mode (multiplayer via URL params) ───────────────
+  function getChallengeParams() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      word:  params.get('w'),
+      theme: params.get('t'),
+      len:   params.get('l'),
+    };
+  }
+
+  function isChallengeMode() {
+    return !!getChallengeParams().word;
+  }
+
+  function generateChallengeLink(word, theme, len) {
+    const base = window.location.origin + window.location.pathname;
+    return `${base}?w=${word}&t=${theme || 'all'}&l=${len || 5}`;
+  }
+
   // ── English game ───────────────────────────────────────────────
-  const COLS = 5;
+  let COLS = 5;
   const FLIP_MS        = 250;
   const FLIP_STAGGER   = 50;
   const POST_FLIP_MS   = 400;
@@ -482,12 +501,16 @@
 
   function initGame(daily) {
     const isDaily = !!daily;
+    const challenge = getChallengeParams();
+    const isChallenge = isChallengeMode();
     const alreadyDone = isDaily && isDailyComplete();
     const settings = loadSettings();
+    COLS = isChallenge ? (challenge.len ? Number(challenge.len) : 5) : (settings.wordLength || 5);
     const rows = (isDaily || !settings.easy) ? 6 : 8;
     eng = {
-      answer:       isDaily ? pickDailyWord() : pickWord(settings.theme),
+      answer:       isChallenge ? challenge.word.toUpperCase() : (isDaily ? pickDailyWord() : pickWord(settings.theme)),
       daily:        isDaily,
+      challenge:    isChallenge,
       rows:         rows,
       currentRow:   0,
       currentInput: '',
@@ -502,6 +525,9 @@
     updateHintButton();
     updateGuessCounter();
     startTimer();
+    // Show challenge banner if in challenge mode
+    const challengeBanner = document.querySelector('[data-challenge-banner]');
+    if (challengeBanner) challengeBanner.hidden = !isChallenge;
     // Show mode badge
     const badge = document.querySelector('[data-mode-badge]');
     if (badge) {
@@ -965,8 +991,19 @@
       .catch(() => toast(t('copied')));
   }
 
+  function shareChallenge() {
+    if (!eng.answer) return;
+    const settings = loadSettings();
+    const link = generateChallengeLink(eng.answer, settings.theme, COLS);
+    const text = `${t('challenge_challenge')}\n\n${link}`;
+    copyToClipboard(text)
+      .then(() => toast(t('copied')))
+      .catch(() => toast(t('copied')));
+  }
+
   document.addEventListener('click', e => {
     if (e.target.closest('[data-modal-share]')) shareResult();
+    if (e.target.closest('[data-challenge-share]')) shareChallenge();
   });
 
   // ── Game timer ──────────────────────────────────────────────────

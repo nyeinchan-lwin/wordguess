@@ -76,6 +76,9 @@
               aria-label="Settings">⚙</button>
     </header>
     <main class="game-main">
+      <div class="challenge-banner" data-challenge-banner hidden>
+        <span data-i18n="challenge_mode">🎯 Challenge Mode</span>
+      </div>
       <div class="game-toolbar">
         <button class="btn-howto" data-howto-toggle aria-expanded="false" aria-controls="howto-details" data-i18n="how_to_play">How to Play ▾</button>
         <details class="howto-details" id="howto-details" data-howto-details>
@@ -130,6 +133,7 @@
         <div class="modal-actions">
           <button class="btn btn-primary btn-play-again" data-modal-action data-i18n="play_again">Play Again</button>
           <button class="btn btn-ghost btn-share" data-modal-share data-i18n="share">Share result</button>
+          <button class="btn btn-ghost btn-challenge" data-challenge-share data-i18n="challenge_friend">Challenge a Friend</button>
         </div>
       </div>
     </div>

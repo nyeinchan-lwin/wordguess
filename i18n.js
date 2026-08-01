@@ -55,6 +55,9 @@ const TRANSLATIONS = {
     theme_tech:    'Technology',
     theme_history: 'History',
     theme_art:     'Art',
+    challenge_mode:     '🎯 Challenge Mode',
+    challenge_friend:   'Challenge a Friend',
+    challenge_challenge:'Can you beat my score? Play this word:',
   },
   my: {
     htp_rule:      'အက္ခရာ ၅ လုံးပါဝင်သော ဝှက်ထားသည့် စကားလုံးကို ကြိုးစားခန့်မှန်းပါ။',
@@ -111,6 +114,9 @@ const TRANSLATIONS = {
     theme_tech:    'နည်းပညာ',
     theme_history: 'သမိုင်း',
     theme_art:     'အနုပညာ',
+    challenge_mode:     '🎯 စိန်ခေါ်မှု မုဒ်',
+    challenge_friend:   'သူငယ်ချင်းကို စိန်ခေါ်',
+    challenge_challenge:'ကျွန်တော့်ရလဒ်ကို ကျော်ဖြတ်နိုင်ပါသလား။ ဒီစကားလုံးကို ကစားပါ:',
   },
 };
 
