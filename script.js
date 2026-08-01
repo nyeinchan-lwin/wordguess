@@ -1131,8 +1131,9 @@
       if (isDaily && !isTournament) parts.push(t('daily'));
       if (settings.easy && !isDaily) parts.push('Easy (8/8)');
       if (settings.hard) parts.push('Hard');
-      if (settings.theme && settings.theme !== 'all' && !isDaily) {
-        parts.push(t('theme_' + settings.theme));
+      if (settings.theme && settings.theme !== 'all' && !isDaily && !isTournament) {
+        const emoji = THEME_EMOJI[settings.theme] || '';
+        parts.push(`${emoji} ${t('theme_' + settings.theme)}`);
       }
       if (parts.length > 0) {
         badge.textContent = parts.join(' · ');
@@ -1574,7 +1575,14 @@
       .map(states => states.map(s => SHARE_EMOJI[s]).join(''))
       .join('\n');
     const maxG = eng.rows || 6;
-    return `WordGuess ${score}/${maxG}\n\n${grid}\n\nPlay: ${SHARE_URL}`;
+    const settings = loadSettings();
+    const THEME_EMOJI = { animals: '🐾', countries: '🌍', food: '🍽️', sports: '⚽', science: '🔬', nature: '🌿' };
+    let themeLine = '';
+    if (settings.theme && settings.theme !== 'all') {
+      const emoji = THEME_EMOJI[settings.theme] || '';
+      themeLine = ` ${emoji} ${t('theme_' + settings.theme)}`;
+    }
+    return `WordGuess ${score}/${maxG}${themeLine}\n\n${grid}\n\nPlay: ${SHARE_URL}`;
   }
 
   function copyToClipboard(text) {
