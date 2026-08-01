@@ -724,7 +724,8 @@
     // Show feedback toast
     const label = t(key + '_mode') || t(key);
     const state = s[key] ? t('on') : t('off');
-    toast(`${label} ${state}`);
+    const icon = key === 'dark' ? (s[key] ? ' 🌙' : ' ☀️') : '';
+    toast(`${label} ${state}${icon}`);
     // Update badge after toggle
     if (key === 'easy' || key === 'hard') {
       const badge = document.querySelector('[data-mode-badge]');
