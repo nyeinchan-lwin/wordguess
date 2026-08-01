@@ -755,60 +755,100 @@
 
   // ── Stats (localStorage) ───────────────────────────────────────
   const STATS_KEY = 'wg_stats';
+  const THEME_KEYS = ['all', 'animals', 'countries', 'food', 'sports', 'science', 'nature', 'music', 'movies', 'tech', 'history', 'art'];
 
-  function defaultStats() {
+  function emptyThemeStats() {
     return { played: 0, won: 0, currentStreak: 0, bestStreak: 0, distribution: [0, 0, 0, 0, 0, 0] };
   }
 
+  function defaultStats() {
+    const stats = {};
+    THEME_KEYS.forEach(k => { stats[k] = emptyThemeStats(); });
+    return stats;
+  }
+
   function loadStats() {
-    return Object.assign(defaultStats(), safeGet(STATS_KEY));
+    const raw = safeGet(STATS_KEY);
+    // Migration: if old flat format, wrap as {all: oldStats}
+    if (raw && typeof raw.played === 'number') {
+      const migrated = defaultStats();
+      migrated.all = Object.assign(emptyThemeStats(), raw);
+      saveStats(migrated);
+      return migrated;
+    }
+    return Object.assign(defaultStats(), raw || {});
   }
 
   function saveStats(s) {
     safeSet(STATS_KEY, s);
   }
 
+  let activeStatsTheme = 'all';
+
   function updateStats(won) {
     const s = loadStats();
-    s.played++;
-    if (won) {
-      s.won++;
-      s.currentStreak++;
-      if (s.currentStreak > s.bestStreak) s.bestStreak = s.currentStreak;
-      const guessNum = eng.history.length;
-      const maxGuesses = eng.rows || 6;
-      if (guessNum >= 1 && guessNum <= maxGuesses) {
-        // Ensure distribution array is large enough
-        while (s.distribution.length < maxGuesses) s.distribution.push(0);
-        s.distribution[guessNum - 1]++;
+    const settings = loadSettings();
+    const themeKey = settings.theme && settings.theme !== 'all' ? settings.theme : 'all';
+
+    // Update per-theme stats
+    ['all', themeKey].forEach(key => {
+      if (!s[key]) s[key] = emptyThemeStats();
+      s[key].played++;
+      if (won) {
+        s[key].won++;
+        s[key].currentStreak++;
+        if (s[key].currentStreak > s[key].bestStreak) s[key].bestStreak = s[key].currentStreak;
+        const guessNum = eng.history.length;
+        const maxGuesses = eng.rows || 6;
+        if (guessNum >= 1 && guessNum <= maxGuesses) {
+          while (s[key].distribution.length < maxGuesses) s[key].distribution.push(0);
+          s[key].distribution[guessNum - 1]++;
+        }
+      } else {
+        s[key].currentStreak = 0;
       }
-    } else {
-      s.currentStreak = 0;
-    }
+    });
+
     saveStats(s);
     return s;
   }
 
   function renderStats(s) {
-    const pct = s.played ? Math.round((s.won / s.played) * 100) : 0;
-    document.querySelectorAll('[data-stat="played"]').forEach(el => { el.textContent = s.played; });
+    const statsData = s || loadStats();
+    const themeStats = statsData[activeStatsTheme] || emptyThemeStats();
+    const pct = themeStats.played ? Math.round((themeStats.won / themeStats.played) * 100) : 0;
+
+    document.querySelectorAll('[data-stat="played"]').forEach(el => { el.textContent = themeStats.played; });
     document.querySelectorAll('[data-stat="win-pct"]').forEach(el => { el.textContent = pct; });
     document.querySelectorAll('[data-stat="streak"]').forEach(el => {
-      el.textContent = s.currentStreak > 0 ? `${s.currentStreak} 🔥` : s.currentStreak;
+      el.textContent = themeStats.currentStreak > 0 ? `${themeStats.currentStreak} 🔥` : themeStats.currentStreak;
     });
-    document.querySelectorAll('[data-stat="best"]').forEach(el => { el.textContent = s.bestStreak; });
+    document.querySelectorAll('[data-stat="best"]').forEach(el => { el.textContent = themeStats.bestStreak; });
+
     // Distribution chart
-    const maxDist = Math.max(...s.distribution, 1);
+    const maxDist = Math.max(...themeStats.distribution, 1);
     document.querySelectorAll('[data-dist]').forEach(container => {
       container.innerHTML = '';
-      const distLen = s.distribution.length;
+      const distLen = themeStats.distribution.length;
       for (let i = 0; i < distLen; i++) {
-        const count = s.distribution[i] || 0;
+        const count = themeStats.distribution[i] || 0;
         const pctBar = Math.round((count / maxDist) * 100);
         const row = document.createElement('div');
         row.className = 'dist-row';
         row.innerHTML = `<span class="dist-label">${i + 1}</span><div class="dist-bar-wrap"><div class="dist-bar" style="width:${pctBar}%"></div></div><span class="dist-count">${count}</span>`;
         container.appendChild(row);
+      }
+    });
+
+    // Sync theme tabs — roving tabindex: only the selected tab is in tab order
+    document.querySelectorAll('[data-stats-theme]').forEach(btn => {
+      const isActive = btn.dataset.statsTheme === activeStatsTheme;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive);
+      btn.tabIndex = isActive ? 0 : -1;
+      if (isActive) {
+        const panel = document.querySelector('[data-stats-panel]');
+        if (panel && btn.id) panel.setAttribute('aria-labelledby', btn.id);
       }
     });
   }
@@ -1058,7 +1098,12 @@
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: true, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
       setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); }, flipDone);
       const winDelay = flipDone + (COLS - 1) * BOUNCE_STAGGER + BOUNCE_MS + 200;
-      setTimeout(() => { renderStats(stats); setModal(t('solved', { n: eng.currentRow + 1 }), 'win'); }, winDelay);
+      setTimeout(() => {
+        const settings = loadSettings();
+        activeStatsTheme = settings.theme || 'all';
+        renderStats(stats);
+        setModal(t('solved', { n: eng.currentRow + 1 }), 'win');
+      }, winDelay);
     } else if (lastRow) {
       eng.gameOver = true;
       stopTimer();
@@ -1066,7 +1111,12 @@
       const stats = updateStats(false);
       submitting = false;
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: false, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
-      setTimeout(() => { renderStats(stats); setModal(t('answer_was'), 'lose', eng.answer); }, postReveal);
+      setTimeout(() => {
+        const settings = loadSettings();
+        activeStatsTheme = settings.theme || 'all';
+        renderStats(stats);
+        setModal(t('answer_was'), 'lose', eng.answer);
+      }, postReveal);
     } else {
       eng.currentRow++;
       eng.currentInput = '';
@@ -1414,6 +1464,7 @@
     if (!overlay) return;
     if (e.target.closest('[data-stats-open]')) {
       statsOpener = e.target.closest('[data-stats-open]');
+      activeStatsTheme = 'all';
       renderStats(loadStats());
       overlay.hidden = false;
       trapFocus(overlay);
@@ -1422,6 +1473,35 @@
       overlay.hidden = true;
       if (statsOpener) { statsOpener.focus(); statsOpener = null; }
     }
+    // Stats theme tab switching
+    const themeBtn = e.target.closest('[data-stats-theme]');
+    if (themeBtn && !overlay.hidden) {
+      activeStatsTheme = themeBtn.dataset.statsTheme;
+      renderStats(loadStats());
+    }
+  });
+
+  // Stats tablist keyboard navigation (WAI-ARIA tabs pattern, automatic activation)
+  document.addEventListener('keydown', e => {
+    const tab = e.target.closest('[data-stats-theme]');
+    if (!tab) return;
+    const tablist = tab.closest('[data-stats-tablist]');
+    if (!tablist) return;
+
+    const tabs = Array.from(tablist.querySelectorAll('[data-stats-theme]'));
+    const i = tabs.indexOf(tab);
+    let next = -1;
+
+    if (e.key === 'ArrowRight')     next = (i + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home')      next = 0;
+    else if (e.key === 'End')       next = tabs.length - 1;
+    else return;
+
+    e.preventDefault();
+    activeStatsTheme = tabs[next].dataset.statsTheme;
+    renderStats(loadStats());
+    tabs[next].focus();
   });
 
   // ── Physical keyboard ──────────────────────────────────────────
