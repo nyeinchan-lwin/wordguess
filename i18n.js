@@ -50,6 +50,11 @@ const TRANSLATIONS = {
     theme_sports:  'Sports',
     theme_science: 'Science',
     theme_nature:  'Nature',
+    theme_music:   'Music',
+    theme_movies:  'Movies',
+    theme_tech:    'Technology',
+    theme_history: 'History',
+    theme_art:     'Art',
   },
   my: {
     htp_rule:      'အက္ခရာ ၅ လုံးပါဝင်သော ဝှက်ထားသည့် စကားလုံးကို ကြိုးစားခန့်မှန်းပါ။',
@@ -101,6 +106,11 @@ const TRANSLATIONS = {
     theme_sports:  'အားကစား',
     theme_science: 'သိပ္ပံ',
     theme_nature:  'သဘာဝ',
+    theme_music:   'ဂီတ',
+    theme_movies:  'ရုပ်ရှင်',
+    theme_tech:    'နည်းပညာ',
+    theme_history: 'သမိုင်း',
+    theme_art:     'အနုပညာ',
   },
 };
 
