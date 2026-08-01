@@ -298,6 +298,38 @@ body {
   font-size: var(--font-size-base);
 }
 
+/* ── Word length selector ───────────────────────────────────── */
+.word-length-selector {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  margin-top: var(--space-2);
+  max-width: var(--menu-max-width);
+}
+
+.word-length-chip {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: background var(--duration-btn) ease, color var(--duration-btn) ease;
+  touch-action: manipulation;
+  min-width: 44px;
+}
+
+.word-length-chip:hover  { filter: brightness(1.1); }
+.word-length-chip:active { filter: brightness(0.95); }
+.word-length-chip.active {
+  background: var(--color-accent);
+  color: var(--color-state-text);
+  border-color: var(--color-accent);
+}
+
 /* ── Language switcher ─────────────────────────────────────────── */
 .lang-switcher {
   display: flex;

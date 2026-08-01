@@ -155,6 +155,238 @@
 
   const VALID_SET = new Set([...ANSWERS, ...EXTRA_VALID]);
 
+  // ── Extra valid words for other lengths ───────────────────────
+  const EXTRA_4 = [
+    'ACHE','ACME','ACRE','AGED','AHEM','AIDE','ALAS','ALSO','ARCH','AREA','ARMY',
+    'AVID','AXLE','BABE','BACK','BAIT','BAKE','BALD','BALE','BALL','BAND','BANE',
+    'BANK','BARE','BARK','BARN','BASE','BATH','BEAD','BEAM','BEAN','BEAR','BEAT',
+    'BEEF','BEEN','BEER','BELL','BELT','BEND','BENT','BEST','BIKE','BILL','BIND',
+    'BIRD','BITE','BLEW','BLOB','BLOG','BLOW','BLUE','BLUR','BOAR','BOAT','BODY',
+    'BOLD','BOLT','BOMB','BOND','BONE','BOOK','BOOM','BOOT','BORE','BORN','BOSS',
+    'BOTH','BOWL','BULK','BULL','BUMP','BURN','BURY','BUSH','BUSY','BUZZ','CAFE',
+    'CAGE','CAKE','CALL','CALM','CAME','CAMP','CANE','CAPE','CARD','CARE','CART',
+    'CASE','CASH','CAST','CAVE','CELL','CHAT','CHEF','CHIN','CHIP','CHOP','CITY',
+    'CLAD','CLAM','CLAN','CLAP','CLAW','CLAY','CLIP','CLOT','CLUB','CLUE','COAL',
+    'COAT','CODE','COIL','COIN','COLD','COLT','COME','COOK','COOL','COPE','COPY',
+    'CORD','CORE','CORK','CORN','COST','COZY','CRAB','CREW','CROP','CROW','CURE',
+    'CURL','CUTE','DALE','DAME','DAMP','DARE','DARK','DART','DASH','DATA','DAWN',
+    'DEAD','DEAF','DEAL','DEAR','DECK','DEED','DEEM','DEEP','DEER','DEMO','DENY',
+    'DESK','DIAL','DICE','DIET','DIME','DINE','DIRT','DISC','DISH','DOCK','DOES',
+    'DOME','DONE','DOOM','DOOR','DOSE','DOWN','DRAG','DRAW','DREW','DRIP','DROP',
+    'DRUM','DUAL','DUCK','DUDE','DUEL','DUKE','DULL','DUMB','DUMP','DUNE','DUSK',
+    'DUST','DUTY','DYED','EACH','EARL','EARN','EASE','EAST','EASY','EDGE','EDIT',
+    'ELSE','EMIT','ENVY','EPIC','EVEN','EVER','EVIL','EXAM','EXPO','EYES','FACE',
+    'FACT','FADE','FAIL','FAIR','FAKE','FALL','FAME','FANG','FARE','FARM','FAST',
+    'FATE','FAWN','FEAR','FEAT','FEED','FEEL','FEET','FELL','FELT','FEND','FERN',
+    'FEST','FEUD','FILE','FILL','FILM','FIND','FINE','FIRE','FIRM','FISH','FIST',
+    'FLAG','FLAK','FLAM','FLAN','FLAP','FLAT','FLAW','FLEA','FLED','FLEW','FLEX',
+    'FLIP','FLIT','FLOG','FLOW','FOAM','FOIL','FOLD','FOLK','FOND','FONT','FOOD',
+    'FOOL','FOOT','FORD','FORE','FORK','FORM','FORT','FOUL','FOUR','FREE','FROG',
+    'FROM','FUEL','FULL','FUME','FUND','FUSE','FURY','FUSS','GALE','GAME','GAPE',
+    'GARB','GATE','GAVE','GAZE','GEAR','GENE','GIFT','GIRL','GIST','GIVE','GLAD',
+    'GLEE','GLEN','GLOW','GLUE','GOAT','GOES','GOLD','GOLF','GONE','GOOD','GOOF',
+    'GORE','GRAB','GRAM','GRAY','GREW','GRID','GRIM','GRIN','GRIP','GRIT','GROW',
+    'GULF','GUST','GUTS','HACK','HAIL','HAIR','HALE','HALF','HALL','HALT','HAND',
+    'HANG','HARE','HARM','HARP','HASH','HASP','HATE','HAUL','HAVE','HAZE','HEAD',
+    'HEAL','HEAP','HEAR','HEAT','HEEL','HELD','HELL','HELP','HERB','HERD','HERE',
+    'HERO','HIDE','HIGH','HIKE','HILL','HILT','HIND','HINT','HIRE','HOLD','HOLE',
+    'HOME','HONE','HOOD','HOOK','HOPE','HORN','HOST','HOUR','HOWL','HUGE','HULL',
+    'HUMP','HUNG','HUNT','HURL','HURT','HUSK','HYPE','ICON','IDEA','INCH','INTO',
+    'IRON','ISLE','ITCH','ITEM','JACK','JAIL','JAMS','JAVA','JAZZ','JERK','JEST',
+    'JIVE','JOIN','JOKE','JOLT','JUMP','JUNE','JURY','JUST','KEEN','KEEP','KEPT',
+    'KEYS','KICK','KIDS','KILL','KIND','KING','KISS','KITE','KNAG','KNEE','KNEW',
+    'KNIT','KNOB','KNOT','KNOW','LACE','LACK','LADY','LAID','LAKE','LAMB','LAME',
+    'LAMP','LAND','LANE','LARD','LARK','LASH','LAST','LATE','LAWN','LAWS','LEAD',
+    'LEAF','LEAK','LEAN','LEAP','LEFT','LEND','LENS','LESS','LICK','LIED','LIFE',
+    'LIFT','LIKE','LIMB','LIME','LIMP','LINE','LINK','LION','LIST','LIVE','LOAD',
+    'LOAF','LOAN','LOCK','LOFT','LONE','LONG','LOOK','LOOP','LORD','LORE','LOSE',
+    'LOSS','LOST','LOTS','LOUD','LOVE','LUCK','LUMP','LUNG','LURE','LURK','LUSH',
+    'LUST','LYNX','MACE','MADE','MAGIC','MAID','MAIL','MAKE','MALE','MALL','MALT',
+    'MANE','MANY','MARE','MARK','MARS','MASH','MASK','MASS','MAST','MATE','MAZE',
+    'MEAL','MEAN','MEAT','MEEK','MEET','MELD','MELT','MEMO','MEND','MENU','MERE',
+    'MESH','MESS','MICA','MICE','MILD','MILE','MILK','MILL','MIME','MIND','MINE',
+    'MINT','MIRE','MISS','MIST','MOAT','MOCK','MODE','MOLD','MOLE','MOLT','MONK',
+    'MOOD','MOON','MOOR','MORE','MOSS','MOST','MOTH','MOVE','MUCH','MUCK','MULE',
+    'MULL','MUSE','MUSH','MUST','MUTE','MYTH','NAIL','NAME','NAVY','NEAR','NEAT',
+    'NECK','NEED','NEST','NEWS','NEXT','NICE','NINE','NODE','NONE','NOON','NORM',
+    'NOSE','NOTE','NOUN','NUDE','NULL','OAKS','OATH','OBEY','ODDS','OGRE','OILY',
+    'OMEN','OMIT','ONCE','ONLY','ONTO','OPUS','ORAL','OVEN','OVER','PACE','PACK',
+    'PAGE','PAID','PAIL','PAIN','PAIR','PALE','PALM','PANE','PARK','PART','PASS',
+    'PAST','PATH','PAVE','PEAK','PEAL','PEAR','PEAT','PECK','PEEL','PEER','PELT',
+    'PEND','PERK','PERM','PEST','PICK','PIER','PIKE','PILE','PILL','PINE','PINK',
+    'PIPE','PLAN','PLAY','PLEA','PLOD','PLOT','PLOW','PLOY','PLUG','PLUM','PLUS',
+    'POEM','POET','POLE','POLL','POLO','POND','PONY','POOL','POOR','POPE','PORE',
+    'PORK','PORT','POSE','POSH','POST','POUR','PRAY','PREY','PRIM','PROP','PROW',
+    'PULL','PULP','PUMP','PUNK','PURE','PUSH','QUIT','QUIZ','RACE','RACK','RAFT',
+    'RAGE','RAID','RAIL','RAIN','RAKE','RAMP','RANG','RANK','RARE','RASH','RATE',
+    'RAVE','READ','REAL','REAP','REAR','REED','REEF','REEL','REIN','RELY','RENT',
+    'REST','RICE','RICH','RIDE','RIFT','RIND','RING','RIOT','RIPE','RISE','RISK',
+    'ROAD','ROAM','ROAR','ROBE','ROCK','RODE','ROLE','ROLL','ROOF','ROOM','ROOT',
+    'ROPE','ROSE','ROSY','ROUT','RUDE','RUIN','RULE','RUMP','RUNG','RUSH','RUST',
+    'SACK','SAFE','SAGE','SAID','SAIL','SAKE','SALE','SALT','SAND','SANE','SANG',
+    'SANK','SASH','SAVE','SCAN','SCAR','SEAL','SEAM','SEAT','SECT','SEED','SEEK',
+    'SEEM','SEEN','SELF','SELL','SEND','SENT','SHED','SHIN','SHIP','SHOE','SHOO',
+    'SHOP','SHOT','SHOW','SHUT','SICK','SIDE','SIFT','SIGH','SIGN','SILK','SING',
+    'SINK','SITE','SIZE','SKIN','SKIP','SLAB','SLAG','SLAM','SLAP','SLAT','SLAW',
+    'SLED','SLEW','SLID','SLIM','SLIP','SLIT','SLOT','SLOW','SLUG','SLUM','SMOG',
+    'SNAP','SNAG','SNIP','SNOB','SNOT','SNOW','SNUB','SNUG','SOAK','SOAP','SOAR',
+    'SOCK','SODA','SOFA','SOFT','SOIL','SOLD','SOLE','SOME','SONG','SOON','SOOT',
+    'SORE','SORT','SOUL','SOUP','SOUR','SPAN','SPAR','SPEC','SPED','SPIN','SPIT',
+    'SPOT','SPUN','SPUR','STAB','STAG','STAR','STAY','STEM','STEP','STEW','STIR',
+    'STOP','STUB','STUD','STUN','SUCH','SUIT','SULK','SUNG','SUNK','SURE','SURF',
+    'SWAN','SWAP','SWIM','SWUM','TABS','TACK','TAIL','TAKE','TALE','TALK','TALL',
+    'TAME','TANG','TANK','TAPE','TAPS','TARN','TART','TASK','TEAM','TEAR','TELL',
+    'TEMP','TEND','TENT','TERM','TEST','TEXT','THAN','THAT','THEM','THEN','THEY',
+    'THIN','THIS','TICK','TIDE','TIDY','TIED','TIER','TILE','TILL','TILT','TIME',
+    'TINY','TIRE','TOAD','TOIL','TOLD','TOLL','TOMB','TONE','TOOK','TOOL','TOPS',
+    'TORE','TORN','TOSS','TOUR','TOWN','TRAP','TRAY','TREE','TREK','TRIM','TRIO',
+    'TRIP','TROD','TROT','TRUE','TUBE','TUCK','TUFT','TUNA','TUNE','TURF','TURN',
+    'TUSK','TUTU','TWIG','TWIN','TYPE','UGLY','UNDO','UNIT','UPON','URGE','USED',
+    'VAIN','VALE','VANE','VARY','VAST','VEIL','VEIN','VENT','VERB','VERY','VEST',
+    'VETO','VIAL','VICE','VIED','VIEW','VINE','VISA','VOID','VOLT','VOTE','WADE',
+    'WAGE','WAIL','WAIT','WAKE','WALK','WALL','WAND','WANT','WARD','WARM','WARN',
+    'WARP','WART','WARY','WASH','WASP','WAVE','WAVY','WAXY','WEAK','WEAN','WEAR',
+    'WEED','WEEK','WEEP','WELD','WELL','WENT','WERE','WEST','WHAT','WHEN','WHOM',
+    'WICK','WIDE','WIFE','WILD','WILL','WILT','WILY','WIND','WINE','WING','WINK',
+    'WIPE','WIRE','WISE','WISH','WITH','WOKE','WOLF','WOOD','WOOL','WORD','WORE',
+    'WORK','WORM','WORN','WOVE','WRAP','WREN','YARD','YARN','YEAR','YELL','YOGA',
+    'YOKE','YOUR','ZEAL','ZERO','ZINC','ZONE','ZOOM',
+  ];
+
+  const EXTRA_6 = [
+    'ABSORB','ACCEPT','ACCESS','ACROSS','ACTION','ACTIVE','ACTUAL','ADVICE',
+    'ADVISE','AFFORD','AGENDA','ALMOST','AMOUNT','ANIMAL','ANNUAL','ANSWER',
+    'ANYONE','ANYWAY','APPEAL','ARctic','ARMOUR','AROUND','ARREST','ARRIVE',
+    'ARTIST','ASSUME','ATTACH','ATTACK','ATTEND','BASKET','BATTLE','BEAUTY',
+    'BECOME','BEFORE','BEHIND','BELONG','BESIDE','BEYOND','BISHOP','BITTER',
+    'BLANKS','BLINDS','BOTHER','BOTTOM','BOUNCE','BRANCH','BREATH','BRIDGE',
+    'BRIGHT','BROKEN','BRONZE','BROWSE','BUCKET','BUDGET','BUNDLE','BURDEN',
+    'BUREAU','BUTTON','CANDLE','CANNON','CANVAS','CARBON','CAREER','CASTLE',
+    'CASUAL','CAUGHT','CAUSES','CENTER','CHANCE','CHANGE','CHARGE','CHOSEN',
+    'CHURCH','CIRCLE','CLIENT','CLOSET','COFFEE','COLUMN','COMBAT','COMEDY',
+    'COMMON','COMPLY','CONVEY','CORNER','COSTLY','COTTON','COUNTY','COUPLE',
+    'COURSE','CRAZY','CUSTOM','DAMAGE','DANGER','DEALER','DECADE','DECIDE',
+    'DEFECT','DEFEND','DEFINE','DEGREE','DEMAND','DEPLOT','DEPUTY','DESERT',
+    'DESIGN','DESIRE','DETAIL','DETECT','DEVICE','DIFFER','DINNER','DIRECT',
+    'DOUBLE','DRAGON','DRIVEN','DURING','EASILY','EATING','EDITOR','EFFECT',
+    'EFFORT','EMPIRE','ENABLE','ENDURE','ENERGY','ENGAGE','ENGINE','ENOUGH',
+    'ENSURE','ENTIRE','ENTITY','EQUITY','ESCAPE','ESTATE','EVOLVE','EXCEED',
+    'EXCEPT','EXCUSE','EXOTIC','EXPAND','EXPECT','EXPERT','EXPORT','EXTEND',
+    'EXTENT','FABRIC','FACTOR','FAIRLY','FAMILY','FAMOUS','FARMER','FATHER',
+    'FELINE','FELLOW','FEMALE','FIERCE','FIGURE','FILTER','FINALE','FINGER',
+    'FLIGHT','FLOWER','FLYING','FOREST','FORGET','FORMAL','FORMAT','FORMER',
+    'FOSTER','FOURTH','FREEZE','FRENCH','FRIEND','FROZEN','FUTURE','GALAXY',
+    'GARDEN','GATHER','GENTLY','GLOBAL','GOLDEN','GOVERN','GROUND','GROWTH',
+    'GUITAR','HANDLE','HAPPEN','HARDLY','HEALTH','HEAVEN','HEIGHT','HIDDEN',
+    'HOLDER','HOLLOW','HONEST','HORROR','HUNGER','HUNTER','IGNORE','IMPACT',
+    'IMPORT','IMPOSE','INCOME','INDEED','INFORM','INJURY','INSERT','INSIDE',
+    'INSIST','INTACT','INTEND','INTENT','INVEST','ISLAND','ITSELF','JACKET',
+    'JUNGLE','JUNIOR','KINDLY','KNIGHT','LAUNCH','LAWYER','LAYOUT','LEADER',
+    'LEGACY','LENGTH','LESSON','LETTER','LIKELY','LINEUP','LINKED','LIQUID',
+    'LISTEN','LITTLE','LIVELY','LOCATE','LONELY','LOVELY','MAINLY','MANAGE',
+    'MANNER','MARKET','MASTER','MATTER','MEDIUM','MEMBER','MEMORY','MENTAL',
+    'MENTOR','METHOD','MIDDLE','MIGHTY','MINUTE','MIRROR','MODERN','MODEST',
+    'MOMENT','MONKEY','MORTAL','MOSTLY','MOTHER','MOTION','MOTIVE','MURDER',
+    'MUSCLE','MUSEUM','MUTUAL','MYSELF','NARROW','NATION','NATURE','NEARBY',
+    'NEARLY','NEEDLE','NORMAL','NOTICE','NOTION','OBJECT','OBTAIN','OCCUPY',
+    'OFFEND','OFFICE','OPPOSE','OPTION','ORANGE','ORIGIN','OUTPUT','OXYGEN',
+    'PALACE','PARISH','PATROL','PATRON','PEANUT','PEASANT','PENCIL','PHARMACY',
+    'PHRASE','PICKLE','PICTURE','PIGEON','PILLAR','PLANET','PLAYER','PLEASE',
+    'PLENTY','POCKET','POETRY','POISON','POLICE','POLICY','POLISH','POORLY',
+    'PORTAL','POSTER','POTATO','POUNCE','PRAYER','PREFER','PRETTY','PRINCE',
+    'PRISON','PROFIT','PROPER','PROVEN','PUBLIC','PURSUE','PUZZLE','QUARRY',
+    'QUARTZ','RABBIT','RANDOM','RATHER','READER','REASON','RECALL','RECORD',
+    'REDUCE','REFORM','REFUSE','REGARD','REGIME','REGION','REGRET','REJECT',
+    'RELATE','RELIEF','REMAIN','REMOTE','REMOVE','RENDER','RENEW','REPEAT',
+    'REPLAY','REPORT','RESIST','RESORT','RESULT','RETAIL','RETAIN','RETIRE',
+    'RETURN','REVEAL','REVIEW','REVOLT','REWARD','RIBBON','RITUAL','ROBUST',
+    'ROCKET','RUBBER','RUGGED','RUSTIC','SACRED','SAFARI','SAFETY','SALARY',
+    'SAMPLE','SAVAGE','SCHEME','SCHOOL','SCREEN','SCRIPT','SEARCH','SEASON',
+    'SECRET','SECTOR','SECURE','SELECT','SENIOR','SERIES','SETTLE','SEVERE',
+    'SHADOW','SHIELD','SIGNAL','SILENT','SIMPLE','SIMPLY','SINGLE','SISTER',
+    'SKETCH','SLEEVE','SMOOTH','SOCCER','SOCIAL','SOFTLY','SOLELY','SOLEMN',
+    'SOLVED','SOUGHT','SOURCE','SPIRIT','SPREAD','SPRING','SQUARE','STATIC',
+    'STATUS','STEADY','STEREO','STOLEN','STRAIN','STRAND','STREAM','STREET',
+    'STRESS','STRICT','STRIKE','STRING','STROKE','STRONG','STRUCK','STUDIO',
+    'SUBMIT','SUBTLE','SUDDEN','SUFFER','SUMMER','SUMMIT','SUNDAY','SUPPLY',
+    'SURELY','SURVEY','SWITCH','SYMBOL','TACKLE','TALENT','TARGET','TEMPLE',
+    'TENANT','TENDER','TERROR','THANKS','THEORY','THIRTY','THREAD','THREAT',
+    'THRILL','THRIVE','THRONE','TIMBER','TISSUE','TONGUE','TOWARD','TRAVEL',
+    'TREATY','TRIBAL','TROPHY','TUNNEL','TURKEY','UNFAIR','UNFOLD','UNIQUE',
+    'UNLESS','UNLIKE','UNVEIL','UPDATE','UPHOLD','URGENT','USEFUL','VALLEY',
+    'VARIES','VENDOR','VESSEL','VIABLE','VIOLET','VIRTUE','VISION','VOLUME',
+    'WANDER','WEAPON','WEIGHT','WINTER','WISDOM','WITHIN','WONDER','WORKER',
+    'WORTHY','WRITER','YELLOW',
+  ];
+
+  const EXTRA_7 = [
+    'ABILITY','ABSENCE','ACADEMY','ACCOUNT','ACHIEVE','ACQUIRE','ADDRESS',
+    'ADVANCE','ALREADY','ANOTHER','ANXIETY','ANYBODY','APPLIED','ARRANGE',
+    'ARTICLE','ATTEMPT','BALANCE','BARGAIN','BATTERY','BEARING','BEDROOM',
+    'BELIEVE','BENEATH','BENEFIT','BESIDES','BISHOPS','BIZARRE','BLANKET',
+    'BOTHERS','BOUNCED','BREATHE','BRIDGE','BRIGHT','BROADER','BROTHER',
+    'CABINET','CAPABLE','CAPITAL','CAPTAIN','CAPTURE','CAREFUL','CAUTION',
+    'CEILING','CERTAIN','CHAMBER','CHANNEL','CHAPTER','CHARITY','CHICKEN',
+    'CIRCUIT','CITIZEN','CLASSIC','CLIMATE','CLOSING','CLUSTER','COASTAL',
+    'COLLECT','COLLEGE','COMFORT','COMMAND','COMMENT','COMPACT','COMPANY',
+    'COMPARE','COMPETE','COMPLEX','CONCERN','CONFIRM','CONNECT','CONSIST',
+    'CONTACT','CONTAIN','CONTENT','CONTEXT','CONTROL','CONVERT','CORRECT',
+    'COUNCIL','COUNTRY','COURAGE','CREATOR','CRICKET','CRIMSON','CRYSTAL',
+    'CULTURE','CURRENT','CURTAIN','CUSTOMS','DAMAGE','DEALING','DECIDED',
+    'DECLINE','DEFAULT','DEFENCE','DEFICIT','DELIVER','DENSITY','DEPOSIT',
+    'DIGITAL','DISPLAY','DISPUTE','DIVERSE','DOCTORS','DOMAIN','DONATED',
+    'DRESSED','DYNAMIC','EAGERLY','ECONOMY','EDITION','ELDERLY','ELEMENT',
+    'EMERGED','EMPLOYE','EMPHASIS','ENABLED','ENDLESS','ENFORCE','ENHANCE',
+    'ENQUIRE','EPISODE','EQUALLY','ESSENCE','EVIDENT','EXAMINE','EXAMPLE',
+    'EXCITED','EXCLUDE','EXHIBIT','EXPENSE','EXPLAIN','EXPLOIT','EXPLORE',
+    'EXTREME','FACTORY','FACULTY','FASHION','FEATURE','FICTION','FINALLY',
+    'FINANCE','FINDING','FOREIGN','FOREVER','FORMULA','FORTUNE','FORWARD',
+    'FOUNDER','FREEDOM','FURTHER','GATEWAY','GENERAL','GENETIC','GENUINE',
+    'GEOGRAPHY','GLIMPSE','GOLDEN','GOSPEL','GRAVITY','GRADUAL','GRANITE',
+    'GREATER','HABITAT','HANDFUL','HARMONY','HARVEST','HEALTHY','HELPFUL',
+    'HEROISM','HIGHWAY','HISTORY','HOLIDAY','HONESTY','HORIZON','HOSTILE',
+    'HUNDRED','HUNTING','HUSBAND','ILLNESS','IMAGINE','IMMENSE','IMPACT',
+    'IMPLIED','IMPROVE','INCLUDE','INDEXED','INFLUENZA','INITIAL','INQUIRY',
+    'INSIGHT','INSPECT','INSTALL','INSTANT','INTEGER','INTERIM','INVOLVE',
+    'JOURNAL','JOURNEY','JUSTICE','JUSTIFY','KITCHEN','LANDING','LARGELY',
+    'LASTING','LIBERAL','LIBERTY','LIBRARY','LICENSE','LIMITED','LOGICAL',
+    'LOYALTY','MACHINE','MADNESS','MANAGER','MANKIND','MASSIVE','MASTERS',
+    'MATTERS','MAXIMUM','MEASURE','MEDICAL','MEETING','MENTION','MESSAGE',
+    'MINERAL','MINIMAL','MINIMUM','MIRACLE','MISSION','MISTAKE','MIXTURE',
+    'MONITOR','MONTHLY','MORNING','MYSTERY','NATURAL','NEITHER','NETWORK',
+    'NOTABLE','NOTHING','NUCLEAR','NURSING','OBSCURE','Observe','OFFENSE',
+    'OFFICER','OPINION','ORGANIC','OUTLINE','OUTSIDE','OVERALL','PACIFIC',
+    'PACKAGE','PAINTER','PARKING','PARTIAL','PARTNER','PASSAGE','PASSING',
+    'PASSION','PATIENT','PATTERN','PAYMENT','PENALTY','PENSION','PERFECT',
+    'PERFORM','PERSIST','PHANTOM','PHONICS','PHYSICS','Pioneer','PLANET',
+    'PLASTIC','PLATTER','PLAYERS','PLAYFUL','POETRY','POINTER','POLITIC',
+    'POPULAR','PORTION','POVERTY','PREDICT','PREMIER','PREMIUM','PREPARE',
+    'PRESENT','PREVENT','PRIMARY','PRIVACY','PRIVATE','PROBLEM','PROCEED',
+    'PROCESS','PRODUCE','PRODUCT','PROFILE','PROGRAM','PROJECT','PROMISE',
+    'PROMOTE','PROTECT','PROTEIN','PROTEST','PROVIDE','PUBLISH','PURPOSE',
+    'QUALIFY','QUARTER','RADICAL','RAINBOW','REALITY','REALIZE','RECEIPT',
+    'RECEIVE','RECOVER','REDUCED','REFLECT','REGULAR','RELATED','RELEASE',
+    'REMAINS','REMOVAL','REPLACE','REQUIRE','RESERVE','RESOLVE','RESPECT',
+    'RESPOND','RESTORE','RETREAT','REVIVAL','RHETORIC','RIGGING','ROBBERY',
+    'ROLLING','ROMANCE','ROUNDED','ROUTINE','RUNNING','SATISFY','SCHOLAR',
+    'SCIENCE','SCRATCH','SECTION','SEGMENT','SERIOUS','SERVICE','SESSION',
+    'SETTING','SHELTER','SILENCE','SILICON','SIMILAR','SINCERE','SKILLED',
+    'SOLDIER','SOMEHOW','SPEAKER','SPECIAL','SPONSOR','STADIUM','STORAGE',
+    'STRANGE','STUDENT','SUBJECT','SUCCEED','SUCCESS','SUGGEST','SURFACE',
+    'SURPLUS','SURVIVE','SUSPECT','SUSTAIN','TEACHER','THEATRE','THERAPY',
+    'THOUGHT','THROUGH','TONIGHT','TOTALLY','TOURIST','TRAGEDY','TRAINER',
+    'TRouble','TRYING','TYPICAL','UNAWARE','UNDERGO','UNIFORM','UNION',
+    'UNIQUE','UNKNOWN','UNUSUAL','UPGRADE','VARIETY','VENTURE','VERBOSE',
+    'VERSION','VETERAN','VILLAGE','VIOLENT','VISIBLE','WARRIOR','WEALTH',
+    'WEATHER','WEBSITE','WELCOME','WELFARE','WESTERN','WHETHER','WHISPER',
+    'WINNING','WORKING','WORSHIP','WRAPPED','WRITING','WRITTEN',
+  ];
+
+  // Merge into VALID_SET
+  EXTRA_4.forEach(w => VALID_SET.add(w));
+  EXTRA_6.forEach(w => VALID_SET.add(w));
+  EXTRA_7.forEach(w => VALID_SET.add(w));
+
   // ── Themed word lists ───────────────────────────────────────────
   const THEMES = {
     animals:   ['TIGER','EAGLE','SHARK','WHALE','SNAKE','HORSE','ZEBRA','WOLF','BEAR','DEER','MOUSE','BIRD','FROG','GOAT','LION','CAMEL','FOX','CRANE','RAVEN','PILOT','MOOSE','OTTER','HAWK','KOALA','PANDA','BUFFALO','JAGUAR','PENGUIN','DOLPHIN','SALMON'],
@@ -171,10 +403,24 @@
   };
 
   function pickWord(theme) {
-    if (theme && THEMES[theme]) {
-      return THEMES[theme][Math.floor(Math.random() * THEMES[theme].length)];
+    const settings = loadSettings();
+    const len = settings.wordLength || 5;
+
+    // Build candidate pool filtered by length
+    let pool;
+    if (theme && theme !== 'all' && THEMES[theme]) {
+      pool = THEMES[theme].filter(w => w.length === len);
+    } else {
+      pool = ANSWERS.filter(w => w.length === len);
     }
-    return ANSWERS[Math.floor(Math.random() * ANSWERS.length)];
+
+    if (pool.length === 0) {
+      // Fallback: use any word of the right length from all themes
+      const allThemed = Object.values(THEMES).flat().filter(w => w.length === len);
+      pool = allThemed.length > 0 ? allThemed : ANSWERS.filter(w => w.length === len);
+    }
+
+    return pool[Math.floor(Math.random() * pool.length)];
   }
 
   // ── Daily challenge (date-seeded) ───────────────────────────────
@@ -301,7 +547,7 @@
 
   function defaultSettings() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return { dark: prefersDark, hc: false, easy: false, hard: false, theme: 'all' };
+    return { dark: prefersDark, hc: false, easy: false, hard: false, theme: 'all', wordLength: 5, sound: true };
   }
 
   function loadSettings() {
@@ -354,14 +600,27 @@
     }
   }
 
-  // Update the tries count in rule text based on current mode
+  // Update the tries count and word length in rule text based on current mode
   function updateRuleTries() {
     const s = loadSettings();
     const tries = (s.easy) ? 8 : 6;
-    const base = t('htp_rule');
-    // Replace the number before "tries" (handles both "6 tries" and "၆ ကြိုးစားခန့်မှန်းချက်")
+    const wordLen = s.wordLength || 5;
+    const lang = getLanguage();
+    let base = t('htp_rule');
+    if (lang === 'en') {
+      // English: "Guess the hidden 5-letter word in 6 tries."
+      base = base.replace(/\d+(?=-letter)/, wordLen);
+      base = base.replace(/\d+(?=\s+tries)/, tries);
+    } else {
+      // Myanmar: replace first number (word length) and second number (tries)
+      const nums = base.match(/\d+/g);
+      if (nums && nums.length >= 2) {
+        base = base.replace(nums[0], String(wordLen));
+        base = base.replace(nums[1], String(tries));
+      }
+    }
     document.querySelectorAll('[data-i18n="htp_rule"]').forEach(el => {
-      el.textContent = base.replace(/\d+/, tries);
+      el.textContent = base;
     });
   }
 
@@ -370,6 +629,7 @@
   applyTranslations();
   syncLangButtons();
   syncThemeButtons();
+  syncWordLengthButtons();
 
   // Settings overlay open/close
   let settingsOpener = null;
@@ -425,6 +685,25 @@
     s.theme = btn.dataset.theme;
     saveSettings(s);
     syncThemeButtons();
+  });
+
+  // ── Word length selector ──────────────────────────────────────
+  function syncWordLengthButtons() {
+    const settings = loadSettings();
+    document.querySelectorAll('[data-word-length]').forEach(btn => {
+      const isActive = Number(btn.dataset.wordLength) === (settings.wordLength || 5);
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive);
+    });
+  }
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-word-length]');
+    if (!btn) return;
+    const s = loadSettings();
+    s.wordLength = Number(btn.dataset.wordLength);
+    saveSettings(s);
+    syncWordLengthButtons();
   });
 
   document.addEventListener('click', e => {
