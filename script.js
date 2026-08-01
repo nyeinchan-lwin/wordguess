@@ -474,7 +474,13 @@
   }
 
   function saveDaily(data) {
+    const prev = loadDaily();
     safeSet(DAILY_KEY, data);
+    // Track total daily challenges completed (only count new completions)
+    if (data.done && data.date === todayStr() && !(prev && prev.done && prev.date === todayStr())) {
+      const count = (safeGet('wg_daily_count') || 0) + 1;
+      safeSet('wg_daily_count', count);
+    }
   }
 
   function isDailyComplete() {
@@ -853,6 +859,121 @@
     });
   }
 
+  // ── Achievement system ────────────────────────────────────────
+  const ACHIEVEMENTS_KEY = 'wg_achievements';
+
+  const ACHIEVEMENTS = [
+    { id: 'first_win',    emoji: '🏆', nameKey: 'ach_first_win',    descKey: 'ach_first_win_desc' },
+    { id: 'on_fire',      emoji: '🔥', nameKey: 'ach_on_fire',      descKey: 'ach_on_fire_desc' },
+    { id: 'unstoppable',  emoji: '⚡', nameKey: 'ach_unstoppable',  descKey: 'ach_unstoppable_desc' },
+    { id: 'perfectionist',emoji: '🎯', nameKey: 'ach_perfectionist',descKey: 'ach_perfectionist_desc' },
+    { id: 'speed_demon',  emoji: '⏱️', nameKey: 'ach_speed_demon',  descKey: 'ach_speed_demon_desc' },
+    { id: 'theme_master', emoji: '🎓', nameKey: 'ach_theme_master', descKey: 'ach_theme_master_desc' },
+    { id: 'word_wizard',  emoji: '🧙', nameKey: 'ach_word_wizard',  descKey: 'ach_word_wizard_desc' },
+    { id: 'century',      emoji: '💯', nameKey: 'ach_century',      descKey: 'ach_century_desc' },
+    { id: 'all_rounder',  emoji: '🎲', nameKey: 'ach_all_rounder',  descKey: 'ach_all_rounder_desc' },
+    { id: 'daily_devotee',emoji: '📅', nameKey: 'ach_daily_devotee',descKey: 'ach_daily_devotee_desc' },
+    { id: 'collector',    emoji: '🏅', nameKey: 'ach_collector',    descKey: 'ach_collector_desc' },
+    { id: 'completionist',emoji: '👑', nameKey: 'ach_completionist',descKey: 'ach_completionist_desc' },
+  ];
+
+  function loadAchievements() {
+    return safeGet(ACHIEVEMENTS_KEY) || [];
+  }
+
+  function saveAchievements(list) {
+    safeSet(ACHIEVEMENTS_KEY, list);
+  }
+
+  function hasAchievement(id) {
+    return loadAchievements().includes(id);
+  }
+
+  function unlockAchievement(id) {
+    if (hasAchievement(id)) return false;
+    const list = loadAchievements();
+    list.push(id);
+    saveAchievements(list);
+    const ach = ACHIEVEMENTS.find(a => a.id === id);
+    if (ach) toast(`${ach.emoji} ${t(ach.nameKey)}`);
+    renderAchievements();
+    return true;
+  }
+
+  function checkAchievements(won) {
+    if (!won) return;
+    const s = loadStats();
+    const allStats = s.all || { played: 0, won: 0, currentStreak: 0, bestStreak: 0 };
+
+    // First Win
+    unlockAchievement('first_win');
+
+    // On Fire (3-game streak)
+    if (allStats.currentStreak >= 3) unlockAchievement('on_fire');
+
+    // Unstoppable (5-game streak)
+    if (allStats.currentStreak >= 5) unlockAchievement('unstoppable');
+
+    // Perfectionist (win in 1 guess)
+    if (eng.history.length === 1) unlockAchievement('perfectionist');
+
+    // Speed Demon (win in under 60 seconds)
+    if (eng.startTime) {
+      const elapsed = (Date.now() - eng.startTime) / 1000;
+      if (elapsed < 60) unlockAchievement('speed_demon');
+    }
+
+    // Word Wizard (50 wins)
+    if (allStats.won >= 50) unlockAchievement('word_wizard');
+
+    // Century (100 wins)
+    if (allStats.won >= 100) unlockAchievement('century');
+
+    // Theme Master (win with every theme)
+    const settings = loadSettings();
+    if (settings.theme && settings.theme !== 'all') {
+      const themeWins = safeGet('wg_theme_wins') || {};
+      themeWins[settings.theme] = true;
+      safeSet('wg_theme_wins', themeWins);
+      const themeList = Object.keys(THEMES);
+      if (themeList.every(t => themeWins[t])) unlockAchievement('theme_master');
+    }
+
+    // All-Rounder (win with 3+ word lengths)
+    const lenWins = safeGet('wg_length_wins') || {};
+    lenWins[settings.wordLength || 5] = true;
+    safeSet('wg_length_wins', lenWins);
+    if (Object.keys(lenWins).length >= 3) unlockAchievement('all_rounder');
+
+    // Daily Devotee (play 7 daily challenges)
+    const dailyCount = safeGet('wg_daily_count') || 0;
+    if (dailyCount >= 7) unlockAchievement('daily_devotee');
+
+    // Collector (5 achievements)
+    if (loadAchievements().length >= 5) unlockAchievement('collector');
+
+    // Completionist (all achievements)
+    if (loadAchievements().length >= ACHIEVEMENTS.length) unlockAchievement('completionist');
+  }
+
+  function renderAchievements() {
+    const container = document.querySelector('[data-achievements]');
+    if (!container) return;
+    container.innerHTML = '';
+    const unlocked = loadAchievements();
+    ACHIEVEMENTS.forEach(ach => {
+      const isUnlocked = unlocked.includes(ach.id);
+      const card = document.createElement('div');
+      card.className = 'achievement-card' + (isUnlocked ? ' unlocked' : '');
+      card.innerHTML = `
+        <span class="achievement-emoji">${isUnlocked ? ach.emoji : '🔒'}</span>
+        <span class="achievement-name">${isUnlocked ? t(ach.nameKey) : '???'}</span>
+        <span class="achievement-desc">${isUnlocked ? t(ach.descKey) : ''}</span>
+      `;
+      container.appendChild(card);
+    });
+  }
+
   const SHARE_EMOJI = { correct: '🟩', present: '🟨', absent: '⬛' };
   const SHARE_URL   = 'https://nyeinchan-lwin.github.io/wordguess/';
 
@@ -1094,6 +1215,7 @@
       stopTimer();
       updateHintButton();
       const stats = updateStats(true);
+      checkAchievements(true);
       submitting = false;
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: true, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
       setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); }, flipDone);
@@ -1466,6 +1588,7 @@
       statsOpener = e.target.closest('[data-stats-open]');
       activeStatsTheme = 'all';
       renderStats(loadStats());
+      renderAchievements();
       overlay.hidden = false;
       trapFocus(overlay);
     }
