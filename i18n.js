@@ -57,7 +57,11 @@ const TRANSLATIONS = {
     theme_history: 'History',
     theme_art:     'Art',
     daily_theme:    "Today's theme",
+    theme_announce: 'Theme: {theme}',
+    theme_group:        'Word theme',
+    word_length_group:  'Word length',
     stats_tablist:      'Theme statistics',
+    distribution_group: 'Win distribution',
     achievements:   'Achievements',
     ach_first_win:       'First Win',
     ach_first_win_desc:  'Win any game',
@@ -146,7 +150,11 @@ const TRANSLATIONS = {
     theme_history: 'သမိုင်း',
     theme_art:     'အနုပညာ',
     daily_theme:    'ဒီနေ့ရဲ့ အမျိုးအစား',
+    theme_announce: 'အမျိုးအစား: {theme}',
+    theme_group:        'စကားလုံး အမျိုးအစား',
+    word_length_group:  'စကားလုံး အရှည်',
     stats_tablist:      'အမျိုးအစားအလိုက် စာရင်းအင်း',
+    distribution_group: 'အနိုင်ရ ခွဲဝေမှု',
     achievements:   'ဆုတံဆိပ်များ',
     ach_first_win:       'ပထမဆုံးနိုင်',
     ach_first_win_desc:  'ဂိမ်းတစ်ခု နိုင်ပါ',
@@ -210,6 +218,9 @@ function applyTranslations() {
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+    el.setAttribute('aria-label', t(el.dataset.i18nAriaLabel));
   });
   // Update the tries count in rule text based on current mode
   if (typeof updateRuleTries === 'function') updateRuleTries();

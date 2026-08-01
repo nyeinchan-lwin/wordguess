@@ -819,7 +819,9 @@
   function syncThemeButtons() {
     const settings = loadSettings();
     document.querySelectorAll('[data-theme]').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.theme === settings.theme);
+      const isActive = btn.dataset.theme === settings.theme;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive);
     });
   }
 
@@ -840,6 +842,9 @@
     s.theme = btn.dataset.theme;
     saveSettings(s);
     syncThemeButtons();
+    // Announce theme to screen readers
+    const themeName = btn.dataset.theme === 'all' ? t('theme_all') : t('theme_' + btn.dataset.theme);
+    live(t('theme_announce', { theme: themeName }));
   });
 
   // ── Word length selector ──────────────────────────────────────
@@ -1530,16 +1535,25 @@
 
   // ── Focus trap for modals ──────────────────────────────────────
   function trapFocus(modal) {
-    const focusable = modal.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    if (focusable.length === 0) return;
+    // Recomputed on every Tab, not cached: the stats tablist uses a roving tabindex,
+    // so which elements are tabbable changes while the modal is open. Elements with
+    // tabindex="-1" must be excluded or they become bogus trap boundaries.
+    function tabbables() {
+      return Array.from(modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]'
+      )).filter(el => el.tabIndex >= 0 && !el.disabled && !el.hidden);
+    }
 
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
+    const initial = tabbables();
+    if (initial.length === 0) return;
 
     function handler(e) {
       if (e.key !== 'Tab') return;
+
+      const focusable = tabbables();
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
 
       if (e.shiftKey) {
         if (document.activeElement === first) {
@@ -1555,7 +1569,7 @@
     }
 
     modal.addEventListener('keydown', handler);
-    first.focus();
+    initial[0].focus();
 
     // Auto-remove trap when modal closes
     const observer = new MutationObserver(() => {
