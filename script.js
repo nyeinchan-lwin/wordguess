@@ -472,9 +472,15 @@
       pool = ANSWERS.filter(w => w.length === len);
     }
 
+    // ANSWERS is entirely 5-letter, so at any other length the filters above
+    // come up empty. Every fallback must still honour `len`: the grid is built
+    // COLS wide from the same setting, so an answer of a different length is
+    // unreachable no matter what the player types.
     if (pool.length === 0) {
-      // Fallback: any word of the right length
-      pool = ANSWERS.filter(w => w.length === len);
+      pool = Object.values(THEMES).flat().filter(w => w.length === len);
+    }
+    if (pool.length === 0) {
+      pool = [...VALID_SET].filter(w => w.length === len);
     }
     if (pool.length === 0) return ANSWERS[Math.abs(hash) % ANSWERS.length];
     return pool[Math.abs(hash) % pool.length];
@@ -530,8 +536,10 @@
 
   document.querySelectorAll('[data-target]').forEach(btn => {
     btn.addEventListener('click', () => {
-      pendingDaily = !!btn.dataset.daily;
-      pendingTournament = !!btn.dataset.tournament;
+      // `data-daily` and `data-tournament` are valueless attributes, so
+      // dataset.daily is "" — truthiness would read every button as neither.
+      pendingDaily = 'daily' in btn.dataset;
+      pendingTournament = 'tournament' in btn.dataset;
       showScreen(btn.dataset.target);
     });
   });

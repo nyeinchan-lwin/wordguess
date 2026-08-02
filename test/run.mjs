@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT  = fileURLToPath(new URL('..', import.meta.url));
 const PORT  = Number(process.env.WG_PORT) || 8123;
-const SUITE = ['test/wordlists.mjs', 'test/playwright-test.mjs', 'test/a11y-check.mjs'];
+const SUITE = ['test/wordlists.mjs', 'test/playwright-test.mjs', 'test/a11y-check.mjs', 'test/daily-modes.mjs'];
 
 const TYPES = {
   '.html': 'text/html',       '.js':  'text/javascript',
