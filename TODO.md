@@ -60,6 +60,12 @@
       themed answers could not be typed — a Countries game with the answer `FRANCE` rejected
       `FRANCE` as "Not a valid word". Countries was 29/30 unwinnable, Sports 16/20, Food 18/30
 - [x] `test/wordlists.mjs` — 27 static assertions locking in both fixes
+- [x] **Daily Challenge and Weekly Tournament actually run.** Both markers are valueless attributes,
+      so `!!btn.dataset.daily` was always false and each button started an ordinary random game —
+      no daily state saved, no tournament stats, daily-devotee unreachable. Now `'daily' in dataset`
+- [x] `pickDailyWord()` honours the word length. Its fallbacks re-ran an empty filter and then
+      ignored length, so 4/6/7-letter dailies got a 5-letter answer behind a wider grid (#47)
+- [x] `test/daily-modes.mjs` — 20 browser assertions; reverting either fix alone fails it
 
 ---
 
@@ -71,9 +77,9 @@ Highest priority: these break the game itself, so they outrank everything below.
 
 | # | Bug | Effort | Notes |
 |---|-----|--------|-------|
-| 47 | **Daily challenge is unwinnable at 4, 6 and 7 letters** | Small | `pickDailyWord()` filters `ANSWERS` by length, but `ANSWERS` is 589 words that are *all* 5 letters, so the filter is empty. The fallback re-runs **the same empty filter**, then the last resort `return ANSWERS[Math.abs(hash) % ANSWERS.length]` ignores length entirely. For today's seed, `len=4`, `6` and `7` all return **TOWER** — a 5-letter answer in a grid built `COLS` wide, so no submittable guess can ever match. `pickWord()` (random mode) has a working fallback via `Object.values(THEMES).flat()`; copy that into `pickDailyWord()` |
+| 47 | ~~**Daily challenge is unwinnable at 4, 6 and 7 letters**~~ | ~~Small~~ | ~~Fixed 2026-08-02~~ ✅ — and the root cause was worse: the Daily and Tournament buttons never started their modes at all (`data-daily` is valueless, so `!!btn.dataset.daily` was always false). Both fixed; guarded by `test/daily-modes.mjs` |
 | 48 | **Challenge links are not validated** | Small | Observed: `?w=HI&l=6` → 6-wide grid with a 2-letter answer; `?w=FRANCE&l=4` → 4-wide grid with a 6-letter answer; `?w=12345&l=5` → digits accepted as the answer; `?w=&l=5` → starts a normal game with the banner off. No crash, but any truncated or hand-edited link yields a dead game. Fix in `initGame`: require `/^[A-Z]+$/` and `word.length === len`, else ignore the params and start a normal game |
-| 49 | **"Daily challenge" is not the same word for everyone** | Medium | `pickDailyWord()` draws from the player's *current theme*, so one date yields 12 different answers (all→TOWER, countries→ITALY, food→OLIVE, animals→MOOSE, sports→RUGBY, science→GENES, music→FLUTE, history→QUEEN, …). Share text says `WordGuess 3/6` as if results are comparable, but players solved different puzzles — and switching theme before playing re-rolls the draw, since only *completion* is date-locked. Design call: either seed from the date alone and ignore theme/length, or rename the mode so it stops promising a shared puzzle |
+| 49 | **"Daily challenge" is not the same word for everyone** | Medium | ⚠️ Only became reachable on 2026-08-02 — before that the daily button never started a daily at all, so this sat latent. `pickDailyWord()` draws from the player's *current theme*, so one date yields 12 different answers (all→TOWER, countries→ITALY, food→OLIVE, animals→MOOSE, sports→RUGBY, science→GENES, music→FLUTE, history→QUEEN, …). Share text says `WordGuess 3/6` as if results are comparable, but players solved different puzzles — and switching theme before playing re-rolls the draw, since only *completion* is date-locked. Design call: either seed from the date alone and ignore theme/length, or rename the mode so it stops promising a shared puzzle |
 
 ### Submission artifacts — do before submitting (found 2026-08-02)
 
