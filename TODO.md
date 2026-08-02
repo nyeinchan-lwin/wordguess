@@ -1,5 +1,22 @@
 # WordGuess — Remaining Polish & Implementation
 
+## ▶️ Start here next session
+
+Stopped 2026-08-02. Working tree clean, `npm test` green (4 suites).
+**Nothing since `b91208a` is pushed** — `git log --oneline origin/main..HEAD` lists what is waiting.
+
+Planned order:
+
+1. **#48** — validate challenge links. Last of the three gameplay bugs, ~15 min.
+   Require `/^[A-Z]+$/` and `word.length === len` in `initGame`, else start a normal game.
+2. **#49** — decide what "daily" means. A design call, not a code fix: either seed from the
+   date alone (same word for everyone) or rename the mode. Now live, see the bugs table.
+3. **#38–42** — submission artifacts. Mechanical; #40 and #42 are factual errors in `report.md`.
+4. **#43–46** — word content. The real remaining work; 7-letter mode has only 31 answers.
+5. Older polish backlog (#3–#19), of which **#16** (high-contrast chips) is the most worthwhile.
+
+Run `npm test` before and after anything — it catches all of today's fixes regressing.
+
 ## ✅ Completed
 
 ### Core Features (Slices 1–7)
