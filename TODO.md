@@ -65,7 +65,17 @@
 
 ## 🔲 Remaining Polish
 
-### Submission artifacts — do first (found 2026-08-02)
+### 🐞 Bugs — gameplay broken (found 2026-08-02)
+
+Highest priority: these break the game itself, so they outrank everything below.
+
+| # | Bug | Effort | Notes |
+|---|-----|--------|-------|
+| 47 | **Daily challenge is unwinnable at 4, 6 and 7 letters** | Small | `pickDailyWord()` filters `ANSWERS` by length, but `ANSWERS` is 589 words that are *all* 5 letters, so the filter is empty. The fallback re-runs **the same empty filter**, then the last resort `return ANSWERS[Math.abs(hash) % ANSWERS.length]` ignores length entirely. For today's seed, `len=4`, `6` and `7` all return **TOWER** — a 5-letter answer in a grid built `COLS` wide, so no submittable guess can ever match. `pickWord()` (random mode) has a working fallback via `Object.values(THEMES).flat()`; copy that into `pickDailyWord()` |
+| 48 | **Challenge links are not validated** | Small | Observed: `?w=HI&l=6` → 6-wide grid with a 2-letter answer; `?w=FRANCE&l=4` → 4-wide grid with a 6-letter answer; `?w=12345&l=5` → digits accepted as the answer; `?w=&l=5` → starts a normal game with the banner off. No crash, but any truncated or hand-edited link yields a dead game. Fix in `initGame`: require `/^[A-Z]+$/` and `word.length === len`, else ignore the params and start a normal game |
+| 49 | **"Daily challenge" is not the same word for everyone** | Medium | `pickDailyWord()` draws from the player's *current theme*, so one date yields 12 different answers (all→TOWER, countries→ITALY, food→OLIVE, animals→MOOSE, sports→RUGBY, science→GENES, music→FLUTE, history→QUEEN, …). Share text says `WordGuess 3/6` as if results are comparable, but players solved different puzzles — and switching theme before playing re-rolls the draw, since only *completion* is date-locked. Design call: either seed from the date alone and ignore theme/length, or rename the mode so it stops promising a shared puzzle |
+
+### Submission artifacts — do before submitting (found 2026-08-02)
 
 These drifted behind the code. Nothing here is a code bug; they are things a
 reviewer sees first, and 40–42 are outright wrong in a document being submitted.
