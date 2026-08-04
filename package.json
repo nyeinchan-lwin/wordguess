@@ -13,7 +13,8 @@
     "test:daily": "node test/daily-modes.mjs",
     "test:a11y": "node test/a11y-check.mjs",
     "test:links": "node test/challenge-links.mjs",
-    "test:browsers": "playwright install chromium"
+    "test:browsers": "playwright install chromium",
+    "screenshots": "node tools/screenshots.mjs"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/nyeinchan-lwin/wordguess/issues"

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>WordGuess — social preview</title>
+  <!-- Every value below derives from the design system's tokens in style.css;
+       the card only scales them, it never introduces new colours or sizes. -->
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    :root { --og-scale: 2; }
+
+    html, body { margin: 0; padding: 0; }
+
+    body {
+      width: 1200px;
+      height: 630px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-8);
+      background: var(--color-bg);
+      font-family: var(--font-family);
+    }
+
+    .og-title {
+      margin: 0;
+      font-size: calc(var(--font-size-xl) * 3);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tile);
+      color: var(--color-text-primary);
+      text-transform: uppercase;
+    }
+
+    .og-tagline {
+      margin: 0;
+      font-size: calc(var(--font-size-lg) * 1.4);
+      color: var(--color-text-muted);
+    }
+
+    .og-row {
+      display: flex;
+      gap: var(--space-4);
+    }
+
+    .og-tile {
+      width:  calc(var(--tile-size) * var(--og-scale));
+      height: calc(var(--tile-size) * var(--og-scale));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: calc(var(--border-width-tile) * 2) solid var(--color-border);
+      font-size: calc(var(--font-size-xl) * 3);
+      font-weight: var(--font-weight-bold);
+      letter-spacing: var(--letter-spacing-tile);
+      color: var(--color-text-primary);
+      text-transform: uppercase;
+    }
+
+    .og-tile[data-state="correct"],
+    .og-tile[data-state="present"],
+    .og-tile[data-state="absent"] { color: var(--color-state-text); }
+
+    .og-tile[data-state="correct"] { background: var(--color-correct); border-color: var(--color-correct); }
+    .og-tile[data-state="present"] { background: var(--color-present); border-color: var(--color-present); }
+    .og-tile[data-state="absent"]  { background: var(--color-absent);  border-color: var(--color-absent); }
+  </style>
+</head>
+<body class="dark">
+  <div class="og-row">
+    <div class="og-tile" data-state="correct">G</div>
+    <div class="og-tile" data-state="absent">U</div>
+    <div class="og-tile" data-state="present">E</div>
+    <div class="og-tile" data-state="correct">S</div>
+    <div class="og-tile" data-state="absent">S</div>
+  </div>
+  <h1 class="og-title">WordGuess</h1>
+  <p class="og-tagline">A daily word puzzle — 11 themes, 4 to 7 letters.</p>
+</body>
+</html>

@@ -950,8 +950,10 @@
     const settings = loadSettings();
     const themeKey = settings.theme && settings.theme !== 'all' ? settings.theme : 'all';
 
-    // Update per-theme stats
-    ['all', themeKey].forEach(key => {
+    // Update the 'all' bucket and the theme's own. themeKey is already 'all'
+    // when no theme is selected, so dedupe — otherwise the default case counts
+    // every game twice: played, wins, streak and distribution all doubled.
+    [...new Set(['all', themeKey])].forEach(key => {
       if (!s[key]) s[key] = emptyThemeStats();
       s[key].played++;
       if (won) {

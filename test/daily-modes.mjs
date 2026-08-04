@@ -86,6 +86,12 @@ for (const profile of PROFILES) {
   check(`${label}: answer is ${DAILY_LENGTH} letters, so the game is winnable`,
     answer.length === DAILY_LENGTH, `result="${result}" revealed="${revealed}"`);
 
+  // One game must count once. The 'all' bucket and the selected theme's bucket
+  // are both updated, and when no theme is selected those are the same bucket —
+  // which used to double every stat for the default player.
+  const played = (await page.textContent('[data-stat="played"]').catch(() => '') || '').trim();
+  check(`${label}: one finished game counts as one`, played === '1', `Played showed "${played}"`);
+
   answers.push({ label, answer, won: result === 'win' });
   check(`${label}: no page errors`, errors.length === 0, errors.join(' | '));
   await ctx.close();
