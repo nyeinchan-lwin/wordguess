@@ -2,18 +2,16 @@
 
 ## ▶️ Start here next session
 
-Stopped 2026-08-02. Working tree clean, `npm test` green (4 suites).
+Stopped 2026-08-02. Working tree clean, `npm test` green (5 suites).
 **Nothing since `b91208a` is pushed** — `git log --oneline origin/main..HEAD` lists what is waiting.
 
 Planned order:
 
-1. **#48** — validate challenge links. Last of the three gameplay bugs, ~15 min.
-   Require `/^[A-Z]+$/` and `word.length === len` in `initGame`, else start a normal game.
-2. **#49** — decide what "daily" means. A design call, not a code fix: either seed from the
+1. **#49** — decide what "daily" means. A design call, not a code fix: either seed from the
    date alone (same word for everyone) or rename the mode. Now live, see the bugs table.
-3. **#38–42** — submission artifacts. Mechanical; #40 and #42 are factual errors in `report.md`.
-4. **#43–46** — word content. The real remaining work; 7-letter mode has only 31 answers.
-5. Older polish backlog (#3–#19), of which **#16** (high-contrast chips) is the most worthwhile.
+2. **#38–42** — submission artifacts. Mechanical; #40 and #42 are factual errors in `report.md`.
+3. **#43–46** — word content. The real remaining work; 7-letter mode has only 31 answers.
+4. Older polish backlog (#3–#19), of which **#16** (high-contrast chips) is the most worthwhile.
 
 Run `npm test` before and after anything — it catches all of today's fixes regressing.
 
@@ -83,6 +81,10 @@ Run `npm test` before and after anything — it catches all of today's fixes reg
 - [x] `pickDailyWord()` honours the word length. Its fallbacks re-ran an empty filter and then
       ignored length, so 4/6/7-letter dailies got a 5-letter answer behind a wider grid (#47)
 - [x] `test/daily-modes.mjs` — 20 browser assertions; reverting either fix alone fails it
+- [x] **Challenge links validated.** A truncated or hand-edited link built a board no guess could
+      match (`?w=HI&l=6` → 2-letter answer in a 6-wide grid; `?w=12345` → digits as the answer;
+      `?w=WATERCOLOR&l=10` → a 10-wide grid). Bad links now fall back to a normal game (#48)
+- [x] `test/challenge-links.mjs` — 22 browser assertions, incl. a good link still winning
 
 ---
 
@@ -95,7 +97,7 @@ Highest priority: these break the game itself, so they outrank everything below.
 | # | Bug | Effort | Notes |
 |---|-----|--------|-------|
 | 47 | ~~**Daily challenge is unwinnable at 4, 6 and 7 letters**~~ | ~~Small~~ | ~~Fixed 2026-08-02~~ ✅ — and the root cause was worse: the Daily and Tournament buttons never started their modes at all (`data-daily` is valueless, so `!!btn.dataset.daily` was always false). Both fixed; guarded by `test/daily-modes.mjs` |
-| 48 | **Challenge links are not validated** | Small | Observed: `?w=HI&l=6` → 6-wide grid with a 2-letter answer; `?w=FRANCE&l=4` → 4-wide grid with a 6-letter answer; `?w=12345&l=5` → digits accepted as the answer; `?w=&l=5` → starts a normal game with the banner off. No crash, but any truncated or hand-edited link yields a dead game. Fix in `initGame`: require `/^[A-Z]+$/` and `word.length === len`, else ignore the params and start a normal game |
+| 48 | ~~**Challenge links are not validated**~~ | ~~Small~~ | ~~Fixed 2026-08-02~~ ✅ — `getChallengeParams()` now returns null unless the link describes a winnable game (A–Z only, a length the UI plays, length matching the word, and a word in `VALID_SET`); anything else starts a normal game. Guarded by `test/challenge-links.mjs` |
 | 49 | **"Daily challenge" is not the same word for everyone** | Medium | ⚠️ Only became reachable on 2026-08-02 — before that the daily button never started a daily at all, so this sat latent. `pickDailyWord()` draws from the player's *current theme*, so one date yields 12 different answers (all→TOWER, countries→ITALY, food→OLIVE, animals→MOOSE, sports→RUGBY, science→GENES, music→FLUTE, history→QUEEN, …). Share text says `WordGuess 3/6` as if results are comparable, but players solved different puzzles — and switching theme before playing re-rolls the draw, since only *completion* is date-locked. Design call: either seed from the date alone and ignore theme/length, or rename the mode so it stops promising a shared puzzle |
 
 ### Submission artifacts — do before submitting (found 2026-08-02)

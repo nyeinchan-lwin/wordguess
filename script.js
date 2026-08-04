@@ -548,17 +548,37 @@
   });
 
   // ── Challenge mode (multiplayer via URL params) ───────────────
+  const PLAYABLE_LENGTHS = [4, 5, 6, 7];
+
+  // Returns the challenge, or null if the link does not describe a game that
+  // can be won. Links get truncated, hand-edited and mangled by chat apps, and
+  // an unchecked one builds a board that no guess can ever match — a 6-wide
+  // grid hiding a 2-letter answer, say. Anything suspect falls back to a
+  // normal game rather than a dead one.
   function getChallengeParams() {
     const params = new URLSearchParams(window.location.search);
+    const raw   = params.get('w');
+    if (raw === null) return null;
+
+    const word = raw.toUpperCase();
+    if (!/^[A-Z]+$/.test(word)) return null;              // letters only
+    if (!PLAYABLE_LENGTHS.includes(word.length)) return null;  // a length the UI can render
+    if (!VALID_SET.has(word)) return null;                // must be typeable by the recipient
+
+    // `l` is advisory: honour it only when it agrees with the word itself.
+    const declared = params.get('l');
+    if (declared !== null && Number(declared) !== word.length) return null;
+
+    const theme = params.get('t');
     return {
-      word:  params.get('w'),
-      theme: params.get('t'),
-      len:   params.get('l'),
+      word,
+      theme: theme === 'all' || (theme && THEMES[theme]) ? theme : 'all',
+      len:   word.length,
     };
   }
 
   function isChallengeMode() {
-    return !!getChallengeParams().word;
+    return getChallengeParams() !== null;
   }
 
   function generateChallengeLink(word, theme, len) {
@@ -1115,14 +1135,14 @@
   function initGame(daily, tournament) {
     const isDaily = !!daily;
     const isTournament = !!tournament;
-    const challenge = getChallengeParams();
-    const isChallenge = isChallengeMode();
+    const challenge = getChallengeParams();   // null when the link is unusable
+    const isChallenge = challenge !== null;
     const alreadyDone = isDaily && isDailyComplete();
     const settings = loadSettings();
-    COLS = isChallenge ? (challenge.len ? Number(challenge.len) : 5) : (settings.wordLength || 5);
+    COLS = isChallenge ? challenge.len : (settings.wordLength || 5);
     const rows = (isDaily || !settings.easy) ? 6 : 8;
     eng = {
-      answer:       isChallenge ? challenge.word.toUpperCase() : (isDaily ? pickDailyWord() : pickWord(settings.theme)),
+      answer:       isChallenge ? challenge.word : (isDaily ? pickDailyWord() : pickWord(settings.theme)),
       daily:        isDaily,
       tournament:   isTournament,
       challenge:    isChallenge,
