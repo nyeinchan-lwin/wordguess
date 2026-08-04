@@ -7,11 +7,9 @@ Stopped 2026-08-02. Working tree clean, `npm test` green (5 suites).
 
 Planned order:
 
-1. **#49** — decide what "daily" means. A design call, not a code fix: either seed from the
-   date alone (same word for everyone) or rename the mode. Now live, see the bugs table.
-2. **#38–42** — submission artifacts. Mechanical; #40 and #42 are factual errors in `report.md`.
-3. **#43–46** — word content. The real remaining work; 7-letter mode has only 31 answers.
-4. Older polish backlog (#3–#19), of which **#16** (high-contrast chips) is the most worthwhile.
+1. **#38–42** — submission artifacts. Mechanical; #40 and #42 are factual errors in `report.md`.
+2. **#43–46** — word content. The real remaining work: the daily now repeats (sports has 1 five-letter word), and 7-letter mode has only 31 answers.
+3. Older polish backlog (#3–#19), of which **#16** (high-contrast chips) is the most worthwhile.
 
 Run `npm test` before and after anything — it catches all of today's fixes regressing.
 
@@ -85,6 +83,11 @@ Run `npm test` before and after anything — it catches all of today's fixes reg
       match (`?w=HI&l=6` → 2-letter answer in a 6-wide grid; `?w=12345` → digits as the answer;
       `?w=WATERCOLOR&l=10` → a 10-wide grid). Bad links now fall back to a normal game (#48)
 - [x] `test/challenge-links.mjs` — 22 browser assertions, incl. a good link still winning
+- [x] **The daily is one shared puzzle** (#49). Theme now comes from `getDailyTheme()` and length
+      from `DAILY_LENGTH = 5`, so personal settings can no longer change it — or re-roll it by
+      switching theme before playing. The menu banner and the mode badge finally agree
+- [x] `THEME_EMOJI` hoisted to one map; it was duplicated 4× and the copy in `buildShareText()`
+      was missing the 5 newer themes, so they shared with a blank emoji
 
 ---
 
@@ -98,7 +101,7 @@ Highest priority: these break the game itself, so they outrank everything below.
 |---|-----|--------|-------|
 | 47 | ~~**Daily challenge is unwinnable at 4, 6 and 7 letters**~~ | ~~Small~~ | ~~Fixed 2026-08-02~~ ✅ — and the root cause was worse: the Daily and Tournament buttons never started their modes at all (`data-daily` is valueless, so `!!btn.dataset.daily` was always false). Both fixed; guarded by `test/daily-modes.mjs` |
 | 48 | ~~**Challenge links are not validated**~~ | ~~Small~~ | ~~Fixed 2026-08-02~~ ✅ — `getChallengeParams()` now returns null unless the link describes a winnable game (A–Z only, a length the UI plays, length matching the word, and a word in `VALID_SET`); anything else starts a normal game. Guarded by `test/challenge-links.mjs` |
-| 49 | **"Daily challenge" is not the same word for everyone** | Medium | ⚠️ Only became reachable on 2026-08-02 — before that the daily button never started a daily at all, so this sat latent. `pickDailyWord()` draws from the player's *current theme*, so one date yields 12 different answers (all→TOWER, countries→ITALY, food→OLIVE, animals→MOOSE, sports→RUGBY, science→GENES, music→FLUTE, history→QUEEN, …). Share text says `WordGuess 3/6` as if results are comparable, but players solved different puzzles — and switching theme before playing re-rolls the draw, since only *completion* is date-locked. Design call: either seed from the date alone and ignore theme/length, or rename the mode so it stops promising a shared puzzle |
+| 49 | ~~**"Daily challenge" is not the same word for everyone**~~ | ~~Medium~~ | ~~Fixed 2026-08-02~~ ✅ — the daily now comes entirely from the date: theme from `getDailyTheme()` (the rotation the menu banner already advertised) and length pinned to `DAILY_LENGTH = 5`, ignoring the player's settings. Badge and share text name the daily's own theme, and the share line reads `Daily Challenge <date> 3/6`. Guarded by `test/daily-modes.mjs` |
 
 ### Submission artifacts — do before submitting (found 2026-08-02)
 
@@ -117,7 +120,7 @@ reviewer sees first, and 40–42 are outright wrong in a document being submitte
 
 | # | Fix | Effort | Notes |
 |---|-----|--------|-------|
-| 43 | **Thin answer pools for 4/6/7 letters** | Medium | `ANSWERS` is 589 words, *all* 5 letters, so the other modes fall through to the themed lists as their entire answer pool: 4→39 answers, 6→73, 7→**31**. A 7-letter player sees the same 31 words cycle. Needs ~100–150 new themed words |
+| 43 | **Thin answer pools for 4/6/7 letters — and for the daily** | Medium | ⚠️ Now also hits the daily: since 2026-08-02 it draws 5-letter words from the theme of the day, and **sports has exactly 1** (so that day is always `RUGBY`) and history 2. Counts: sports 1, history 2, movies 5, art 5, science 7, music 7, nature 8, tech 10, countries 11, animals 16, food 20. Fill the thin themes to ~15 five-letter words each first. Separately, `ANSWERS` is 589 words, *all* 5 letters, so the other modes fall through to the themed lists as their entire answer pool: 4→39 answers, 6→73, 7→**31**. A 7-letter player sees the same 31 words cycle. Needs ~100–150 new themed words |
 | 44 | **4 theme×length combos have zero answers** | Small | Countries×7, Tech×7, Nature×4, Art×4. `pickWord` falls back to *any* theme's words of that length while the badge still says the chosen theme, so you get an animal in a Countries game. 20 of the 44 combos have fewer than 5 answers |
 | 45 | **13 themed words can never be picked** | Trivial | No 3/8/9/10-letter mode exists, so these are dead weight: `FOX`, `CLIMBING`, `LACROSSE`, `SPECTRUM`, `SAXOPHONE`, `THRILLER`, `DIRECTOR`, `MEDIEVAL`, `REVOLUTION`, `CONQUEST`, `HERITAGE`, `PORTRAIT`, `WATERCOLOR` |
 | 46 | **`SCIFI` is not a word** | Trivial | In the movies theme. Now that themed words are accepted as guesses it is a valid guess everywhere. `NIUE`, `ZESTY` and `CYBER` are also dictionary-flagged but are legitimate (a country, and two real words) |

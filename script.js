@@ -409,6 +409,12 @@
     art:       ['PAINT','BRUSH','COLOR','DRAFT','SKETCH','CANVAS','SCULPT','GALLERY','MUSEUM','PORTRAIT','DRAWING','WATERCOLOR','FRESCO','MOSAIC','POTTERY','DESIGN','PATTERN','TEXTILE','MURALS','FRAME'],
   };
 
+  // One map, used by the badge, the menu banner and both share texts.
+  const THEME_EMOJI = {
+    animals: '🐾', countries: '🌍', food: '🍽️', sports: '⚽', science: '🔬', nature: '🌿',
+    music: '🎵', movies: '🎬', tech: '💻', history: '📜', art: '🎨',
+  };
+
   // Themed answers have to be guessable as well, or a themed game cannot be
   // won: the player is refused the very word they are being asked for.
   Object.values(THEMES).flat().forEach(w => VALID_SET.add(w));
@@ -454,33 +460,28 @@
     return DAILY_THEMES[Math.abs(hash) % DAILY_THEMES.length];
   }
 
+  // The daily is one shared puzzle: everything about it comes from the date,
+  // never from the player's own settings. The theme is the same date-seeded
+  // rotation the menu banner advertises, and the length is fixed — otherwise
+  // two people comparing "WordGuess 3/6" solved different words.
+  const DAILY_LENGTH = 5;
+
   function pickDailyWord() {
     const dateStr = todayStr();
     let hash = 0;
     for (let i = 0; i < dateStr.length; i++) {
       hash = ((hash << 5) - hash + dateStr.charCodeAt(i)) | 0;
     }
-    const settings = loadSettings();
-    const len = settings.wordLength || 5;
-    const theme = settings.theme || 'all';
+    const theme = getDailyTheme();
 
-    // Build pool: filter by theme and length
-    let pool;
-    if (theme !== 'all' && THEMES[theme]) {
-      pool = THEMES[theme].filter(w => w.length === len);
-    } else {
-      pool = ANSWERS.filter(w => w.length === len);
-    }
-
-    // ANSWERS is entirely 5-letter, so at any other length the filters above
-    // come up empty. Every fallback must still honour `len`: the grid is built
-    // COLS wide from the same setting, so an answer of a different length is
-    // unreachable no matter what the player types.
+    // Each fallback still honours DAILY_LENGTH: the grid is built that wide,
+    // so an answer of any other length is unreachable however the player guesses.
+    let pool = THEMES[theme] ? THEMES[theme].filter(w => w.length === DAILY_LENGTH) : [];
     if (pool.length === 0) {
-      pool = Object.values(THEMES).flat().filter(w => w.length === len);
+      pool = ANSWERS.filter(w => w.length === DAILY_LENGTH);
     }
     if (pool.length === 0) {
-      pool = [...VALID_SET].filter(w => w.length === len);
+      pool = [...VALID_SET].filter(w => w.length === DAILY_LENGTH);
     }
     if (pool.length === 0) return ANSWERS[Math.abs(hash) % ANSWERS.length];
     return pool[Math.abs(hash) % pool.length];
@@ -639,7 +640,7 @@
     resetTournamentIfNewWeek();
     const data = loadTournament();
     const theme = getTournamentTheme();
-    const emoji = { animals: '🐾', countries: '🌍', food: '🍽️', sports: '⚽', science: '🔬', nature: '🌿', music: '🎵', movies: '🎬', tech: '💻', history: '📜', art: '🎨' }[theme] || '';
+    const emoji = THEME_EMOJI[theme] || '';
     const pct = data.played ? Math.round((data.won / data.played) * 100) : 0;
     return `WordGuess Tournament ${emoji} ${t('theme_' + theme)}\n📅 Week ${data.week}\n🎮 ${data.played} played · ${pct}% win · 🔥 ${data.streak} streak\n\nPlay: ${SHARE_URL}`;
   }
@@ -869,7 +870,7 @@
     const el = document.querySelector('[data-daily-theme-banner]');
     if (!el) return;
     const dailyTheme = getDailyTheme();
-    const emoji = { animals: '🐾', countries: '🌍', food: '🍽️', sports: '⚽', science: '🔬', nature: '🌿', music: '🎵', movies: '🎬', tech: '💻', history: '📜', art: '🎨' }[dailyTheme] || '';
+    const emoji = THEME_EMOJI[dailyTheme] || '';
     el.textContent = `${emoji} ${t('daily_theme')}: ${t('theme_' + dailyTheme)}`;
     el.hidden = false;
   }
@@ -1139,7 +1140,11 @@
     const isChallenge = challenge !== null;
     const alreadyDone = isDaily && isDailyComplete();
     const settings = loadSettings();
-    COLS = isChallenge ? challenge.len : (settings.wordLength || 5);
+    // The daily ignores the player's length setting for the same reason it
+    // ignores their theme: everyone plays the identical puzzle.
+    COLS = isChallenge ? challenge.len
+         : isDaily     ? DAILY_LENGTH
+         : (settings.wordLength || 5);
     const rows = (isDaily || !settings.easy) ? 6 : 8;
     eng = {
       answer:       isChallenge ? challenge.word : (isDaily ? pickDailyWord() : pickWord(settings.theme)),
@@ -1166,14 +1171,17 @@
     // Show mode badge
     const badge = document.querySelector('[data-mode-badge]');
     if (badge) {
-      const THEME_EMOJI = { animals: '🐾', countries: '🌍', food: '🍽️', sports: '⚽', science: '🔬', nature: '🌿', music: '🎵', movies: '🎬', tech: '💻', history: '📜', art: '🎨' };
       const parts = [];
       if (isTournament) {
         const tTheme = getTournamentTheme();
         const emoji = THEME_EMOJI[tTheme] || '';
         parts.push(`🏆 ${t('tournament')} ${emoji}`);
       }
-      if (isDaily && !isTournament) parts.push(t('daily'));
+      if (isDaily && !isTournament) {
+        // Name the daily's own theme — the player's setting does not apply here.
+        const dTheme = getDailyTheme();
+        parts.push(`${t('daily')} ${THEME_EMOJI[dTheme] || ''} ${t('theme_' + dTheme)}`.trim());
+      }
       if (settings.easy && !isDaily) parts.push('Easy (8/8)');
       if (settings.hard) parts.push('Hard');
       if (settings.theme && settings.theme !== 'all' && !isDaily && !isTournament) {
@@ -1630,13 +1638,15 @@
       .join('\n');
     const maxG = eng.rows || 6;
     const settings = loadSettings();
-    const THEME_EMOJI = { animals: '🐾', countries: '🌍', food: '🍽️', sports: '⚽', science: '🔬', nature: '🌿' };
+    // A daily result is only comparable against the same day's daily, so label
+    // it as one and name its own theme rather than the player's setting.
+    const theme = eng.daily ? getDailyTheme() : settings.theme;
     let themeLine = '';
-    if (settings.theme && settings.theme !== 'all') {
-      const emoji = THEME_EMOJI[settings.theme] || '';
-      themeLine = ` ${emoji} ${t('theme_' + settings.theme)}`;
+    if (theme && theme !== 'all') {
+      themeLine = ` ${THEME_EMOJI[theme] || ''} ${t('theme_' + theme)}`;
     }
-    return `WordGuess ${score}/${maxG}${themeLine}\n\n${grid}\n\nPlay: ${SHARE_URL}`;
+    const label = eng.daily ? `${t('daily')} ${todayStr()}` : 'WordGuess';
+    return `${label} ${score}/${maxG}${themeLine}\n\n${grid}\n\nPlay: ${SHARE_URL}`;
   }
 
   function copyToClipboard(text) {
