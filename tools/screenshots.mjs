@@ -25,9 +25,11 @@ function list(name) {
 function themeLists() {
   const block = SRC.match(/const THEMES = \{([\s\S]*?)\n {2}\};/)[1];
   const out = {};
-  for (const line of block.split('\n')) {
-    const m = line.match(/^\s*(\w+):\s*\[(.*)\],?\s*$/);
-    if (m) out[m[1]] = [...m[2].matchAll(/'([^']*)'/g)].map(x => x[1]);
+  // Entries span several lines, grouped by word length — matching
+  // test/wordlists.mjs. A line-at-a-time parser silently yields no themes,
+  // which sends the daily answer below down the wrong fallback.
+  for (const m of block.matchAll(/(\w+):\s*\[([^\]]*)\]/g)) {
+    out[m[1]] = [...m[2].matchAll(/'([^']*)'/g)].map(x => x[1]);
   }
   return out;
 }
@@ -37,6 +39,13 @@ const DAILY_THEMES = SRC.match(/const DAILY_THEMES = \[(.*?)\];/)[1]
   .split(',').map(s => s.trim().replace(/'/g, ''));
 const THEMES = themeLists();
 const ANSWERS = list('ANSWERS');
+
+// Fail loudly rather than fall through to the wrong answer below: an empty
+// parse just means the parser drifted from script.js, and the only symptom
+// downstream is the modal never opening, 8 seconds later.
+if (Object.keys(THEMES).length === 0) {
+  throw new Error('parsed no themes from script.js — themeLists() is out of date');
+}
 
 const d = new Date();
 const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
