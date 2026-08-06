@@ -7,9 +7,12 @@ Stopped 2026-08-06. Working tree clean, `npm test` green (5 suites).
 
 Planned order:
 
-1. **#50–52** — three cosmetic issues the fresh screenshots exposed (mobile header overlap, keyboard below the fold, stray Share Tournament button).
-2. Older polish backlog (#3–#19), of which **#16** (high-contrast chips) is the most worthwhile.
-3. Consider regenerating screenshots once #50–52 land — they are what exposed those three.
+1. **A `design-reviewer` pass on `style.css`** — #50–52 changed the header layout
+   and added a viewport tier; CLAUDE.md asks for that review after any slice
+   touching `index.html`/`style.css`, and it has not been run yet.
+2. **Regenerate screenshots** (`npm run screenshots`) — the current ones show all
+   three bugs #50–52 fixed, and the desktop shots no longer need to be full-page.
+3. Older polish backlog (#3–#19), of which **#16** (high-contrast chips) is the most worthwhile.
 
 Run `npm test` before and after anything — it catches all of the fixes above regressing.
 
@@ -154,9 +157,9 @@ reviewer sees first, and 40–42 are outright wrong in a document being submitte
 |---|---------|--------|-------|
 | 11 | **Haptic feedback** | Small | Vibrate on guess submit (mobile only) |
 | 12 | **Landscape mode** | Medium | Better layout for landscape phones |
-| 50 | **Mobile header overlaps** | Trivial | At 390 px the "← Back" button overlaps the WORDGUESS title — visible in `screenshots/05-mobile-game.png` |
-| 51 | **Keyboard below the fold at 1280×800** | Small | The bottom keyboard row needs a scroll on a 800 px-tall laptop; the desktop screenshots have to be full-page to show it |
-| 52 | **"Share Tournament" shows in non-tournament results** | Trivial | The result modal offers it after any game, incl. the daily — see `screenshots/03-result.png` |
+| 50 | ~~**Mobile header overlaps**~~ | ~~Trivial~~ | ~~Fixed 2026-08-06~~ ✅ — the header was `justify-content: center` with both buttons absolutely positioned, so "← Back" sat on top of the title (13px of overlap at 390px, 28px at 360, 48px at 320). Now a `1fr auto 1fr` grid, so the buttons take real space. The title also drops to `--font-size-lg` under 480px, without which the three tracks pushed 13px past the edge at 320px |
+| 51 | ~~**Keyboard below the fold at 1280×800**~~ | ~~Small~~ | ~~Fixed 2026-08-06~~ ✅ — new `@media (max-height: 880px)` tier drops to `--tile-size-sm`/`--key-height-sm` and tighter gaps. Keyboard bottom went 850 → 748 at 1280×800, 850 → 708 at 1280×720, 850 → 732 at 1366×768. 1440×900 and taller keep the full 62px tile |
+| 52 | ~~**"Share Tournament" shows in non-tournament results**~~ | ~~Trivial~~ | ~~Fixed 2026-08-06~~ ✅ — `setModal()` now hides it unless `eng.tournament`. Verified in a browser: hidden after a random and a daily game, shown after a tournament game. "Challenge a Friend" still shows in every mode, which is correct — it shares the word you just played |
 | 13 | **PWA install prompt** | Small | Show "Add to Home Screen" banner |
 
 ### Accessibility

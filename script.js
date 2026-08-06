@@ -1625,6 +1625,11 @@
     if (msgEl)  msgEl.textContent = message;
     if (wordEl) { wordEl.textContent = word || ''; wordEl.hidden = !word; }
     if (card)   card.dataset.result = result || '';
+
+    // Sharing your tournament standing only means something in a tournament;
+    // the button used to be offered after every game, including the daily.
+    const tourBtn = qs('[data-tournament-share]');
+    if (tourBtn) tourBtn.hidden = !eng.tournament;
     overlay.hidden = false;
     live(word ? `${message} ${word}` : message);
     trapFocus(overlay);

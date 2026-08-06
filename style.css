@@ -105,18 +105,23 @@ body {
 }
 
 /* ── Header ─────────────────────────────────────────────────────── */
+/* Three columns with equal side tracks: the title stays optically centred
+   while the buttons take real space, so they cannot overlap it. They used to
+   be absolutely positioned, which let "← Back" sit on top of the title on a
+   narrow phone (13px of overlap at 390px, 48px at 320px). */
 .site-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
+  gap: var(--space-2);
   height: var(--header-height);
   border-bottom: var(--border-width) solid var(--color-border);
   padding: 0 var(--space-4);
-  position: relative;
   flex-shrink: 0;
 }
 
 .site-title {
+  grid-column: 2;
   margin: 0;
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
@@ -161,10 +166,10 @@ body {
   border: var(--border-width) solid var(--color-border);
 }
 
-/* Back button sits at the left edge of the header */
+/* Back button takes the left header track; the gear takes the right one. */
 .btn-back {
-  position: absolute;
-  left: var(--space-4);
+  grid-column: 1;
+  justify-self: start;
   font-size: var(--font-size-sm);
 }
 
@@ -957,8 +962,8 @@ body {
 
 /* ── Settings ───────────────────────────────────────────────────── */
 .btn-settings {
-  position: absolute;
-  right: var(--space-4);
+  grid-column: 3;
+  justify-self: end;
   font-size: var(--font-size-lg);
   line-height: 1;
   padding: var(--space-2);
@@ -1128,6 +1133,11 @@ body {
 
 /* ── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 480px) {
+  /* The header's three tracks have to fit side by side now that they no longer
+     overlap, and at 320px the full-size title pushed them 13px past the edge. */
+  .site-header { padding: 0 var(--space-2); }
+  .site-title  { font-size: var(--font-size-lg); }
+
   .btn-lang {
     padding: var(--space-3) var(--space-6);
     font-size: var(--font-size-base);
@@ -1151,6 +1161,18 @@ body {
 @media (max-width: 480px) and (max-height: 640px) {
   .game-main { gap: var(--space-2); padding: var(--space-1) var(--space-1); }
   .grid      { gap: var(--space-1); }
+}
+
+/* Laptops — the board and keyboard have to fit without scrolling.
+   At the full 62px tile the keyboard ended 50px below the fold on a 1280x800
+   screen (130px on 1280x720), so the bottom row needed a scroll to reach.
+   1440x900 and taller keep the full-size tiles. */
+@media (max-height: 880px) {
+  .game-main { gap: var(--space-2); padding: var(--space-2) var(--space-4); }
+  .grid      { gap: var(--space-2); }
+  .tile      { width: var(--tile-size-sm); height: var(--tile-size-sm); }
+  .key       { height: var(--key-height-sm); }
+  .game-toolbar { gap: var(--space-1); }
 }
 
 /* Taller phones — keep everything on one screen */
