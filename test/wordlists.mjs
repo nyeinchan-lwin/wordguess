@@ -22,9 +22,9 @@ function themeLists() {
   const block = SRC.match(/const THEMES = \{([\s\S]*?)\n {2}\};/);
   if (!block) throw new Error('THEMES object not found');
   const out = {};
-  for (const line of block[1].split('\n')) {
-    const m = line.match(/^\s*(\w+):\s*\[(.*)\],?\s*$/);
-    if (m) out[m[1]] = [...m[2].matchAll(/'([^']*)'/g)].map(x => x[1]);
+  // Entries span several lines, grouped by word length.
+  for (const m of block[1].matchAll(/(\w+):\s*\[([^\]]*)\]/g)) {
+    out[m[1]] = [...m[2].matchAll(/'([^']*)'/g)].map(x => x[1]);
   }
   return out;
 }
@@ -57,6 +57,56 @@ for (const [theme, words] of Object.entries(THEMES)) {
   const unguessable = words.filter(w => PLAYABLE.includes(w.length) && !VALID.has(w));
   check(`${theme}: every playable answer is in VALID_SET`, unguessable.length === 0,
     unguessable.join(', '));
+}
+
+// ── every theme can fill every length it advertises ─────────────
+// pickWord() falls back to *any* theme's words when a theme has none of the
+// requested length, while the badge still names the theme you chose — so an
+// empty combo hands a Countries player an animal. The daily is a single
+// 5-letter word drawn from the theme of the day, so a thin 5-letter list makes
+// that day repeat (sports once had exactly one: RUGBY, every sports day).
+const MIN_PER_COMBO = 5;
+const MIN_FIVE_LETTER = 15;
+
+for (const [theme, words] of Object.entries(THEMES)) {
+  for (const len of PLAYABLE) {
+    const n = words.filter(w => w.length === len).length;
+    check(`${theme}: has at least ${MIN_PER_COMBO} answers at ${len} letters`,
+      n >= MIN_PER_COMBO, `only ${n}`);
+  }
+  const five = words.filter(w => w.length === 5).length;
+  check(`${theme}: has at least ${MIN_FIVE_LETTER} five-letter answers (the daily draws from these)`,
+    five >= MIN_FIVE_LETTER, `only ${five}`);
+
+  // No 3/8/9/10-letter mode exists, so an entry at any other length is dead
+  // weight that can never be picked.
+  const unpickable = words.filter(w => !PLAYABLE.includes(w.length));
+  check(`${theme}: every entry is a length the UI plays`, unpickable.length === 0,
+    unpickable.map(w => `${w}(${w.length})`).join(', '));
+
+  const dupes = [...new Set(words.filter((w, i) => words.indexOf(w) !== i))];
+  check(`${theme}: no duplicates`, dupes.length === 0, dupes.join(', '));
+}
+
+// ── unthemed games have a real pool at every length ─────────────
+// ANSWERS is 5-letter only; the other lengths come from the EXTRA_* lists.
+const poolsMatch = SRC.match(/const ANSWER_POOLS = \{([^}]*)\}/);
+check('ANSWER_POOLS exists (unthemed 4/6/7 games would otherwise fall back to themed words)',
+  !!poolsMatch);
+if (poolsMatch) {
+  const pools = Object.fromEntries(
+    [...poolsMatch[1].matchAll(/(\d)\s*:\s*(\w+)/g)].map(m => [m[1], m[2]]));
+  for (const len of PLAYABLE) {
+    const name = pools[String(len)];
+    check(`ANSWER_POOLS has a pool for ${len} letters`, !!name);
+    if (!name) continue;
+    const words = list(name).filter(w => w.length === len);
+    check(`ANSWER_POOLS[${len}] (${name}) holds at least 100 words of that length`,
+      words.length >= 100, `only ${words.length}`);
+    const unguessable = words.filter(w => !VALID.has(w));
+    check(`ANSWER_POOLS[${len}] (${name}): every answer is in VALID_SET`,
+      unguessable.length === 0, unguessable.slice(0, 10).join(', '));
+  }
 }
 
 // ── list hygiene ────────────────────────────────────────────────

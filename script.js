@@ -395,18 +395,107 @@
   EXTRA_7.forEach(w => VALID_SET.add(w));
 
   // ── Themed word lists ───────────────────────────────────────────
+  // Every theme carries answers at all four playable lengths, grouped below by
+  // length. Two rules keep the game honest and test/wordlists.mjs enforces both:
+  //   - at least 5 answers per theme per length, or pickWord() silently serves
+  //     another theme's word while the badge still names the one you chose;
+  //   - at least 15 five-letter answers, because the daily is one 5-letter word
+  //     drawn from the theme of the day and would otherwise repeat.
   const THEMES = {
-    animals:   ['TIGER','EAGLE','SHARK','WHALE','SNAKE','HORSE','ZEBRA','WOLF','BEAR','DEER','MOUSE','BIRD','FROG','GOAT','LION','CAMEL','FOX','CRANE','RAVEN','PILOT','MOOSE','OTTER','HAWK','KOALA','PANDA','BUFFALO','JAGUAR','PENGUIN','DOLPHIN','SALMON'],
-    countries: ['FRANCE','JAPAN','KENYA','INDIA','CHINA','EGYPT','BRAZIL','MEXICO','ITALY','SPAIN','TURKEY','NORWAY','SWEDEN','POLAND','GREECE','CUBA','IRAQ','IRAN','LAOS','MALI','OMAN','PERU','FIJI','CHAD','GUAM','NIUE','PALAU','SAMOA','TONGA','NAURU'],
-    food:      ['PASTA','CHEESE','GRAPE','MELON','SPICE','BREAD','BUTTER','CREAM','HONEY','LEMON','OLIVE','PEACH','RICE','SUGAR','TOAST','MANGO','BERRY','CIDER','COCOA','CURRY','GHERKIN','NOODLE','RADISH','SALSA','STEAK','TOFU','WAFFLE','YOGURT','ZESTY'],
-    sports:    ['TENNIS','GOLF','BOXING','CRICKET','RUGBY','HOCKEY','KARATE','POLO','SQUASH','SURFING','FENCING','ROWING','DIVING','SKIING','ARCHERY','BOWLING','CLIMBING','JAVELIN','LACROSSE','SAILING'],
-    science:   ['ATOM','VIRUS','ORBIT','GENES','LASER','NERVE','CELL','FORCE','GRAVITY','ENERGY','PROTON','NEUTRON','PHOTON','QUARK','GENE','ENZYME','NUCLEUS','PLASMA','VACUUM','SPECTRUM'],
-    nature:    ['RIVER','OCEAN','STORM','CLOUD','FIELD','FLORA','CORAL','MEADOW','FOREST','DESERT','ISLAND','PLAINS','TUNDRA','VOLCANO','CANYON','GLACIER','LAGOON','MARSH','TROPIC'],
-    music:     ['TEMPO','CHORD','BASS','DRUM','FLUTE','HARP','PIANO','TRUMPET','GUITAR','VIOLIN','CELLO','LYRIC','MELODY','RHYTHM','BALLAD','CHORUS','TREBLE','BANJO','UKULELE','SAXOPHONE'],
-    movies:    ['FILM','CINEMA','DRAMA','COMEDY','ACTION','HORROR','THRILLER','ROMANCE','FANTASY','SCIFI','SCRIPT','DIRECTOR','ACTRESS','ACTOR','SCREEN','PLOT','GENRE','SCENE','TRAILER','STUDIO'],
-    tech:      ['CODE','DATA','CHIP','WIFI','MODEM','BYTES','PIXEL','CLOUD','ROBOT','CYBER','HACKER','SERVER','MOUSE','DISK','ROUTER','PYTHON','ARRAY','BINARY','LOGIC','CACHE'],
-    history:   ['ROME','FORT','KING','QUEEN','CASTLE','SWORD','SHIELD','THRONE','BATTLE','EMPIRE','PHARAOH','KNIGHT','MEDIEVAL','DYNASTY','REVOLUTION','PYRAMID','TEMPLE','ARSENAL','CONQUEST','HERITAGE'],
-    art:       ['PAINT','BRUSH','COLOR','DRAFT','SKETCH','CANVAS','SCULPT','GALLERY','MUSEUM','PORTRAIT','DRAWING','WATERCOLOR','FRESCO','MOSAIC','POTTERY','DESIGN','PATTERN','TEXTILE','MURALS','FRAME'],
+    animals: [
+      'WOLF','BEAR','DEER','BIRD','FROG','GOAT','LION','CRAB','MOLE','SWAN','TOAD','HARE','LYNX','MULE','HAWK',
+      'TIGER','EAGLE','SHARK','WHALE','SNAKE','HORSE','ZEBRA','MOUSE','CAMEL','CRANE','RAVEN','MOOSE','OTTER',
+      'KOALA','PANDA','BISON','HYENA','LEMUR','SLOTH','HERON','SKUNK','STORK','VIPER','LLAMA',
+      'JAGUAR','FALCON','MONKEY','RABBIT','TURTLE','WEASEL','BADGER','BEAVER','CONDOR','IGUANA','OSPREY','WALRUS','FERRET','SALMON',
+      'PENGUIN','DOLPHIN','GIRAFFE','LEOPARD','BUFFALO','GORILLA','MEERKAT','PELICAN','RACCOON','OCTOPUS',
+    ],
+    countries: [
+      'CUBA','IRAQ','IRAN','LAOS','MALI','OMAN','PERU','FIJI','CHAD','GUAM','NIUE','TOGO',
+      'JAPAN','KENYA','INDIA','CHINA','EGYPT','ITALY','SPAIN','PALAU','SAMOA','TONGA','NAURU','CHILE','GHANA',
+      'HAITI','LIBYA','MALTA','NEPAL','NIGER','QATAR','SUDAN','SYRIA','YEMEN','CONGO','GABON','KOREA',
+      'FRANCE','BRAZIL','MEXICO','TURKEY','NORWAY','SWEDEN','POLAND','GREECE','CANADA','ANGOLA','BHUTAN',
+      'CYPRUS','GUINEA','ISRAEL','JORDAN','KUWAIT','MALAWI','PANAMA','RUSSIA','RWANDA','TAIWAN','ZAMBIA',
+      'AUSTRIA','BELGIUM','BOLIVIA','DENMARK','ECUADOR','ENGLAND','ESTONIA','FINLAND','GEORGIA','GERMANY',
+      'HUNGARY','IRELAND','JAMAICA','LEBANON','MOROCCO','MYANMAR','NIGERIA','ROMANIA','SENEGAL','SOMALIA',
+      'TUNISIA','UKRAINE','URUGUAY','VIETNAM',
+    ],
+    food: [
+      'RICE','TOFU','CORN','BEAN','KALE','LIME','MILK','MINT','PEAR','PLUM','SOUP','TUNA',
+      'PASTA','GRAPE','MELON','SPICE','BREAD','CREAM','HONEY','LEMON','OLIVE','PEACH','SUGAR','TOAST','MANGO',
+      'BERRY','CIDER','COCOA','CURRY','SALSA','STEAK','APPLE','BACON','BASIL','CANDY','DONUT','FLOUR','ONION',
+      'PIZZA','SALAD','SYRUP','WHEAT',
+      'CHEESE','BUTTER','NOODLE','RADISH','WAFFLE','YOGURT','BANANA','CARROT','CELERY','GARLIC','GINGER',
+      'MUFFIN','ORANGE','PEANUT','PEPPER','POTATO','SHRIMP','TOMATO','WALNUT',
+      'GHERKIN','AVOCADO','CABBAGE','CUSTARD','GRANOLA','LASAGNA','MUSTARD','PANCAKE','POPCORN','PUMPKIN',
+      'SAUSAGE','SEAFOOD','SPINACH',
+    ],
+    sports: [
+      'GOLF','POLO','SWIM','RACE','JUMP','JUDO','LUGE','SURF',
+      'RUGBY','RELAY','SKATE','SPORT','MATCH','COACH','MEDAL','ARENA','PITCH','TRACK','SCORE','VAULT','SERVE',
+      'SPIKE','RIDER','DERBY','FINAL',
+      'TENNIS','BOXING','HOCKEY','KARATE','SQUASH','ROWING','DIVING','SKIING','SOCCER','RACING','SPRINT',
+      'TROPHY','UMPIRE','WICKET','LEAGUE','RUNNER','GOALIE','HURDLE',
+      'CRICKET','SURFING','FENCING','ARCHERY','BOWLING','JAVELIN','SAILING','ATHLETE','REFEREE','NETBALL',
+      'OLYMPIC','CAPTAIN',
+    ],
+    science: [
+      'ATOM','CELL','GENE','MASS','HEAT','ACID','IONS','LENS',
+      'VIRUS','ORBIT','GENES','LASER','NERVE','FORCE','QUARK','PRISM','SOLAR','LUNAR','LIGHT','PHASE','SOUND',
+      'ALLOY','ORGAN','BRAIN','BLOOD',
+      'PROTON','PHOTON','ENZYME','PLASMA','VACUUM','ENERGY','MATTER','FOSSIL','GALAXY','LIQUID','MAGNET',
+      'NEURON','OXYGEN','THEORY','VOLUME','CARBON',
+      'GRAVITY','NEUTRON','NUCLEUS','BIOLOGY','ECLIPSE','ELEMENT','ORGANIC','PHYSICS','QUANTUM','SCIENCE',
+      'THERMAL','VOLTAGE',
+    ],
+    nature: [
+      'LAKE','HILL','TREE','LEAF','ROCK','SAND','WIND','DUNE','FERN','MOSS','REEF','SNOW',
+      'RIVER','OCEAN','STORM','CLOUD','FIELD','FLORA','CORAL','MARSH','BEACH','BLOOM','CLIFF','CREEK','DELTA',
+      'FAUNA','FROST','GORGE','GRASS','GROVE','RIDGE','SHORE','STONE','WOODS',
+      'MEADOW','FOREST','DESERT','ISLAND','PLAINS','TUNDRA','CANYON','LAGOON','TROPIC','BRANCH','BREEZE',
+      'JUNGLE','STREAM','SUMMIT','VALLEY','WILLOW',
+      'VOLCANO','GLACIER','PRAIRIE','SAVANNA','WETLAND','ORCHARD','THUNDER','RAINBOW','CLIMATE','HABITAT','ICEBERG',
+    ],
+    music: [
+      'BASS','DRUM','HARP','NOTE','BEAT','SONG','TUNE','JAZZ','OBOE','REED','SOLO',
+      'TEMPO','CHORD','FLUTE','PIANO','CELLO','LYRIC','BANJO','BLUES','BUGLE','CHOIR','DISCO','MAJOR','MINOR',
+      'MUSIC','OPERA','ORGAN','SCALE','SHARP','TENOR','VOICE',
+      'GUITAR','VIOLIN','MELODY','RHYTHM','BALLAD','CHORUS','TREBLE','ANTHEM','ENCORE','FIDDLE','OCTAVE',
+      'RECORD','SONATA','STEREO','STRING','VOCALS',
+      'TRUMPET','UKULELE','CONCERT','HARMONY','MELODIC','MUSICAL','PIANIST','RECITAL','SOPRANO','BAGPIPE','MARIMBA',
+    ],
+    movies: [
+      'FILM','CAST','ROLE','PLOT','EDIT','REEL','SHOT','TAKE',
+      'DRAMA','GENRE','SCENE','ACTOR','STUNT','SCORE','DEBUT','FRAME','MOVIE','OSCAR','SHORT','STAGE','TITLE',
+      'VIDEO','SHOOT','CAMEO',
+      'CINEMA','COMEDY','ACTION','HORROR','SCRIPT','SCREEN','STUDIO','CAMERA','CREDIT','EDITOR','SEQUEL',
+      'TICKET','REMAKE',
+      'ROMANCE','FANTASY','ACTRESS','TRAILER','MONTAGE','FEATURE','MATINEE','PREMIER','WESTERN','CAPTION',
+    ],
+    tech: [
+      'CODE','DATA','CHIP','WIFI','DISK','BYTE','FILE','HOST','LINK','PORT','USER','SCAN',
+      'MODEM','BYTES','PIXEL','CLOUD','ROBOT','CYBER','MOUSE','ARRAY','LOGIC','CACHE','DEBUG','EMAIL','INBOX',
+      'MACRO','PATCH','QUERY','STACK','TOKEN','DRIVE','LOGIN',
+      'HACKER','SERVER','ROUTER','PYTHON','BINARY','BACKUP','COOKIE','DEVICE','DOMAIN','KERNEL','LAPTOP',
+      'MEMORY','MODULE','ONLINE','PACKET','SENSOR','SOCKET','SYNTAX','UPLOAD','VECTOR',
+      'COMPILE','CONSOLE','DIGITAL','DISPLAY','MONITOR','NETWORK','PROGRAM','STORAGE','WEBSITE','BROWSER',
+      'DESKTOP','MACHINE','VIRTUAL',
+    ],
+    history: [
+      'ROME','FORT','KING','DUKE','EPIC','TOMB','WALL','ARMY','CLAN','LORD','MYTH',
+      'QUEEN','SWORD','ROYAL','CROWN','TRIBE','RELIC','RUINS','SIEGE','REIGN','NOBLE','ARMOR','CHIEF','MANOR',
+      'TOWER','VILLA','ROMAN',
+      'CASTLE','SHIELD','THRONE','BATTLE','EMPIRE','TEMPLE','KNIGHT','ORACLE','SCROLL','TREATY','VIKING',
+      'MUSKET','PLAGUE','SENATE','LEGION',
+      'PHARAOH','PYRAMID','ARSENAL','DYNASTY','ANCIENT','CRUSADE','EMPEROR','KINGDOM','MONARCH','WARFARE','CHARIOT',
+    ],
+    art: [
+      'CLAY','ICON','LINE','OILS','TONE','NUDE','KILN','FORM','TINT',
+      'PAINT','BRUSH','COLOR','DRAFT','EASEL','CHALK','CRAFT','GLAZE','IMAGE','MURAL','PRINT','SHADE','STYLE',
+      'PAPER','MODEL','CARVE','FRAME',
+      'SKETCH','CANVAS','SCULPT','FRESCO','MOSAIC','DESIGN','MURALS','MUSEUM','CRAYON','PASTEL','RELIEF',
+      'STATUE','MARBLE',
+      'GALLERY','POTTERY','PATTERN','TEXTILE','PALETTE','ARTWORK','CERAMIC','DRAWING','ETCHING','PAINTER','REALISM',
+    ],
   };
 
   // One map, used by the badge, the menu banner and both share texts.
@@ -419,6 +508,12 @@
   // won: the player is refused the very word they are being asked for.
   Object.values(THEMES).flat().forEach(w => VALID_SET.add(w));
 
+  // Answer pool for an unthemed game, by length. ANSWERS is 5-letter only, so
+  // without this the 4/6/7-letter modes fell through to the themed lists as
+  // their entire pool — a 7-letter player saw the same 31 words cycle. The
+  // EXTRA_* lists are the common-word lists the validator already accepts.
+  const ANSWER_POOLS = { 4: EXTRA_4, 5: ANSWERS, 6: EXTRA_6, 7: EXTRA_7 };
+
   function pickWord(theme) {
     const settings = loadSettings();
     const len = settings.wordLength || 5;
@@ -428,7 +523,7 @@
     if (theme && theme !== 'all' && THEMES[theme]) {
       pool = THEMES[theme].filter(w => w.length === len);
     } else {
-      pool = ANSWERS.filter(w => w.length === len);
+      pool = (ANSWER_POOLS[len] || ANSWERS).filter(w => w.length === len);
     }
 
     if (pool.length === 0) {

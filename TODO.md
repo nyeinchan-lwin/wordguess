@@ -2,16 +2,16 @@
 
 ## ▶️ Start here next session
 
-Stopped 2026-08-04. Working tree clean, `npm test` green (5 suites).
+Stopped 2026-08-06. Working tree clean, `npm test` green (5 suites).
 **Nothing since `b91208a` is pushed** — `git log --oneline origin/main..HEAD` lists what is waiting.
 
 Planned order:
 
-1. **#43–46** — word content. The real remaining work: the daily now repeats (sports has 1 five-letter word), and 7-letter mode has only 31 answers.
-2. **#50–52** — three cosmetic issues the fresh screenshots exposed (mobile header overlap, keyboard below the fold, stray Share Tournament button).
-3. Older polish backlog (#3–#19), of which **#16** (high-contrast chips) is the most worthwhile.
+1. **#50–52** — three cosmetic issues the fresh screenshots exposed (mobile header overlap, keyboard below the fold, stray Share Tournament button).
+2. Older polish backlog (#3–#19), of which **#16** (high-contrast chips) is the most worthwhile.
+3. Consider regenerating screenshots once #50–52 land — they are what exposed those three.
 
-Run `npm test` before and after anything — it catches all of today's fixes regressing.
+Run `npm test` before and after anything — it catches all of the fixes above regressing.
 
 ## ✅ Completed
 
@@ -126,10 +126,10 @@ reviewer sees first, and 40–42 are outright wrong in a document being submitte
 
 | # | Fix | Effort | Notes |
 |---|-----|--------|-------|
-| 43 | **Thin answer pools for 4/6/7 letters — and for the daily** | Medium | ⚠️ Now also hits the daily: since 2026-08-02 it draws 5-letter words from the theme of the day, and **sports has exactly 1** (so that day is always `RUGBY`) and history 2. Counts: sports 1, history 2, movies 5, art 5, science 7, music 7, nature 8, tech 10, countries 11, animals 16, food 20. Fill the thin themes to ~15 five-letter words each first. Separately, `ANSWERS` is 589 words, *all* 5 letters, so the other modes fall through to the themed lists as their entire answer pool: 4→39 answers, 6→73, 7→**31**. A 7-letter player sees the same 31 words cycle. Needs ~100–150 new themed words |
-| 44 | **4 theme×length combos have zero answers** | Small | Countries×7, Tech×7, Nature×4, Art×4. `pickWord` falls back to *any* theme's words of that length while the badge still says the chosen theme, so you get an animal in a Countries game. 20 of the 44 combos have fewer than 5 answers |
-| 45 | **13 themed words can never be picked** | Trivial | No 3/8/9/10-letter mode exists, so these are dead weight: `FOX`, `CLIMBING`, `LACROSSE`, `SPECTRUM`, `SAXOPHONE`, `THRILLER`, `DIRECTOR`, `MEDIEVAL`, `REVOLUTION`, `CONQUEST`, `HERITAGE`, `PORTRAIT`, `WATERCOLOR` |
-| 46 | **`SCIFI` is not a word** | Trivial | In the movies theme. Now that themed words are accepted as guesses it is a valid guess everywhere. `NIUE`, `ZESTY` and `CYBER` are also dictionary-flagged but are legitimate (a country, and two real words) |
+| 43 | ~~**Thin answer pools for 4/6/7 letters — and for the daily**~~ | ~~Medium~~ | ~~Fixed 2026-08-06~~ ✅ — themed lists rewritten, 235 → 662 words, grouped by length. Every theme now has ≥15 five-letter answers (sports went 1 → 17, history 2 → 16), so the daily no longer repeats. Separately `ANSWER_POOLS` gives unthemed games a real pool per length (`EXTRA_4`/`ANSWERS`/`EXTRA_6`/`EXTRA_7`) instead of falling through to themed words: 7-letter went from 31 answers to 404 |
+| 44 | ~~**4 theme×length combos have zero answers**~~ | ~~Small~~ | ~~Fixed 2026-08-06~~ ✅ — Countries×7, Tech×7, Nature×4 and Art×4 are filled; the weakest combo is now 8 answers, so the silent cross-theme fallback in `pickWord` no longer fires. Verified in a browser: Countries×7 returns `MYANMAR`/`ECUADOR`/`SOMALIA`/`VIETNAM`, not an animal |
+| 45 | ~~**13 themed words can never be picked**~~ | ~~Trivial~~ | ~~Fixed 2026-08-06~~ ✅ — all removed. `test/wordlists.mjs` now fails on any themed entry outside 4–7 letters |
+| 46 | ~~**`SCIFI` is not a word**~~ | ~~Trivial~~ | ~~Fixed 2026-08-06~~ ✅ — dropped from movies, and it is the only word the rewrite made unguessable (checked by diffing VALID_SET against `HEAD`). `NIUE`, `ZESTY` and `CYBER` were left alone as legitimate |
 
 ### Gameplay
 | # | Feature | Effort | Notes |
@@ -246,6 +246,9 @@ reviewer sees first, and 40–42 are outright wrong in a document being submitte
   browser and no server. Run `npm run test:browsers` if Playwright's Chromium is not installed yet.
 - `test/wordlists.mjs` guards the word lists: it rebuilds `VALID_SET` from the merge statements
   actually present in `script.js`, so removing a merge fails the suite. Run it after any list edit.
+  It also enforces the pool floors — ≥5 answers per theme per length, ≥15 five-letter per theme
+  (the daily draws from those), no entry outside 4–7 letters, no duplicates, and an `ANSWER_POOLS`
+  entry per length whose words are all in `VALID_SET`.
 - Theme word lists could be expanded (currently ~20–30 words each, aim for 50+) — see 43/44
 - Consider lazy-loading theme word lists to reduce initial bundle size
 - All new features should maintain i18n support (EN + MY)
