@@ -5,13 +5,22 @@
   --color-border:       #d3d6da;
   --color-text-primary: #1a1a1b;
   --color-text-muted:   #787c7e;
-  --color-correct:      #538d4e;
+  --color-correct:      #4a7f46;
   --color-present:      #8a7000;
   --color-absent:       #737678;
   --color-key-bg:       #d3d6da;
   --color-key-text:     #1a1a1b;
-  --color-accent:       #538d4e;
+  --color-accent:       #4a7f46;
   --color-state-text:   #ffffff;
+  /* The ring is drawn on the control's own background, and an `.active` chip or
+     `.btn-primary` *is* the accent — an accent ring on it is invisible. Text
+     colour contrasts with both the surface and the accent, light and dark. */
+  --color-focus-ring:   var(--color-text-primary);
+  /* White is unreadable on the high-contrast orange and blue (2.73:1 and
+     1.93:1), so the text colour has to vary per state, not per theme. */
+  --color-correct-text: var(--color-state-text);
+  --color-present-text: var(--color-state-text);
+  --color-absent-text:  var(--color-state-text);
   --color-overlay:      rgba(0, 0, 0, 0.5);
 
   --font-family:         'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
@@ -41,6 +50,10 @@
   --layout-max-width:  500px;
   --modal-max-width:   380px;
   --header-height:     50px;
+  /* Floor for anything tappable. It was spelled `44px` in five separate rules
+     and simply forgotten on the header buttons; one token so the next control
+     cannot miss it. */
+  --touch-target:      44px;
   --key-min-w:         43px;
   --key-min-w-wide:    65px;
   --border-width:      1px;
@@ -72,9 +85,14 @@ body.dark {
   --color-key-text:     #ffffff;
 }
 
+/* The orange/blue pair is chosen for hue separation under colour blindness, not
+   for luminance — both are light. Keep the hues and flip the text to black:
+   7.68:1 and 10.91:1, against 2.73:1 and 1.93:1 with white. */
 body.hc {
   --color-correct: #f5793a;
   --color-present: #85c0f9;
+  --color-correct-text: #000000;
+  --color-present-text: #000000;
 }
 
 /* ── Reset & base ───────────────────────────────────────────────── */
@@ -147,7 +165,7 @@ body {
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -177,6 +195,7 @@ body {
   grid-column: 1;
   justify-self: start;
   font-size: var(--font-size-sm);
+  min-height: var(--touch-target);
 }
 
 /* ── Language selection screen ──────────────────────────────────── */
@@ -284,6 +303,7 @@ body {
 
 .theme-chip:hover  { filter: brightness(1.1); }
 .theme-chip:active { filter: brightness(0.95); }
+.theme-chip:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
 .theme-chip.active {
   background: var(--color-accent);
   color: var(--color-state-text);
@@ -345,11 +365,12 @@ body {
   cursor: pointer;
   transition: background var(--duration-btn) ease, color var(--duration-btn) ease;
   touch-action: manipulation;
-  min-width: 44px;
+  min-width: var(--touch-target);
 }
 
 .word-length-chip:hover  { filter: brightness(1.1); }
 .word-length-chip:active { filter: brightness(0.95); }
+.word-length-chip:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
 .word-length-chip.active {
   background: var(--color-accent);
   color: var(--color-state-text);
@@ -380,6 +401,7 @@ body {
 
 .lang-btn:hover  { filter: brightness(1.1); }
 .lang-btn:active { filter: brightness(0.95); }
+.lang-btn:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
 .lang-btn.active {
   background: var(--color-accent);
   color: var(--color-state-text);
@@ -400,7 +422,7 @@ body {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
   padding: var(--space-2) var(--space-3);
-  min-height: 44px;
+  min-height: var(--touch-target);
   cursor: pointer;
   transition: background var(--duration-btn) ease, color var(--duration-btn) ease;
   touch-action: manipulation;
@@ -408,6 +430,7 @@ body {
 
 .lang-btn-sm:hover  { filter: brightness(1.1); }
 .lang-btn-sm:active { filter: brightness(0.95); }
+.lang-btn-sm:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
 .lang-btn-sm.active {
   background: var(--color-accent);
   color: var(--color-state-text);
@@ -448,14 +471,14 @@ body {
   font-weight: var(--font-weight-bold);
   cursor: pointer;
   padding: var(--space-2) var(--space-3);
-  min-height: 44px;
+  min-height: var(--touch-target);
   line-height: 1.4;
   transition: filter var(--duration-btn) ease;
   touch-action: manipulation;
 }
 .btn-howto:hover  { filter: brightness(1.1); }
 .btn-howto:active { filter: brightness(0.95); }
-.btn-howto:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.btn-howto:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
 
 .howto-details {
   width: 100%;
@@ -572,7 +595,7 @@ body {
   font-weight: var(--font-weight-bold);
   cursor: pointer;
   padding: var(--space-2) var(--space-3);
-  min-height: 44px;
+  min-height: var(--touch-target);
   line-height: 1.4;
   transition: filter var(--duration-btn) ease, opacity var(--duration-btn) ease;
   touch-action: manipulation;
@@ -581,7 +604,7 @@ body {
 .btn-hint:hover { filter: brightness(1.1); }
 .btn-hint:active { filter: brightness(0.95); }
 .btn-hint:disabled { opacity: 0.4; cursor: default; filter: none; }
-.btn-hint:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.btn-hint:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
 
 /* ── Accessibility helpers ──────────────────────────────────────── */
 .sr-only {
@@ -631,19 +654,19 @@ body {
 .tile[data-state='correct'] {
   background: var(--color-correct);
   border-color: var(--color-correct);
-  color: var(--color-state-text);
+  color: var(--color-correct-text);
 }
 
 .tile[data-state='present'] {
   background: var(--color-present);
   border-color: var(--color-present);
-  color: var(--color-state-text);
+  color: var(--color-present-text);
 }
 
 .tile[data-state='absent'] {
   background: var(--color-absent);
   border-color: var(--color-absent);
-  color: var(--color-state-text);
+  color: var(--color-absent-text);
 }
 
 /* ── On-screen keyboard ─────────────────────────────────────────── */
@@ -688,16 +711,16 @@ body {
 .key--wide { min-width: var(--key-min-w-wide); }
 
 .key:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
 
 .key:hover  { filter: brightness(1.1); }
 .key:active { filter: brightness(0.88); transform: scale(0.94); }
 
-.key[data-state='correct'] { background: var(--color-correct); color: var(--color-state-text); }
-.key[data-state='present']  { background: var(--color-present); color: var(--color-state-text); }
-.key[data-state='absent']   { background: var(--color-absent);  color: var(--color-state-text); }
+.key[data-state='correct'] { background: var(--color-correct); color: var(--color-correct-text); }
+.key[data-state='present']  { background: var(--color-present); color: var(--color-present-text); }
+.key[data-state='absent']   { background: var(--color-absent);  color: var(--color-absent-text); }
 
 /* ── End-game modal ─────────────────────────────────────────────── */
 .modal-overlay {
@@ -852,7 +875,7 @@ body {
 }
 
 .stats-panel:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -872,6 +895,7 @@ body {
 
 .stats-theme-chip:hover  { filter: brightness(1.1); }
 .stats-theme-chip:active { filter: brightness(0.95); }
+.stats-theme-chip:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
 .stats-theme-chip.active {
   background: var(--color-accent);
   color: var(--color-state-text);
@@ -973,6 +997,8 @@ body {
   font-size: var(--font-size-lg);
   line-height: 1;
   padding: var(--space-2);
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
 }
 
 .settings-list {
@@ -1002,7 +1028,7 @@ body {
   -webkit-appearance: none;
   width: 44px;
   height: 24px;
-  min-height: 44px;
+  min-height: var(--touch-target);
   background: var(--color-border);
   border-radius: 12px;
   position: relative;
@@ -1034,7 +1060,7 @@ body {
 }
 
 .toggle:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -1126,15 +1152,20 @@ body {
 .grid-row--shake  { animation: row-shake   var(--duration-shake)  linear; }
 
 /* ── Accessibility ──────────────────────────────────────────────── */
+/* Blanket rather than a selector list, on purpose. The list kept missing things
+   — the screen fade, the modal overlay and card, the distribution bars, the
+   settings toggle and every chip were all still animating — and the confetti
+   sets `animation` as an inline style from JS, which nothing but `!important`
+   can override. Near-zero instead of `none` so the `animationend` listeners
+   that clean up `.tile--flip` and friends still fire. */
 @media (prefers-reduced-motion: reduce) {
-  .btn,
-  .key,
-  .tile                          { transition: none; }
-  .key:active                    { transform: none; }
-  .tile--pop,
-  .tile--flip,
-  .tile--bounce,
-  .grid-row--shake               { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .key:active { transform: none; }
 }
 
 /* ── Responsive ─────────────────────────────────────────────────── */
@@ -1196,7 +1227,10 @@ body {
 
 /* Short screens — minimize chrome */
 @media (max-height: 600px) {
-  .site-header { height: 40px; }
+  /* Was a flat 40px, which is shorter than the buttons inside it — `.btn-back`
+     spilled past the bottom border. `box-sizing: border-box` counts the border
+     against the height, so the floor is one touch target plus that border. */
+  .site-header { --header-height: calc(var(--touch-target) + var(--border-width)); }
   .game-main { gap: var(--space-1); padding: var(--space-1); }
   .grid      { gap: 3px; }
   .tile      { width: 44px; height: 44px; font-size: var(--font-size-base); }

@@ -11,6 +11,7 @@ const SUITE = [
   'test/daily-modes.mjs',
   'test/challenge-links.mjs',
   'test/screens.mjs',
+  'test/visual-a11y.mjs',
 ];
 
 function runSuite(script, base, cwd) {

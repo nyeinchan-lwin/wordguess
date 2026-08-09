@@ -15,12 +15,16 @@ All colours are defined as CSS custom properties on `:root`.
 | `--color-border` | `#d3d6da` | `#3a3a3c` | Tile borders, dividers |
 | `--color-text-primary` | `#1a1a1b` | `#ffffff` | Body copy, labels |
 | `--color-text-muted` | `#787c7e` | `#818384` | Secondary / hint text |
-| `--color-correct` | `#538d4e` | `#538d4e` | Correct letter (green) |
+| `--color-correct` | `#4a7f46` | `#4a7f46` | Correct letter (green) |
 | `--color-present` | `#8a7000` | `#8a7000` | Wrong position (yellow/amber) |
 | `--color-absent` | `#787c7e` | `#3a3a3c` | Not in word (gray) |
 | `--color-key-bg` | `#d3d6da` | `#818384` | Keyboard key default |
 | `--color-key-text` | `#1a1a1b` | `#ffffff` | Keyboard key label |
-| `--color-accent` | `#538d4e` | `#538d4e` | Buttons, focus rings |
+| `--color-focus-ring` | `--color-text-primary` | `--color-text-primary` | Focus outline |
+| `--color-correct-text` | `--color-state-text` | `--color-state-text` | Label on a correct tile/key |
+| `--color-present-text` | `--color-state-text` | `--color-state-text` | Label on a present tile/key |
+| `--color-absent-text` | `--color-state-text` | `--color-state-text` | Label on an absent tile/key |
+| `--color-accent` | `#4a7f46` | `#4a7f46` | Buttons, active chips |
 
 High-contrast variants (activated via `.hc` class on `<body>`):
 
@@ -28,6 +32,18 @@ High-contrast variants (activated via `.hc` class on `<body>`):
 |----------------|-------|
 | `--color-correct` | `#f5793a` |
 | `--color-present` | `#85c0f9` |
+| `--color-correct-text` | `#000000` |
+| `--color-present-text` | `#000000` |
+
+The orange/blue pair is picked for hue separation under colour blindness, not for
+luminance — both are light, and white on them scores 2.73:1 and 1.93:1. The text
+flips to black instead: 7.68:1 and 10.91:1. Any future state colour needs its own
+`--color-*-text` if white will not clear 4.5:1, because the 12px bold keyboard
+label is normal-sized text for WCAG and takes the stricter threshold.
+
+`--color-focus-ring` is deliberately not the accent: the ring is drawn on the
+control's own background, and an `.active` chip or `.btn-primary` *is* the
+accent.
 
 Dark mode is toggled via `.dark` on `<body>` (not `prefers-color-scheme` media query, so the user toggle works predictably).
 
@@ -156,9 +172,18 @@ Toast notifications: fixed top `var(--space-12)`, centred, `background var(--col
 ## Accessibility requirements
 
 - Minimum contrast ratio 4.5 : 1 for all text on backgrounds (WCAG AA).
+- Anything tappable is at least `var(--touch-target)` (44px) in both directions, and
+  any container sized to hold one must allow for it — a header at `border-box` needs
+  `--touch-target` **plus** its border. Use the token, never a bare `44px`; the gear
+  button was missed precisely because the floor was spelled out in five places.
 - Every interactive element reachable by keyboard; visible focus ring using `focus-visible`.
+- Focus rings use `--color-focus-ring`, never `--color-accent` — see the palette note.
 - Tile grid has `role="grid"` with `aria-label="Guesses"`.
 - Each row is `role="row"`; each tile `role="gridcell"` with `aria-label` describing letter and state after reveal.
 - On-screen keyboard keys are `<button>` elements (not `<div>`).
 - A visually-hidden `aria-live="assertive"` region announces guess results to screen readers.
-- All animations respect `@media (prefers-reduced-motion: reduce)`: disable flip, pop, shake; keep only instant state changes.
+- All animations respect `@media (prefers-reduced-motion: reduce)`. The block is a
+  blanket `*, *::before, *::after` rule rather than a selector list: the list kept
+  missing things, and the confetti sets `animation` as an inline style from JS, which
+  only `!important` can override. Durations go to near-zero rather than `none` so the
+  `animationend` listeners that clean up `.tile--flip` and friends still fire.

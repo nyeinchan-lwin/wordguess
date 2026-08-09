@@ -2,7 +2,7 @@
 
 ## ▶️ Start here next session
 
-Stopped 2026-08-08. Working tree clean, `npm test` green (6 suites).
+Stopped 2026-08-08. Working tree clean, `npm test` green (7 suites, 269 assertions).
 Everything is pushed, and GitHub Pages is serving it — the 2026-08-06 deploy had
 failed (Pages' own deploy step timed out at 10 minutes, nothing to do with the
 code), so the live site sat five days behind `main` until it was rebuilt.
@@ -13,12 +13,16 @@ not the page itself, when you want to know whether a change actually shipped.
 Planned order:
 
 1. ~~**#55** — the tab-reachable hidden screens.~~ ✅ Done 2026-08-08.
-2. **#56–#59** — the smaller accessibility items from the same review
-   (44px gear, high-contrast contrast, chip focus rings, reduced-motion gaps).
-   **#57 supersedes #16** — do them together. None of these four has been
-   reproduced yet; #55 turned out worse than its report, so verify before acting.
-3. **#60–#61** — dead CSS and design-system drift; tidy-up, no user impact.
-4. The rest of the older backlog (#3–#19).
+2. ~~**#56–#59** — the accessibility items from the same review.~~ ✅ Done
+   2026-08-08, and **#16 closed with #57**. Every one was worse or wider than
+   reported, so keep verifying before acting: the gear was 36×38 not 38×38,
+   `.btn-back` was under the floor too, the invisible focus ring also affected
+   `.btn-primary`, and six more selectors were animating under reduced motion.
+3. **#62** — muted text and dark keyboard labels miss AA. Found by the #57
+   sweep, deliberately left out of it: the fix moves two palette tokens and so
+   restyles most of the app. **Needs a call before starting.**
+4. **#60–#61** — dead CSS and design-system drift; tidy-up, no user impact.
+5. The rest of the older backlog (#3–#19).
 
 Run `npm test` before and after anything — it catches all of the fixes above regressing.
 
@@ -143,12 +147,13 @@ agent's report and should be reproduced before being acted on.
 | 53 | ~~**`hidden` on a `.btn` did nothing**~~ | ~~Trivial~~ | ~~Fixed 2026-08-06~~ ✅ — `.btn { display: inline-flex }` is author-origin and outranks the UA `[hidden] { display: none }`, so #52's `tourBtn.hidden = !eng.tournament` was a no-op: the button stayed visible and clickable, and was merely dropped from the focus trap. Verified with the modal open (`display: flex`, 316×42, clickable) before adding `.btn[hidden] { display: none; }` |
 | 54 | ~~**880px tier widened side padding on phones**~~ | ~~Trivial~~ | ~~Fixed 2026-08-06~~ ✅ — the tier used the `padding` shorthand, so phones in the 700–880px band (390×844, 360×800) had side padding doubled from the base 8px to 16px, at the width where the board is tightest. Now `padding-block` only |
 | 55 | ~~**Hidden screens stay tab-reachable**~~ | ~~Medium~~ | ~~Fixed 2026-08-08~~ ✅ — confirmed in a browser first, and it was worse than reported: the hidden menu was still laid out at its full 1265×800 with **23** tabbable controls, and the a11y tree carried *both* screens at once — two `banner` landmarks, two `main`s, two `h1`s, two Settings buttons stacked on the live game. `[data-screen][hidden] { display: none; }` fixes all of it. `showScreen` also sets `inert` on the outgoing screen, which covers the 200ms fade while it is still on screen. That made the deferred hide a hazard it had never been — a fast back-and-forth let a stale timeout hide the screen that had since become current, blanking the page — so the timeout now only hides what is still outgoing. Guarded by `test/screens.mjs`; reverting either half fails it |
-| 56 | **`.btn-settings` is ~38×38px** | Trivial | Below the 44×44 floor the project adopted everywhere else (`min-height: 44px` at style.css:397, :446, :569, :999). At `@media (max-height: 600px)` the header shrinks to 40px while button padding does not, so `.btn-back` (~43px) reportedly overflows it |
-| 57 | **High contrast mode is less legible than default** | Small | Ties into #16. `body.hc` sets `--color-correct: #f5793a` (≈2.7:1 on white) and `--color-present: #85c0f9` (≈1.9:1) while `--color-state-text` stays white. Also `--color-correct #538d4e` at the keyboard's 12px bold label is ≈3.97:1, failing AA for normal text |
-| 58 | **No `:focus-visible` on chips** | Trivial | `.theme-chip`, `.word-length-chip`, `.stats-theme-chip`, `.lang-btn` fall back to the UA ring, invisible against `--color-accent` when `.active` |
-| 59 | **Reduced-motion gaps** | Trivial | `@keyframes confetti-fall`, the `.modal-overlay`/`.modal-card`/`.dist-bar` transitions and `[data-screen]` opacity are not covered by the `prefers-reduced-motion` block |
+| 56 | ~~**`.btn-settings` is ~38×38px**~~ | ~~Trivial~~ | ~~Fixed 2026-08-08~~ ✅ — measured 36×38, not 38×38, on both screens at every viewport, and `.btn-back` was 42px tall, also under the floor (the report only flagged its overflow). New `--touch-target` token; the floor had been spelled `44px` in five separate rules, which is why the header buttons were missed. The `max-height: 600px` tier hardcoded `height: 40px`, shorter than the buttons it holds, so it now derives from `calc(var(--touch-target) + var(--border-width))` — `box-sizing: border-box` counts the border against the height |
+| 57 | ~~**High contrast mode is less legible than default**~~ | ~~Small~~ | ~~Fixed 2026-08-08~~ ✅ — **supersedes #16.** Both claims measured true: hc scored 2.73:1 and 1.93:1, and the default green 3.97:1 under the 4.5 the 12px bold key label needs. The orange/blue are chosen for hue separation under colour blindness, not luminance, so the hues stay and the *text* flips to black — 7.68:1 and 10.91:1. New per-state `--color-correct-text`/`-present-text`/`-absent-text` tokens make that expressible; a single `--color-state-text` could not. Default green darkened `#538d4e` → `#4a7f46` (3.97 → 4.76), which also lifts `--color-accent` and every button using it. Skill updated. Guarded by `test/visual-a11y.mjs`, which also asserts hc *beats* default rather than merely passing |
+| 58 | ~~**No `:focus-visible` on chips**~~ | ~~Trivial~~ | ~~Fixed 2026-08-08~~ ✅ — all four had no ring of their own (plus `.lang-btn-sm`, which the report missed). The same defect ran wider than chips: `.btn:focus-visible` drew its ring in `--color-accent`, and `.btn-primary`'s background *is* the accent, so primary buttons had an invisible ring too. New `--color-focus-ring` (text colour, contrasts on surface and accent alike, light and dark) now backs every focus rule |
+| 59 | ~~**Reduced-motion gaps**~~ | ~~Trivial~~ | ~~Fixed 2026-08-08~~ ✅ — the audit found more than the four listed: every chip, `.btn-howto`, `.btn-hint`, `.achievement-card`, `.toggle` and `.toggle::before` were uncovered as well. Replaced the selector list with a blanket `*, *::before, *::after` rule, because the confetti sets `animation` as an inline style from JS (script.js:1684) and nothing but `!important` reaches it. Durations go near-zero rather than `none` so the `animationend` cleanup listeners still fire |
 | 60 | **Dead CSS** | Trivial | `.game-rule` (style.css:491–496, :1196) matches no element. The `@media (max-width: 480px) and (max-height: 640px)` block is fully shadowed by the 700 tier that follows it |
 | 61 | **Design-system drift** | Small | The skill documents only a width-driven tile step; the new height tiers are undocumented. It also lists `--color-absent: #787c7e` while the CSS uses the better `#737678`. `.btn-tournament-share` has no CSS rule at all, so it renders a size smaller than its siblings. `script.js` re-declares `FLIP_MS`/`BOUNCE_MS` that duplicate `--duration-flip`/`--duration-bounce` |
+| 62 | **Muted text and dark keyboard labels miss AA** | Small | Found while measuring #57, and **out of that item's scope** — pre-existing, not a regression. A sweep of every visible text node in four modes: `--color-text-muted` `#787c7e` on white is **4.21:1** at 12–14px (needs 4.5), hitting `.htp-rule`, `.htp-desc`, every chip, `.lang-btn`, `.btn-howto`, `.btn-hint`, `.guess-counter`, `.game-timer`; in dark, `--color-key-bg` `#818384` with white labels is **3.81:1** across all 28 unstyled keys, and `.daily-theme-banner` is 3.94:1. Fixing means moving two palette tokens, so it changes how most of the app looks — worth deciding deliberately rather than folding into an a11y pass |
 
 ### Word content (found 2026-08-02)
 
@@ -192,7 +197,7 @@ agent's report and should be reproduced before being acted on.
 |---|---------|--------|-------|
 | 14 | ~~**Screen reader theme announcement**~~ | ~~Trivial~~ | ~~Announce "Theme: Animals" when selected~~ ✅ |
 | 15 | **Keyboard navigation for themes** | Trivial | Stats tabs ✅ (arrow keys done). Menu theme chips still Tab-only — that is spec-correct for a button group, so this may be a no-op; only worth doing if 12 tab stops feels tedious |
-| 16 | **High contrast theme chips** | Trivial | Still open — `body.hc` (style.css:75) has no rules for `.theme-chip`, `.word-length-chip`, `.stats-theme-chip` |
+| 16 | ~~**High contrast theme chips**~~ | ~~Trivial~~ | ~~Closed 2026-08-08~~ ✅ — superseded by #57. Chips take their colours from `--color-accent`/`--color-state-text`, so the per-state text tokens and the darkened accent cover them; `body.hc` needs no chip-specific rules |
 
 ### Technical
 | # | Feature | Effort | Notes |
@@ -269,7 +274,7 @@ agent's report and should be reproduced before being acted on.
 ## 📝 Notes
 
 - ✅ All of the above is committed and pushed to `origin/main` (2026-08-02).
-- `npm test` serves the project on port 8123 (override with `WG_PORT`) and runs all six suites.
+- `npm test` serves the project on port 8123 (override with `WG_PORT`) and runs all seven suites.
   Use `npm run test:words` / `test:flow` / `test:a11y` to run one alone — `test:words` needs no
   browser and no server. Run `npm run test:browsers` if Playwright's Chromium is not installed yet.
 - `test/wordlists.mjs` guards the word lists: it rebuilds `VALID_SET` from the merge statements
