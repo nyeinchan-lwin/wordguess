@@ -97,12 +97,12 @@ body {
   transition: opacity 0.2s ease;
 }
 
-[data-screen][hidden] {
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-}
+/* `display: flex` above is author-origin and so outranks the user agent's
+   `[hidden] { display: none }` — the same trap as `.btn[hidden]` further down.
+   Without this a hidden screen stays rendered at full size: its controls keep
+   their place in the tab order and the whole screen stays in the accessibility
+   tree, duplicating the banner, main and `h1` of the screen actually on show. */
+[data-screen][hidden] { display: none; }
 
 /* ── Header ─────────────────────────────────────────────────────── */
 /* Three columns with equal side tracks: the title stays optically centred

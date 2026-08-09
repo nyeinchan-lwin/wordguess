@@ -13,6 +13,7 @@
     "test:daily": "node test/daily-modes.mjs",
     "test:a11y": "node test/a11y-check.mjs",
     "test:links": "node test/challenge-links.mjs",
+    "test:screens": "node test/screens.mjs",
     "test:browsers": "playwright install chromium",
     "screenshots": "node tools/screenshots.mjs"
   },

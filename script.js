@@ -605,17 +605,29 @@
   const screenLang  = { en: 'en' };
   const screenLabel = { menu: 'Select game', en: 'English game' };
 
+  let currentScreen = null;
+
   function showScreen(name) {
+    currentScreen = name;
     document.querySelectorAll('[data-screen]').forEach(el => {
       if (el.dataset.screen === name) {
         el.hidden = false;
+        el.inert = false;
         el.style.opacity = '0';
         requestAnimationFrame(() => {
           el.style.opacity = '1';
         });
       } else {
+        // `inert` right away: the outgoing screen is still visible for the
+        // 200ms fade, and until it is hidden its controls are tabbable.
+        el.inert = true;
         el.style.opacity = '0';
-        setTimeout(() => { el.hidden = true; }, 200);
+        // Now that `[data-screen][hidden]` really hides, a stale timeout from a
+        // fast back-and-forth would hide the screen that has since become
+        // current — leaving a blank page. Only hide what is still outgoing.
+        setTimeout(() => {
+          if (currentScreen !== el.dataset.screen) el.hidden = true;
+        }, 200);
       }
     });
     document.documentElement.lang = screenLang[name] || 'en';

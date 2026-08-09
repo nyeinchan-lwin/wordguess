@@ -2,17 +2,21 @@
 
 ## ▶️ Start here next session
 
-Stopped 2026-08-06. Working tree clean, `npm test` green (5 suites).
-**Nothing since `b91208a` is pushed** — `git log --oneline origin/main..HEAD` lists what is waiting.
+Stopped 2026-08-08. Working tree clean, `npm test` green (6 suites).
+Everything is pushed, and GitHub Pages is serving it — the 2026-08-06 deploy had
+failed (Pages' own deploy step timed out at 10 minutes, nothing to do with the
+code), so the live site sat five days behind `main` until it was rebuilt.
+Pages is on legacy branch builds, so a failed deploy shows no error to a visitor:
+the previous build just keeps serving. Check `last-modified` on the live site,
+not the page itself, when you want to know whether a change actually shipped.
 
 Planned order:
 
-1. **#55** — verify and fix the tab-reachable hidden screens. Same cascade trap as
-   #53, but it puts a whole off-screen menu in the tab order and the a11y tree.
-   The highest-value item left, and the only open one that is a real bug.
+1. ~~**#55** — the tab-reachable hidden screens.~~ ✅ Done 2026-08-08.
 2. **#56–#59** — the smaller accessibility items from the same review
    (44px gear, high-contrast contrast, chip focus rings, reduced-motion gaps).
-   **#57 supersedes #16** — do them together.
+   **#57 supersedes #16** — do them together. None of these four has been
+   reproduced yet; #55 turned out worse than its report, so verify before acting.
 3. **#60–#61** — dead CSS and design-system drift; tidy-up, no user impact.
 4. The rest of the older backlog (#3–#19).
 
@@ -138,7 +142,7 @@ agent's report and should be reproduced before being acted on.
 |---|---------|--------|-------|
 | 53 | ~~**`hidden` on a `.btn` did nothing**~~ | ~~Trivial~~ | ~~Fixed 2026-08-06~~ ✅ — `.btn { display: inline-flex }` is author-origin and outranks the UA `[hidden] { display: none }`, so #52's `tourBtn.hidden = !eng.tournament` was a no-op: the button stayed visible and clickable, and was merely dropped from the focus trap. Verified with the modal open (`display: flex`, 316×42, clickable) before adding `.btn[hidden] { display: none; }` |
 | 54 | ~~**880px tier widened side padding on phones**~~ | ~~Trivial~~ | ~~Fixed 2026-08-06~~ ✅ — the tier used the `padding` shorthand, so phones in the 700–880px band (390×844, 360×800) had side padding doubled from the base 8px to 16px, at the width where the board is tightest. Now `padding-block` only |
-| 55 | **Hidden screens stay tab-reachable** | Medium | `[data-screen] { display: flex }` beats `[hidden]` the same way #53 did, so `[data-screen][hidden]` only applies `opacity: 0; pointer-events: none`. The off-screen menu reportedly stays in the tab order and the a11y tree — meaning two `.btn-settings`, 12 theme chips and 4 length chips are tabbable while the game is up. `showScreen` sets no `inert`. **Verify first**, then likely `inert` + a `display: none` audit |
+| 55 | ~~**Hidden screens stay tab-reachable**~~ | ~~Medium~~ | ~~Fixed 2026-08-08~~ ✅ — confirmed in a browser first, and it was worse than reported: the hidden menu was still laid out at its full 1265×800 with **23** tabbable controls, and the a11y tree carried *both* screens at once — two `banner` landmarks, two `main`s, two `h1`s, two Settings buttons stacked on the live game. `[data-screen][hidden] { display: none; }` fixes all of it. `showScreen` also sets `inert` on the outgoing screen, which covers the 200ms fade while it is still on screen. That made the deferred hide a hazard it had never been — a fast back-and-forth let a stale timeout hide the screen that had since become current, blanking the page — so the timeout now only hides what is still outgoing. Guarded by `test/screens.mjs`; reverting either half fails it |
 | 56 | **`.btn-settings` is ~38×38px** | Trivial | Below the 44×44 floor the project adopted everywhere else (`min-height: 44px` at style.css:397, :446, :569, :999). At `@media (max-height: 600px)` the header shrinks to 40px while button padding does not, so `.btn-back` (~43px) reportedly overflows it |
 | 57 | **High contrast mode is less legible than default** | Small | Ties into #16. `body.hc` sets `--color-correct: #f5793a` (≈2.7:1 on white) and `--color-present: #85c0f9` (≈1.9:1) while `--color-state-text` stays white. Also `--color-correct #538d4e` at the keyboard's 12px bold label is ≈3.97:1, failing AA for normal text |
 | 58 | **No `:focus-visible` on chips** | Trivial | `.theme-chip`, `.word-length-chip`, `.stats-theme-chip`, `.lang-btn` fall back to the UA ring, invisible against `--color-accent` when `.active` |
@@ -265,7 +269,7 @@ agent's report and should be reproduced before being acted on.
 ## 📝 Notes
 
 - ✅ All of the above is committed and pushed to `origin/main` (2026-08-02).
-- `npm test` serves the project on port 8123 (override with `WG_PORT`) and runs all three suites.
+- `npm test` serves the project on port 8123 (override with `WG_PORT`) and runs all six suites.
   Use `npm run test:words` / `test:flow` / `test:a11y` to run one alone — `test:words` needs no
   browser and no server. Run `npm run test:browsers` if Playwright's Chromium is not installed yet.
 - `test/wordlists.mjs` guards the word lists: it rebuilds `VALID_SET` from the merge statements
