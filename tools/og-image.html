@@ -57,9 +57,12 @@
       text-transform: uppercase;
     }
 
-    .og-tile[data-state="correct"],
-    .og-tile[data-state="present"],
-    .og-tile[data-state="absent"] { color: var(--color-state-text); }
+    /* Per-state, matching the tile rules in style.css — `--color-state-text` is
+       only the default those fall back to, and it is wrong for any state whose
+       background cannot carry white. */
+    .og-tile[data-state="correct"] { color: var(--color-correct-text); }
+    .og-tile[data-state="present"] { color: var(--color-present-text); }
+    .og-tile[data-state="absent"]  { color: var(--color-absent-text); }
 
     .og-tile[data-state="correct"] { background: var(--color-correct); border-color: var(--color-correct); }
     .og-tile[data-state="present"] { background: var(--color-present); border-color: var(--color-present); }

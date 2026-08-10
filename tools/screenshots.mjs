@@ -96,6 +96,11 @@ const shots = [];
 // page capture strands it above a band of empty page.
 async function shot(page, file, fullPage = true) {
   const path = `${root}screenshots/${file}`;
+  // Park the pointer off-canvas first. It otherwise stays wherever the last
+  // click left it, and `.key:hover` brightened whichever key happened to sit
+  // under that coordinate on the next screen — on mobile it lit up "V".
+  await page.mouse.move(-50, -50);
+  await page.waitForTimeout(150);
   await page.screenshot({ path, fullPage });
   shots.push(file);
   console.log(`  wrote screenshots/${file}`);
