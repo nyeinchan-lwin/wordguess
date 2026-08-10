@@ -2,7 +2,7 @@
 
 ## ▶️ Start here next session
 
-Stopped 2026-08-08. Working tree clean, `npm test` green (7 suites, 269 assertions).
+Stopped 2026-08-09. Working tree clean, `npm test` green (7 suites, 282 assertions).
 Everything is pushed, and GitHub Pages is serving it — the 2026-08-06 deploy had
 failed (Pages' own deploy step timed out at 10 minutes, nothing to do with the
 code), so the live site sat five days behind `main` until it was rebuilt.
@@ -18,10 +18,11 @@ Planned order:
    reported, so keep verifying before acting: the gear was 36×38 not 38×38,
    `.btn-back` was under the floor too, the invisible focus ring also affected
    `.btn-primary`, and six more selectors were animating under reduced motion.
-3. **#62** — muted text and dark keyboard labels miss AA. Found by the #57
-   sweep, deliberately left out of it: the fix moves two palette tokens and so
-   restyles most of the app. **Needs a call before starting.**
+3. ~~**#62** — muted text, dark keyboard labels and hue-as-text.~~ ✅ Done
+   2026-08-09. Contrast is now swept rather than spot-checked: every visible
+   text node, both screens, a challenge link, four colour modes.
 4. **#60–#61** — dead CSS and design-system drift; tidy-up, no user impact.
+   Note #61 still lists `--color-absent` drift, untouched here on purpose.
 5. The rest of the older backlog (#3–#19).
 
 Run `npm test` before and after anything — it catches all of the fixes above regressing.
@@ -153,7 +154,7 @@ agent's report and should be reproduced before being acted on.
 | 59 | ~~**Reduced-motion gaps**~~ | ~~Trivial~~ | ~~Fixed 2026-08-08~~ ✅ — the audit found more than the four listed: every chip, `.btn-howto`, `.btn-hint`, `.achievement-card`, `.toggle` and `.toggle::before` were uncovered as well. Replaced the selector list with a blanket `*, *::before, *::after` rule, because the confetti sets `animation` as an inline style from JS (script.js:1684) and nothing but `!important` reaches it. Durations go near-zero rather than `none` so the `animationend` cleanup listeners still fire |
 | 60 | **Dead CSS** | Trivial | `.game-rule` (style.css:491–496, :1196) matches no element. The `@media (max-width: 480px) and (max-height: 640px)` block is fully shadowed by the 700 tier that follows it |
 | 61 | **Design-system drift** | Small | The skill documents only a width-driven tile step; the new height tiers are undocumented. It also lists `--color-absent: #787c7e` while the CSS uses the better `#737678`. `.btn-tournament-share` has no CSS rule at all, so it renders a size smaller than its siblings. `script.js` re-declares `FLIP_MS`/`BOUNCE_MS` that duplicate `--duration-flip`/`--duration-bounce` |
-| 62 | **Muted text and dark keyboard labels miss AA** | Small | Found while measuring #57, and **out of that item's scope** — pre-existing, not a regression. A sweep of every visible text node in four modes: `--color-text-muted` `#787c7e` on white is **4.21:1** at 12–14px (needs 4.5), hitting `.htp-rule`, `.htp-desc`, every chip, `.lang-btn`, `.btn-howto`, `.btn-hint`, `.guess-counter`, `.game-timer`; in dark, `--color-key-bg` `#818384` with white labels is **3.81:1** across all 28 unstyled keys, and `.daily-theme-banner` is 3.94:1. Fixing means moving two palette tokens, so it changes how most of the app looks — worth deciding deliberately rather than folding into an a11y pass |
+| 62 | ~~**Muted text and dark keyboard labels miss AA**~~ | ~~Small~~ | ~~Fixed 2026-08-09~~ ✅ — narrower than first written: the *dark* muted value already passed (4.92:1), only the light one failed. `--color-text-muted` `#787c7e` → `#6e7275` (4.21 → 4.85). Dark keyboard labels flip to black, matching the #57 approach — `#818384` carries white at 3.81:1 and black at 5.51:1. The sweep also caught a third failure the first pass missed entirely: `.daily-theme-banner`, `.challenge-banner`, `.mode-badge`, `.guess-counter[data-low]` and the win message colour *text* with a state hue, and those hues are tuned to carry white on top, so on a dark page they sit at ~3.9:1. New `--color-*-ink` tokens (the mirror of `--color-*-text`) lighten them in dark mode. Guarded by a full-node sweep in `test/visual-a11y.mjs` across both screens, a challenge link and four colour modes — reverting the fix fails 12 of its assertions |
 
 ### Word content (found 2026-08-02)
 

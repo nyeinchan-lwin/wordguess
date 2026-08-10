@@ -6,9 +6,23 @@
 // ring of their own and rings drawn in the accent colour on accent-coloured
 // controls; and a reduced-motion block that covered four selectors while the
 // screen fade, modal, distribution bars, toggle and confetti kept moving.
+//
+// Plus #62: a sweep of every visible text node in four colour modes, which is
+// what caught muted text at 4.21:1, dark keyboard labels at 3.81:1 across all
+// 28 unstyled keys, and the two banners using a state hue as text at ~3.9:1.
+// The sweep is the guard that generalises — spot checks are what let these sit.
 import { chromium } from 'playwright';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const base = process.argv[2] || 'http://localhost:8080';
+
+// A word that really is in the shipped valid set, so the challenge link is
+// honoured and its banner is on screen to be measured. Same source of truth as
+// test/challenge-links.mjs — read from the merge statements in script.js.
+const SRC = readFileSync(fileURLToPath(new URL('../script.js', import.meta.url)), 'utf8');
+const GOOD = [...SRC.match(/const EXTRA_6 = \[([\s\S]*?)\n\s*\];/)[1]
+  .matchAll(/'([^']*)'/g)].map(x => x[1])[0];
 
 const results = [];
 const check = (name, pass, detail = '') => results.push({ name, pass, detail });
@@ -188,6 +202,76 @@ const browser = await chromium.launch();
     check(`reduced motion: ${label} does not transition`, v.t <= 1, `${v.t}ms`);
     check(`reduced motion: ${label} does not animate`, v.a <= 1, `${v.a}ms`);
   }
+  await ctx.close();
+}
+
+// ── every visible text node, both screens, four modes ───────────
+{
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+
+  // A challenge link so the challenge banner is on screen too — it uses a state
+  // hue as text and was missed by a sweep that only visited the plain menu.
+  await page.goto(base + '/', { waitUntil: 'networkidle' });
+
+  const sweep = async label => {
+    for (const mode of ['light', 'light+hc', 'dark', 'dark+hc']) {
+      await page.evaluate(m => {
+        document.body.classList.toggle('dark', m.includes('dark'));
+        document.body.classList.toggle('hc', m.includes('hc'));
+      }, mode);
+      await page.waitForTimeout(350);
+      const fails = await page.evaluate(() => {
+        const lum = ([r, g, b]) => {
+          const f = c => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+          return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+        };
+        const nums = s => (s.match(/[\d.]+/g) || ['0', '0', '0']).map(Number);
+        const rgb = s => nums(s).slice(0, 3);
+        const opaque = s => { const n = nums(s); return n.length < 4 || n[3] > 0.99; };
+        const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+        // walk up for the first background that actually paints
+        const bgOf = el => {
+          for (let n = el; n; n = n.parentElement) {
+            const c = getComputedStyle(n).backgroundColor;
+            if (c && !c.includes('rgba(0, 0, 0, 0)') && opaque(c)) return rgb(c);
+          }
+          return rgb(getComputedStyle(document.body).backgroundColor);
+        };
+        const out = [];
+        for (const el of document.querySelectorAll('*')) {
+          if (el.closest('[hidden], [inert]') || !el.offsetParent) continue;
+          const own = [...el.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent.trim()).join('');
+          if (!own) continue;
+          const cs = getComputedStyle(el);
+          if (cs.visibility === 'hidden' || +cs.opacity < 0.1) continue;
+          const px = parseFloat(cs.fontSize);
+          const large = px >= 24 || (Number(cs.fontWeight) >= 700 && px >= 18.66);
+          const need = large ? 3.0 : 4.5;
+          const r = ratio(bgOf(el), rgb(cs.color));
+          if (r < need) out.push(`${el.tagName.toLowerCase()}${el.className ? '.' + String(el.className).trim().split(/\s+/).join('.') : ''} ${r.toFixed(2)}:1 <${need} "${own.slice(0, 18)}"`);
+        }
+        return [...new Set(out)];
+      });
+      check(`${label} ${mode}: every visible text node meets AA`, fails.length === 0,
+        fails.slice(0, 4).join(' | ') + (fails.length > 4 ? ` (+${fails.length - 4} more)` : ''));
+    }
+    await page.evaluate(() => document.body.classList.remove('dark', 'hc'));
+  };
+
+  await sweep('menu');
+  await page.click('button[data-target="en"]:not([data-daily]):not([data-tournament])');
+  await page.waitForSelector('[data-screen="en"]:not([hidden])');
+  await page.waitForTimeout(300);
+  await sweep('game');
+
+  await page.goto(`${base}/?w=${GOOD}&t=all&l=${GOOD.length}`, { waitUntil: 'networkidle' });
+  await page.click('button[data-target="en"]:not([data-daily]):not([data-tournament])');
+  await page.waitForSelector('[data-screen="en"]:not([hidden])');
+  await page.waitForTimeout(300);
+  const bannerUp = await page.$eval('[data-challenge-banner]', el => !el.hidden).catch(() => false);
+  check('challenge banner is actually on screen to be measured', bannerUp);
+  await sweep('challenge');
   await ctx.close();
 }
 

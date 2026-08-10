@@ -14,16 +14,19 @@ All colours are defined as CSS custom properties on `:root`.
 | `--color-surface` | `#f9f9f9` | `#1a1a1b` | Card / modal surface |
 | `--color-border` | `#d3d6da` | `#3a3a3c` | Tile borders, dividers |
 | `--color-text-primary` | `#1a1a1b` | `#ffffff` | Body copy, labels |
-| `--color-text-muted` | `#787c7e` | `#818384` | Secondary / hint text |
+| `--color-text-muted` | `#6e7275` | `#818384` | Secondary / hint text |
 | `--color-correct` | `#4a7f46` | `#4a7f46` | Correct letter (green) |
 | `--color-present` | `#8a7000` | `#8a7000` | Wrong position (yellow/amber) |
 | `--color-absent` | `#787c7e` | `#3a3a3c` | Not in word (gray) |
 | `--color-key-bg` | `#d3d6da` | `#818384` | Keyboard key default |
-| `--color-key-text` | `#1a1a1b` | `#ffffff` | Keyboard key label |
+| `--color-key-text` | `#1a1a1b` | `#000000` | Keyboard key label |
 | `--color-focus-ring` | `--color-text-primary` | `--color-text-primary` | Focus outline |
 | `--color-correct-text` | `--color-state-text` | `--color-state-text` | Label on a correct tile/key |
 | `--color-present-text` | `--color-state-text` | `--color-state-text` | Label on a present tile/key |
 | `--color-absent-text` | `--color-state-text` | `--color-state-text` | Label on an absent tile/key |
+| `--color-accent-ink` | `--color-accent` | `#5f9e59` | Accent used *as* text |
+| `--color-correct-ink` | `--color-correct` | `#5f9e59` | Green used *as* text |
+| `--color-present-ink` | `--color-present` | `#b39200` | Amber used *as* text |
 | `--color-accent` | `#4a7f46` | `#4a7f46` | Buttons, active chips |
 
 High-contrast variants (activated via `.hc` class on `<body>`):
@@ -44,6 +47,18 @@ label is normal-sized text for WCAG and takes the stricter threshold.
 `--color-focus-ring` is deliberately not the accent: the ring is drawn on the
 control's own background, and an `.active` chip or `.btn-primary` *is* the
 accent.
+
+Mind the two families, which read alike and mean opposite things:
+
+- `--color-*-text` — the label drawn **on** that hue (white on green).
+- `--color-*-ink` — that hue used **as** text on the page (green on the page
+  background). The state colours are tuned to carry white on top, which leaves
+  them too dark to read against a dark page: `#4a7f46` on `#121213` is 3.94:1
+  and `#8a7000` is 3.92:1, so dark mode lightens both. Anything colouring text
+  with a state hue wants `-ink`, not the raw token.
+
+In dark mode the keyboard's default key takes a **black** label: `#818384` with
+white is 3.81:1 across all 28 unstyled keys, with black 5.51:1.
 
 Dark mode is toggled via `.dark` on `<body>` (not `prefers-color-scheme` media query, so the user toggle works predictably).
 
@@ -99,9 +114,9 @@ State variants (applied via data attribute `data-state`):
 |--------------|--------|------------|-------------|
 | `empty`      | `--color-border` | transparent | — |
 | `tbd`        | `--color-text-primary` | transparent | `--color-text-primary` |
-| `correct`    | `--color-correct` | `--color-correct` | `#ffffff` |
-| `present`    | `--color-present` | `--color-present` | `#ffffff` |
-| `absent`     | `--color-absent` | `--color-absent` | `#ffffff` |
+| `correct`    | `--color-correct` | `--color-correct` | `--color-correct-text` |
+| `present`    | `--color-present` | `--color-present` | `--color-present-text` |
+| `absent`     | `--color-absent` | `--color-absent` | `--color-absent-text` |
 
 Flip animation on reveal: `transform: rotateX(180deg)`, 250 ms per tile, staggered by `50 ms × tile-index`.
 
@@ -122,7 +137,7 @@ Padding:      var(--space-3) var(--space-6)
 Border-radius: 4 px
 Border:       none
 Cursor:       pointer
-Focus-visible: outline 2 px solid var(--color-accent), outline-offset 2 px
+Focus-visible: outline 2 px solid var(--color-focus-ring), outline-offset 2 px
 Hover:        brightness(1.1)
 Active:       brightness(0.95)
 Disabled:     opacity 0.5, cursor not-allowed

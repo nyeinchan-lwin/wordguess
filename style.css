@@ -4,7 +4,7 @@
   --color-surface:      #f9f9f9;
   --color-border:       #d3d6da;
   --color-text-primary: #1a1a1b;
-  --color-text-muted:   #787c7e;
+  --color-text-muted:   #6e7275;
   --color-correct:      #4a7f46;
   --color-present:      #8a7000;
   --color-absent:       #737678;
@@ -21,6 +21,12 @@
   --color-correct-text: var(--color-state-text);
   --color-present-text: var(--color-state-text);
   --color-absent-text:  var(--color-state-text);
+  /* `--color-*-text` is the label drawn ON that hue. `--color-*-ink` is the hue
+     used AS text on the page — it has to be lighter in dark mode, where the
+     versions tuned to carry white on top only reach 3.9:1. */
+  --color-accent-ink:   var(--color-accent);
+  --color-correct-ink:  var(--color-correct);
+  --color-present-ink:  var(--color-present);
   --color-overlay:      rgba(0, 0, 0, 0.5);
 
   --font-family:         'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
@@ -82,7 +88,11 @@ body.dark {
   --color-text-muted:   #818384;
   --color-absent:       #3a3a3c;
   --color-key-bg:       #818384;
-  --color-key-text:     #ffffff;
+  /* White on #818384 is 3.81:1 across all 28 unstyled keys; black is 5.51:1. */
+  --color-key-text:     #000000;
+  --color-accent-ink:   #5f9e59;
+  --color-correct-ink:  #5f9e59;
+  --color-present-ink:  #b39200;
 }
 
 /* The orange/blue pair is chosen for hue separation under colour blindness, not
@@ -314,7 +324,7 @@ body {
 .daily-theme-banner {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  color: var(--color-accent);
+  color: var(--color-accent-ink);
   background: color-mix(in srgb, var(--color-accent) 10%, transparent);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);
@@ -329,7 +339,7 @@ body {
 .challenge-banner {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  color: var(--color-present);
+  color: var(--color-present-ink);
   background: color-mix(in srgb, var(--color-present) 12%, transparent);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);
@@ -546,7 +556,7 @@ body {
 }
 
 .guess-counter[data-low] {
-  color: var(--color-correct);
+  color: var(--color-correct-ink);
 }
 
 .game-timer {
@@ -558,7 +568,7 @@ body {
 .mode-badge {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  color: var(--color-accent);
+  color: var(--color-accent-ink);
   background: color-mix(in srgb, var(--color-accent) 12%, transparent);
   padding: 1px var(--space-2);
   border-radius: var(--radius-xs);
@@ -777,7 +787,7 @@ body {
 }
 
 .modal-card[data-result='win'] .modal-message {
-  color: var(--color-correct);
+  color: var(--color-correct-ink);
   font-size: var(--font-size-xl);
 }
 
