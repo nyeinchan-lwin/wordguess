@@ -633,14 +633,18 @@
     document.documentElement.lang = screenLang[name] || 'en';
     live(screenLabel[name] || '');
     if (name === 'en') {
-      initGame(pendingDaily, pendingTournament);
+      initGame(pendingDaily, pendingTournament, pendingPractice, pendingTimed);
       pendingDaily = false;
       pendingTournament = false;
+      pendingPractice = false;
+      pendingTimed = false;
     }
   }
 
   let pendingDaily = false;
   let pendingTournament = false;
+  let pendingPractice = false;
+  let pendingTimed = false;
 
   document.querySelectorAll('[data-target]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -648,6 +652,8 @@
       // dataset.daily is "" — truthiness would read every button as neither.
       pendingDaily = 'daily' in btn.dataset;
       pendingTournament = 'tournament' in btn.dataset;
+      pendingPractice = 'practice' in btn.dataset;
+      pendingTimed = 'timed' in btn.dataset;
       showScreen(btn.dataset.target);
     });
   });
@@ -1251,9 +1257,16 @@
 
   let eng = {};
 
-  function initGame(daily, tournament) {
+  const TIMED_SECONDS = 300;
+  const TIMED_BEST_KEY = 'wg_timed_best';
+
+  function initGame(daily, tournament, practice, timed) {
     const isDaily = !!daily;
     const isTournament = !!tournament;
+    const isTimed = !!timed && !daily && !tournament;
+    // Practice is a free play: the grid grows instead of running out, and
+    // nothing it does reaches the stats, streaks or achievements.
+    const isPractice = !!practice && !daily && !tournament && !isTimed;
     const challenge = getChallengeParams();   // null when the link is unusable
     const isChallenge = challenge !== null;
     const alreadyDone = isDaily && isDailyComplete();
@@ -1268,6 +1281,10 @@
       answer:       isChallenge ? challenge.word : (isDaily ? pickDailyWord() : pickWord(settings.theme)),
       daily:        isDaily,
       tournament:   isTournament,
+      practice:     isPractice,
+      timed:        isTimed,
+      timedScore:   0,
+      timedEnd:     isTimed ? Date.now() + TIMED_SECONDS * 1000 : 0,
       challenge:    isChallenge,
       rows:         rows,
       currentRow:   0,
@@ -1300,7 +1317,9 @@
         const dTheme = getDailyTheme();
         parts.push(`${t('daily')} ${THEME_EMOJI[dTheme] || ''} ${t('theme_' + dTheme)}`.trim());
       }
-      if (settings.easy && !isDaily) parts.push('Easy (8/8)');
+      if (isTimed) parts.push(`⚡ ${t('timed_mode')}`);
+      if (isPractice) parts.push(t('practice_mode'));
+      if (settings.easy && !isDaily && !isPractice) parts.push('Easy (8/8)');
       if (settings.hard) parts.push('Hard');
       if (settings.theme && settings.theme !== 'all' && !isDaily && !isTournament) {
         const emoji = THEME_EMOJI[settings.theme] || '';
@@ -1351,27 +1370,33 @@
   function getTile(r, c) { return qs(`[data-tile="${r}-${c}"]`); }
   function getRow(r)     { return qs(`[data-row="${r}"]`); }
 
+  // One row builder, so a row grown mid-game in practice mode is identical to
+  // one built up front — same roles, same aria-labels, same data attributes.
+  function appendGridRow(r) {
+    const grid = qs('[data-grid]');
+    if (!grid) return;
+    const rowEl = document.createElement('div');
+    rowEl.className = 'grid-row';
+    rowEl.setAttribute('role', 'row');
+    rowEl.dataset.row = r;
+    for (let c = 0; c < COLS; c++) {
+      const t = document.createElement('div');
+      t.className = 'tile';
+      t.setAttribute('role', 'gridcell');
+      t.setAttribute('aria-label', 'Empty');
+      t.dataset.state = 'empty';
+      t.dataset.tile  = `${r}-${c}`;
+      rowEl.appendChild(t);
+    }
+    grid.appendChild(rowEl);
+  }
+
   function buildGrid() {
     const grid = qs('[data-grid]');
     if (!grid) return;
     grid.innerHTML = '';
     const rows = eng.rows || 6;
-    for (let r = 0; r < rows; r++) {
-      const rowEl = document.createElement('div');
-      rowEl.className = 'grid-row';
-      rowEl.setAttribute('role', 'row');
-      rowEl.dataset.row = r;
-      for (let c = 0; c < COLS; c++) {
-        const t = document.createElement('div');
-        t.className = 'tile';
-        t.setAttribute('role', 'gridcell');
-        t.setAttribute('aria-label', 'Empty');
-        t.dataset.state = 'empty';
-        t.dataset.tile  = `${r}-${c}`;
-        rowEl.appendChild(t);
-      }
-      grid.appendChild(rowEl);
-    }
+    for (let r = 0; r < rows; r++) appendGridRow(r);
   }
 
   function buildKeyboard() {
@@ -1505,26 +1530,47 @@
 
     if (won) {
       eng.gameOver = true;
-      stopTimer();
+      if (!eng.timed) stopTimer();
       updateHintButton();
-      const stats = updateStats(true);
-      checkAchievements(true);
+      const scoring = eng.practice || eng.timed;
+      const stats = scoring ? loadStats() : updateStats(true);
+      if (!scoring) checkAchievements(true);
       if (eng.tournament) updateTournamentStats(true);
       submitting = false;
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: true, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
       setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); if (loadSettings().sound) Sound.ding(); }, flipDone);
       const winDelay = flipDone + (COLS - 1) * BOUNCE_STAGGER + BOUNCE_MS + 200;
+      if (eng.timed) {
+        // The run continues: bank the word and deal another.
+        eng.timedScore++;
+        eng.gameOver = false;
+        updateTimedBadge();
+        setTimeout(nextTimedWord, winDelay);
+        return;
+      }
       setTimeout(() => {
         const settings = loadSettings();
         activeStatsTheme = settings.theme || 'all';
         renderStats(stats);
         setModal(t('solved', { n: eng.currentRow + 1 }), 'win');
       }, winDelay);
+    } else if (lastRow && eng.practice) {
+      // Unlimited guesses: append a row and carry on rather than ending.
+      eng.rows++;
+      appendGridRow(eng.rows - 1);
+      eng.currentRow++;
+      eng.currentInput = '';
+      updateGuessCounter();
+      submitting = false;
+    } else if (lastRow && eng.timed) {
+      // Out of guesses on this word only — the run keeps going.
+      submitting = false;
+      setTimeout(nextTimedWord, postReveal);
     } else if (lastRow) {
       eng.gameOver = true;
       stopTimer();
       updateHintButton();
-      const stats = updateStats(false);
+      const stats = (eng.practice || eng.timed) ? loadStats() : updateStats(false);
       if (eng.tournament) updateTournamentStats(false);
       submitting = false;
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: false, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
@@ -1831,12 +1877,59 @@
     eng.startTime = Date.now();
     const el = document.querySelector('[data-game-timer]');
     if (!el) return;
-    timerInterval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - eng.startTime) / 1000);
-      const min = Math.floor(elapsed / 60);
-      const sec = elapsed % 60;
+    const paint = secs => {
+      const min = Math.floor(secs / 60);
+      const sec = secs % 60;
       el.textContent = `${min}:${String(sec).padStart(2, '0')}`;
+    };
+    if (eng.timed) paint(Math.max(0, Math.round((eng.timedEnd - Date.now()) / 1000)));
+    timerInterval = setInterval(() => {
+      if (eng.timed) {
+        // Counts down, and the run ends when it lands on zero.
+        const left = Math.max(0, Math.round((eng.timedEnd - Date.now()) / 1000));
+        paint(left);
+        el.toggleAttribute('data-low', left <= 30);
+        if (left <= 0) endTimedRun();
+        return;
+      }
+      paint(Math.floor((Date.now() - eng.startTime) / 1000));
     }, 1000);
+  }
+
+  function updateTimedBadge() {
+    const badge = document.querySelector('[data-mode-badge]');
+    if (!badge || !eng.timed) return;
+    badge.textContent = `⚡ ${t('timed_mode')} · ${eng.timedScore} ${t('timed_solved')}`;
+    badge.hidden = false;
+  }
+
+  // A fresh word on the same run: board and keyboard reset, timer and score kept.
+  function nextTimedWord() {
+    if (eng.gameOver) return;
+    const settings = loadSettings();
+    eng.answer       = pickWord(settings.theme);
+    eng.rows         = settings.easy ? 8 : 6;
+    eng.currentRow   = 0;
+    eng.currentInput = '';
+    eng.history      = [];
+    eng.hintUsed     = false;
+    buildGrid();
+    buildKeyboard();
+    setModal(null);
+    updateGuessCounter();
+    updateHintButton();
+    updateTimedBadge();
+  }
+
+  function endTimedRun() {
+    if (eng.gameOver) return;
+    eng.gameOver = true;
+    stopTimer();
+    updateHintButton();
+    const best = Math.max(Number(safeGet(TIMED_BEST_KEY)) || 0, eng.timedScore);
+    safeSet(TIMED_BEST_KEY, best);
+    setModal(`${t('timed_score', { n: eng.timedScore })} · ${t('timed_best', { n: best })}`,
+             eng.timedScore > 0 ? 'win' : 'lose');
   }
 
   function stopTimer() {
@@ -1848,6 +1941,12 @@
   function updateGuessCounter() {
     const el = document.querySelector('[data-guess-counter]');
     if (!el) return;
+    if (eng.practice) {
+      // Nothing to count down to — show guesses taken instead.
+      el.textContent = `${eng.currentRow}`;
+      el.removeAttribute('data-low');
+      return;
+    }
     const remaining = (eng.rows || 6) - eng.currentRow;
     el.textContent = `${remaining}/${eng.rows || 6}`;
     el.toggleAttribute('data-low', remaining <= 1);

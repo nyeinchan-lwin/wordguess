@@ -172,7 +172,7 @@ agent's report and should be reproduced before being acted on.
 |---|---------|--------|-------|
 | 1 | ~~**Themed daily challenges**~~ | ~~Small~~ | ~~Use selected theme for daily word, not just random~~ ✅ |
 | 2 | ~~**Statistics per theme**~~ | ~~Medium~~ | ~~Track win rate/distribution per category~~ ✅ |
-| 3 | **Streak tracking by theme** | Small | Separate streaks for Animals, Food, etc. |
+| 3 | ~~**Streak tracking by theme**~~ | ~~Small~~ | ~~Already done — verified 2026-08-10~~ ✅ — delivered by #2 and never ticked off. `emptyThemeStats()` carries `currentStreak`/`bestStreak` per theme, `updateStats` maintains them per theme, and `renderStats` reads `statsData[activeStatsTheme]`. Confirmed in a browser with seeded stats: all 2🔥/best 5, animals 4🔥/best 4, food 0/best 1 |
 | 4 | **Guess limit by theme** | Small | Some themes could have fewer words → adjust difficulty |
 
 ### Visual / UX
@@ -218,10 +218,10 @@ agent's report and should be reproduced before being acted on.
 | # | Feature | Effort | Notes |
 |---|---------|--------|-------|
 | 21 | ~~**Word length selector**~~ | ~~Medium~~ | ~~4, 5, 6, 7 letter words~~ ✅ |
-| 22 | **Timed mode** | Medium | Guess as many words as possible in 5 min |
+| 22 | ~~**Timed mode**~~ | ~~Medium~~ | ~~Done 2026-08-10~~ ✅ — `Timed Mode` on the menu. Five minutes counting down, a solve banks the word and deals another, running out of guesses recycles the word rather than ending the run, and the clock landing on zero closes it with a score and a persisted best (`wg_timed_best`). Kept out of the main stats and achievements entirely. Guarded by `test/game-modes.mjs`, which drives it on a fake clock |
 | 23 | ~~**Multiplayer**~~ | ~~Large~~ | ~~Share a game link, compare results~~ ✅ |
 | 24 | ~~**Tournament mode**~~ | ~~Large~~ | ~~Weekly competitions with leaderboards~~ ✅ |
-| 25 | **Practice mode** | Small | Unlimited guesses, no stats tracking |
+| 25 | ~~**Practice mode**~~ | ~~Small~~ | ~~Done 2026-08-10~~ ✅ — `Practice` on the menu. The grid grows a row instead of ending the game, so guesses really are unlimited; the counter shows guesses taken rather than a countdown; a win still shows the modal but nothing reaches stats, streaks or achievements. `buildGrid` was split so a row grown mid-game is identical to one built up front |
 
 ### Content
 | # | Feature | Effort | Notes |
@@ -244,7 +244,7 @@ agent's report and should be reproduced before being acted on.
 | # | Feature | Effort | Notes |
 |---|---------|--------|-------|
 | 35 | **Theme popularity stats** | Small | Which themes are played most |
-| 36 | **Win rate by theme** | Small | Track which themes are hardest |
+| 36 | ~~**Win rate by theme**~~ | ~~Small~~ | ~~Already done — verified 2026-08-10~~ ✅ — delivered by #2. The stats overlay's theme tabs show played, win %, streak and best per theme |
 | 37 | **Time per theme** | Small | Average solve time per category |
 
 ---
