@@ -179,10 +179,10 @@ agent's report and should be reproduced before being acted on.
 | # | Feature | Effort | Notes |
 |---|---------|--------|-------|
 | 5 | ~~**Theme indicator in game**~~ | ~~Trivial~~ | ~~Show theme name in header, not just mode badge~~ ✅ |
-| 6 | **Theme preview on hover** | Small | Show word count when hovering theme chip |
-| 7 | **Animated theme switch** | Small | Fade word list when changing theme |
+| 6 | ~~**Theme preview on hover**~~ | ~~Small~~ | ~~Done 2026-08-11~~ ✅ — a preview line under the theme chips reporting the theme and how many answers it holds **at the length currently selected**, so the number matches the pool `pickWord` will draw from. Wired to `focusin` as well as `mouseover`, so it is not mouse-only, and the count also goes into each chip's `aria-label` — that reaches a screen reader without a live region announcing on every hover. Difficulty is deliberately excluded: it halves whatever this reports rather than changing what the theme contains |
+| 7 | ~~**Animated theme switch**~~ | ~~Small~~ | ~~Done 2026-08-11~~ ✅ — there is no word list on screen to fade, so the target is the #6 preview, which is the only theme-dependent text on the menu: selecting a theme fades it out and back rather than swapping instantly. The reduced-motion block neutralises the CSS transition but not the 120ms JS timeout behind it, so that is guarded separately — otherwise the text still lagged the click for someone who asked for no motion |
 | 8 | ~~**Keyboard sound effects**~~ | ~~Small~~ | ~~Subtle click on keypress, ding on win~~ ✅ |
-| 9 | **Tile shake improvement** | Trivial | Current shake is basic, could be smoother |
+| 9 | ~~**Tile shake improvement**~~ | ~~Trivial~~ | ~~Done 2026-08-11~~ ✅ — the old shake drove four equal 4px reversals on `linear`, arriving at each extreme at full speed, which read as a buzz. Now a damped oscillation, 6px decaying to 1px over seven stops on `cubic-bezier(0.36, 0.07, 0.19, 0.97)`, so the row settles instead of stopping dead |
 | 10 | ~~**Dark mode toast icon**~~ | ~~Trivial~~ | ~~Show 🌙/☀️ in dark mode toggle toast~~ ✅ |
 
 ### Mobile

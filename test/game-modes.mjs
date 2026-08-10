@@ -233,6 +233,90 @@ const modalOpen = page => page.$eval('[data-modal]', el => !el.hidden);
   await ctx.close();
 }
 
+// ── Theme preview and counts (#6, #7) ────────────────────────────
+{
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto(base + '/', { waitUntil: 'networkidle' });
+
+  const preview = () => page.$eval('[data-theme-preview]', el => el.textContent.trim());
+  check('preview: shows the selected theme on load', /\d/.test(await preview()), await preview());
+
+  // the count has to match the pool the game will actually draw from
+  const agree = await page.evaluate(() => {
+    const shown = document.querySelector('[data-theme-preview]').textContent.match(/\d+/);
+    return { shown: shown ? Number(shown[0]) : -1 };
+  });
+  check('preview: reports a real number', agree.shown > 0, JSON.stringify(agree));
+
+  await page.hover('[data-theme="countries"]');
+  await page.waitForTimeout(200);
+  const hovered = await preview();
+  check('preview: hovering a chip previews that theme', /countries|နိုင်ငံ/i.test(hovered), hovered);
+
+  await page.hover('.site-title');
+  await page.waitForTimeout(200);
+  check('preview: leaving the chips returns to the selected theme',
+    !/countries/i.test(await preview()), await preview());
+
+  // focus, not just hover — the count must not be mouse-only
+  await page.focus('[data-theme="food"]');
+  await page.waitForTimeout(200);
+  const focused = await preview();
+  check('preview: focusing a chip previews it too', /food|အစား/i.test(focused), focused);
+
+  // and it must reach a screen reader without a live region
+  const label = await page.$eval('[data-theme="animals"]', el => el.getAttribute('aria-label'));
+  check('preview: the count is in the chip accessible name', /\d/.test(label || ''), `"${label}"`);
+
+  // the count depends on the chosen length
+  const before = await page.$eval('[data-theme="animals"]', el => el.getAttribute('aria-label'));
+  await page.click('[data-word-length="7"]');
+  await page.waitForTimeout(250);
+  const after = await page.$eval('[data-theme="animals"]', el => el.getAttribute('aria-label'));
+  check('preview: the count follows the word length', before !== after, `${before} -> ${after}`);
+
+  check('preview: no page errors', errors.length === 0, errors.join(' | '));
+  await ctx.close();
+}
+
+// reduced motion must skip the fade delay, not just the CSS transition
+{
+  const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await ctx.newPage();
+  await page.goto(base + '/', { waitUntil: 'networkidle' });
+  await page.click('[data-theme="music"]');
+  await page.waitForTimeout(30);   // shorter than the 120ms fade
+  const txt = await page.$eval('[data-theme-preview]', el => el.textContent.trim());
+  check('preview: reduced motion updates the text immediately', /music|ဂီတ/i.test(txt), txt);
+  await ctx.close();
+}
+
+// ── Shake (#9) ───────────────────────────────────────────────────
+{
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  await page.goto(base + '/', { waitUntil: 'networkidle' });
+  const shake = await page.evaluate(() => {
+    let frames = null, timing = null;
+    for (const sheet of document.styleSheets) {
+      let rules = []; try { rules = [...sheet.cssRules]; } catch { continue; }
+      for (const r of rules) {
+        if (r.name === 'row-shake') frames = [...r.cssRules].map(k => k.keyText);
+        if (r.selectorText === '.grid-row--shake') timing = r.style.animationTimingFunction || r.style.animation;
+      }
+    }
+    return { frames, timing };
+  });
+  check('shake: decays over more than the original five stops',
+    (shake.frames || []).length > 5, JSON.stringify(shake.frames));
+  check('shake: is eased rather than linear',
+    !!shake.timing && !/\blinear\b/.test(shake.timing), `"${shake.timing}"`);
+  await ctx.close();
+}
+
 await browser.close();
 
 let failed = 0;

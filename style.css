@@ -351,6 +351,19 @@ body {
 .challenge-banner[hidden] { display: none; }
 
 /* ── Word length selector ───────────────────────────────────── */
+/* Sits between the theme chips and the length chips, so it must hold its height
+   whether or not it has text — otherwise every theme change nudges the layout. */
+.theme-preview {
+  margin: 0;
+  min-height: 1.2em;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+  transition: opacity var(--duration-btn) ease;
+}
+
+.theme-preview[data-fading] { opacity: 0; }
+
 .word-length-selector,
 .difficulty-selector {
   display: flex;
@@ -1138,12 +1151,18 @@ body {
   100% { transform: perspective(var(--perspective-tile)) rotateX(0deg); }
 }
 
+/* Damped rather than a square wave. The old version drove four equal 4px
+   reversals on `linear`, so it arrived at each extreme at full speed and read
+   as a buzz; amplitude now decays and the row settles instead of stopping. */
 @keyframes row-shake {
-  0%, 100% { transform: translateX(0); }
-  20%       { transform: translateX(-4px); }
-  40%       { transform: translateX(4px); }
-  60%       { transform: translateX(-4px); }
-  80%       { transform: translateX(4px); }
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(-6px); }
+  30%  { transform: translateX(5px); }
+  45%  { transform: translateX(-4px); }
+  60%  { transform: translateX(3px); }
+  75%  { transform: translateX(-2px); }
+  88%  { transform: translateX(1px); }
+  100% { transform: translateX(0); }
 }
 
 @keyframes tile-bounce {
@@ -1159,7 +1178,7 @@ body {
 .tile--pop        { animation: tile-pop    var(--duration-pop)    ease-out; }
 .tile--flip       { animation: tile-flip   var(--duration-flip)   ease-in-out; }
 .tile--bounce     { animation: tile-bounce var(--duration-bounce) ease-out; }
-.grid-row--shake  { animation: row-shake   var(--duration-shake)  linear; }
+.grid-row--shake  { animation: row-shake   var(--duration-shake)  cubic-bezier(0.36, 0.07, 0.19, 0.97); }
 
 /* ── Accessibility ──────────────────────────────────────────────── */
 /* Blanket rather than a selector list, on purpose. The list kept missing things

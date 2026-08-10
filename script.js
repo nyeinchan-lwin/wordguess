@@ -973,6 +973,7 @@
   syncThemeButtons();
   syncWordLengthButtons();
   syncDifficultyButtons();
+  showThemePreview(null);
   updateDailyThemeBanner();
 
   // Settings overlay open/close
@@ -1015,6 +1016,56 @@
   }
 
   // ── Theme selector ─────────────────────────────────────────────
+  // How many answers a theme actually offers at the length currently selected.
+  // Mirrors the pool pickWord() builds, so the number shown is the number the
+  // game will draw from — difficulty is left out on purpose, since it halves
+  // whatever this reports rather than changing what the theme contains.
+  function themeWordCount(theme) {
+    const len = loadSettings().wordLength || 5;
+    const pool = (theme && theme !== 'all' && THEMES[theme])
+      ? THEMES[theme]
+      : (ANSWER_POOLS[len] || ANSWERS);
+    return pool.filter(w => w.length === len).length;
+  }
+
+  function countLabel(n) {
+    return n === 0 ? t('no_words') : n === 1 ? t('one_word') : t('n_words', { n });
+  }
+
+  // The count goes into each chip's accessible name, so it reaches a screen
+  // reader without a live region announcing on every hover.
+  function syncThemeCounts() {
+    document.querySelectorAll('[data-theme]').forEach(btn => {
+      const name = t('theme_' + btn.dataset.theme);
+      btn.setAttribute('aria-label', `${name}, ${countLabel(themeWordCount(btn.dataset.theme))}`);
+    });
+  }
+
+  function showThemePreview(theme) {
+    const el = document.querySelector('[data-theme-preview]');
+    if (!el) return;
+    const key = theme || loadSettings().theme || 'all';
+    el.textContent = `${t('theme_' + key)} · ${countLabel(themeWordCount(key))}`;
+  }
+
+  // #7: the preview is the only theme-dependent text on the menu, so a theme
+  // change fades it out and back rather than swapping the words instantly.
+  function fadeThemePreview(theme) {
+    const el = document.querySelector('[data-theme-preview]');
+    if (!el) return showThemePreview(theme);
+    // The CSS transition is neutralised by the reduced-motion block, but this
+    // timeout is not — without the guard the text would still lag behind the
+    // click by 120ms for someone who asked for no motion.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return showThemePreview(theme);
+    }
+    el.setAttribute('data-fading', '');
+    setTimeout(() => {
+      showThemePreview(theme);
+      el.removeAttribute('data-fading');
+    }, 120);
+  }
+
   function syncThemeButtons() {
     const settings = loadSettings();
     document.querySelectorAll('[data-theme]').forEach(btn => {
@@ -1022,6 +1073,7 @@
       btn.classList.toggle('active', isActive);
       btn.setAttribute('aria-pressed', isActive);
     });
+    syncThemeCounts();
   }
 
   // Daily theme banner
@@ -1041,10 +1093,26 @@
     s.theme = btn.dataset.theme;
     saveSettings(s);
     syncThemeButtons();
+    fadeThemePreview(btn.dataset.theme);
     // Announce theme to screen readers
     const themeName = btn.dataset.theme === 'all' ? t('theme_all') : t('theme_' + btn.dataset.theme);
     live(t('theme_announce', { theme: themeName }));
   });
+
+  // Preview whichever chip is under the pointer or holds focus, and fall back
+  // to the selected theme when neither. Focus is wired as well as hover so the
+  // count is not mouse-only.
+  const themeSelector = document.querySelector('[data-theme-selector]');
+  if (themeSelector) {
+    const peek = e => {
+      const btn = e.target.closest('[data-theme]');
+      if (btn) showThemePreview(btn.dataset.theme);
+    };
+    themeSelector.addEventListener('mouseover', peek);
+    themeSelector.addEventListener('focusin', peek);
+    themeSelector.addEventListener('mouseleave', () => showThemePreview(null));
+    themeSelector.addEventListener('focusout', () => showThemePreview(null));
+  }
 
   // ── Word length selector ──────────────────────────────────────
   function syncWordLengthButtons() {
@@ -1063,6 +1131,8 @@
     s.wordLength = Number(btn.dataset.wordLength);
     saveSettings(s);
     syncWordLengthButtons();
+    syncThemeCounts();
+    fadeThemePreview(null);
   });
 
   function syncDifficultyButtons() {
@@ -1088,6 +1158,10 @@
     if (!btn) return;
     setLanguage(btn.dataset.lang);
     syncLangButtons();
+    // The counts live in the chips' accessible names and in the preview text,
+    // neither of which applyTranslations() touches.
+    syncThemeCounts();
+    showThemePreview(null);
   });
 
   // ── Stats (localStorage) ───────────────────────────────────────
