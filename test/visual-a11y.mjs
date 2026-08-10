@@ -58,6 +58,56 @@ const browser = await chromium.launch();
   await ctx.close();
 }
 
+// every .btn, not just the two the review named — `.btn-play-again` was 42px and
+// `.btn-tournament-share` had no rule at all, so it rendered a size smaller than
+// the buttons beside it. Keys are excluded: `--key-min-w` is deliberately 43px.
+{
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(base + '/', { waitUntil: 'networkidle' });
+
+  const tooSmall = where => page.evaluate(f => {
+    const out = [];
+    for (const el of document.querySelectorAll('.btn')) {
+      if (el.closest('[hidden], [inert]') || !el.offsetParent) continue;
+      const r = el.getBoundingClientRect();
+      if (r.height < f || r.width < f) out.push(`${el.className} ${r.width.toFixed(0)}x${r.height.toFixed(0)}`);
+    }
+    return out;
+  }, FLOOR);
+
+  let bad = await tooSmall();
+  check('menu: every visible .btn meets the touch floor', bad.length === 0, bad.join(' | '));
+
+  await page.click('button[data-target="en"]:not([data-daily]):not([data-tournament])');
+  await page.waitForSelector('[data-screen="en"]:not([hidden])');
+  await page.waitForTimeout(300);
+  bad = await tooSmall();
+  check('game: every visible .btn meets the touch floor', bad.length === 0, bad.join(' | '));
+
+  // the end-game modal, with the tournament action shown
+  const sizes = await page.evaluate(() => {
+    const modal = document.querySelector('[data-modal]');
+    modal.hidden = false;
+    const tour = modal.querySelector('[data-tournament-share]');
+    if (tour) tour.hidden = false;
+    return [...modal.querySelectorAll('.btn')].map(b => {
+      const r = b.getBoundingClientRect();
+      return { cls: b.className, w: Math.round(r.width), h: Math.round(r.height) };
+    });
+  });
+  bad = await tooSmall();
+  check('modal: every visible .btn meets the touch floor', bad.length === 0, bad.join(' | '));
+  const heights = [...new Set(sizes.map(s => s.h))];
+  check('modal: the stacked actions are all one height', heights.length === 1,
+    sizes.map(s => `${s.cls.split(' ').pop()} ${s.w}x${s.h}`).join(' | '));
+
+  // `.game-rule` was styled in two places and matched nothing
+  const ghosts = await page.evaluate(() => document.querySelectorAll('.game-rule').length);
+  check('.game-rule matches no element (its CSS was removed)', ghosts === 0, `${ghosts} found`);
+  await ctx.close();
+}
+
 // a short viewport must not shrink the header below its own buttons
 {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 560 } });

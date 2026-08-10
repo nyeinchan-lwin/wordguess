@@ -2,7 +2,8 @@
 
 ## ▶️ Start here next session
 
-Stopped 2026-08-09. Working tree clean, `npm test` green (7 suites, 282 assertions).
+Stopped 2026-08-10. Working tree clean, `npm test` green (7 suites, 287 assertions).
+Every numbered defect (#38–#62) is closed; what remains is feature backlog.
 Everything is pushed, and GitHub Pages is serving it — the 2026-08-06 deploy had
 failed (Pages' own deploy step timed out at 10 minutes, nothing to do with the
 code), so the live site sat five days behind `main` until it was rebuilt.
@@ -21,9 +22,10 @@ Planned order:
 3. ~~**#62** — muted text, dark keyboard labels and hue-as-text.~~ ✅ Done
    2026-08-09. Contrast is now swept rather than spot-checked: every visible
    text node, both screens, a challenge link, four colour modes.
-4. **#60–#61** — dead CSS and design-system drift; tidy-up, no user impact.
-   Note #61 still lists `--color-absent` drift, untouched here on purpose.
-5. The rest of the older backlog (#3–#19).
+4. ~~**#60–#61** — dead CSS and design-system drift.~~ ✅ Done 2026-08-10.
+5. The rest of the older backlog (#3–#19) — all feature work now, no known
+   defects outstanding. #15 may be a no-op; #19 is largely covered by the
+   seven suites that now exist.
 
 Run `npm test` before and after anything — it catches all of the fixes above regressing.
 
@@ -152,8 +154,8 @@ agent's report and should be reproduced before being acted on.
 | 57 | ~~**High contrast mode is less legible than default**~~ | ~~Small~~ | ~~Fixed 2026-08-08~~ ✅ — **supersedes #16.** Both claims measured true: hc scored 2.73:1 and 1.93:1, and the default green 3.97:1 under the 4.5 the 12px bold key label needs. The orange/blue are chosen for hue separation under colour blindness, not luminance, so the hues stay and the *text* flips to black — 7.68:1 and 10.91:1. New per-state `--color-correct-text`/`-present-text`/`-absent-text` tokens make that expressible; a single `--color-state-text` could not. Default green darkened `#538d4e` → `#4a7f46` (3.97 → 4.76), which also lifts `--color-accent` and every button using it. Skill updated. Guarded by `test/visual-a11y.mjs`, which also asserts hc *beats* default rather than merely passing |
 | 58 | ~~**No `:focus-visible` on chips**~~ | ~~Trivial~~ | ~~Fixed 2026-08-08~~ ✅ — all four had no ring of their own (plus `.lang-btn-sm`, which the report missed). The same defect ran wider than chips: `.btn:focus-visible` drew its ring in `--color-accent`, and `.btn-primary`'s background *is* the accent, so primary buttons had an invisible ring too. New `--color-focus-ring` (text colour, contrasts on surface and accent alike, light and dark) now backs every focus rule |
 | 59 | ~~**Reduced-motion gaps**~~ | ~~Trivial~~ | ~~Fixed 2026-08-08~~ ✅ — the audit found more than the four listed: every chip, `.btn-howto`, `.btn-hint`, `.achievement-card`, `.toggle` and `.toggle::before` were uncovered as well. Replaced the selector list with a blanket `*, *::before, *::after` rule, because the confetti sets `animation` as an inline style from JS (script.js:1684) and nothing but `!important` reaches it. Durations go near-zero rather than `none` so the `animationend` cleanup listeners still fire |
-| 60 | **Dead CSS** | Trivial | `.game-rule` (style.css:491–496, :1196) matches no element. The `@media (max-width: 480px) and (max-height: 640px)` block is fully shadowed by the 700 tier that follows it |
-| 61 | **Design-system drift** | Small | The skill documents only a width-driven tile step; the new height tiers are undocumented. It also lists `--color-absent: #787c7e` while the CSS uses the better `#737678`. `.btn-tournament-share` has no CSS rule at all, so it renders a size smaller than its siblings. `script.js` re-declares `FLIP_MS`/`BOUNCE_MS` that duplicate `--duration-flip`/`--duration-bounce` |
+| 60 | ~~**Dead CSS**~~ | ~~Trivial~~ | ~~Fixed 2026-08-10~~ ✅ — `.game-rule` matched nothing in `index.html`, `script.js` or `i18n.js`; both its rules removed. The `(max-width: 480px) and (max-height: 640px)` block was confirmed dead by measurement, not by reading: at 390×640 and 390×620 `.game-main` already computed to the `max-height: 700px` tier's `8px 4px`, not its own `4px 4px`. Removing it leaves every measurement byte-identical |
+| 61 | ~~**Design-system drift**~~ | ~~Small~~ | ~~Fixed 2026-08-10~~ ✅ — skill now documents all five responsive tiers (height-driven as well as width) and warns against shadowed combined tiers; `--color-absent` corrected to `#737678`. `.btn-tournament-share` was worse than 'a size smaller': at 316×42 it and `.btn-play-again` were both under the 44px floor, and the ghost buttons only cleared it because of their 1px border. Fixed at the root with `min-height: var(--touch-target)` on `.btn`, plus one shared rule for the four stacked actions. `script.js` now derives `FLIP_MS`/`BOUNCE_MS` from `--duration-flip`/`--duration-bounce` instead of restating them |
 | 62 | ~~**Muted text and dark keyboard labels miss AA**~~ | ~~Small~~ | ~~Fixed 2026-08-09~~ ✅ — narrower than first written: the *dark* muted value already passed (4.92:1), only the light one failed. `--color-text-muted` `#787c7e` → `#6e7275` (4.21 → 4.85). Dark keyboard labels flip to black, matching the #57 approach — `#818384` carries white at 3.81:1 and black at 5.51:1. The sweep also caught a third failure the first pass missed entirely: `.daily-theme-banner`, `.challenge-banner`, `.mode-badge`, `.guess-counter[data-low]` and the win message colour *text* with a state hue, and those hues are tuned to carry white on top, so on a dark page they sit at ~3.9:1. New `--color-*-ink` tokens (the mirror of `--color-*-text`) lighten them in dark mode. Guarded by a full-node sweep in `test/visual-a11y.mjs` across both screens, a challenge link and four colour modes — reverting the fix fails 12 of its assertions |
 
 ### Word content (found 2026-08-02)

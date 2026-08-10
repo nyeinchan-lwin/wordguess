@@ -17,7 +17,7 @@ All colours are defined as CSS custom properties on `:root`.
 | `--color-text-muted` | `#6e7275` | `#818384` | Secondary / hint text |
 | `--color-correct` | `#4a7f46` | `#4a7f46` | Correct letter (green) |
 | `--color-present` | `#8a7000` | `#8a7000` | Wrong position (yellow/amber) |
-| `--color-absent` | `#787c7e` | `#3a3a3c` | Not in word (gray) |
+| `--color-absent` | `#737678` | `#3a3a3c` | Not in word (gray) |
 | `--color-key-bg` | `#d3d6da` | `#818384` | Keyboard key default |
 | `--color-key-text` | `#1a1a1b` | `#000000` | Keyboard key label |
 | `--color-focus-ring` | `--color-text-primary` | `--color-text-primary` | Focus outline |
@@ -101,7 +101,7 @@ Use only these values for `margin`, `padding`, and `gap`. Do not interpolate bet
 ## Tile styles
 
 ```
-Size:         62 × 62 px (desktop) → 52 × 52 px (≤480 px)
+Size:         62 × 62 px (desktop) → 52 × 52 px (see the tiers below)
 Border:       2 px solid var(--color-border)
 Border-radius: 0   (square tiles)
 Font:         var(--font-size-xl), var(--font-weight-bold), uppercase
@@ -123,6 +123,24 @@ Flip animation on reveal: `transform: rotateX(180deg)`, 250 ms per tile, stagger
 Pop animation on letter entry: `scale(1.1)` → `scale(1)`, 100 ms.
 
 Shake animation on invalid guess: horizontal translate ±4 px, 3 cycles, 400 ms total.
+
+### Responsive tiers
+
+Sizing is driven by **height** as well as width — the keyboard is what falls off
+the bottom, so a wide-but-short window needs the same shrink a narrow one does.
+Later tiers win, so a viewport matching several gets the last one that applies.
+
+| Tier | Tiles | Keys | Also |
+|------|-------|------|------|
+| base | `--tile-size` 62px | `--key-height` 58px | — |
+| `max-width: 480px` | `--tile-size-sm` | `--key-height-sm`, `flex: 1` | header padding and title shrink |
+| `max-height: 880px` | `--tile-size-sm` | `--key-height-sm` | `padding-block` only — the shorthand would widen the sides on phones this tier also matches |
+| `max-height: 700px` | `--tile-size-sm` | `--key-height-sm`, `flex: 1` | tighter gaps |
+| `max-height: 600px` | 44px | 40px | header drops to `--touch-target` + border; legend and how-to hidden |
+
+Do not add a combined width-and-height tier without checking it is not shadowed:
+a `(max-width: 480px) and (max-height: 640px)` block used to sit here and was
+entirely overridden by the `max-height: 700px` tier that follows it.
 
 ---
 
@@ -166,6 +184,12 @@ Gap between keys: var(--space-1)
 ```
 
 Keys adopt tile state colours once a letter has been evaluated (same `data-state` convention). Transition: `background-color 200 ms ease`, delayed until after tile flip completes (600 ms base delay + stagger).
+
+Reading a key's colour straight after setting `data-state` returns the colour it
+is animating *from*, not the new one — wait out the transition before measuring.
+
+`script.js` derives its flip and bounce timings from `--duration-flip` and
+`--duration-bounce` rather than restating them, so the two cannot drift apart.
 
 ---
 

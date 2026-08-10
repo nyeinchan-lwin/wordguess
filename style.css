@@ -172,6 +172,7 @@ body {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition: filter var(--duration-btn) ease;
+  min-height: var(--touch-target);
 }
 
 .btn:focus-visible {
@@ -349,11 +350,6 @@ body {
 
 .challenge-banner[hidden] { display: none; }
 
-.btn-challenge {
-  padding: var(--space-3) var(--space-8);
-  font-size: var(--font-size-base);
-}
-
 /* ── Word length selector ───────────────────────────────────── */
 .word-length-selector {
   display: flex;
@@ -525,13 +521,6 @@ body {
   gap: var(--space-1);
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
-}
-
-.game-rule {
-  margin: 0;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  text-align: center;
 }
 
 .game-legend {
@@ -805,8 +794,13 @@ body {
   width: 100%;
 }
 
+/* The full-width actions, in the modal and under the board. `.btn-tournament-share`
+   had no rule of its own and fell back to the `.btn` base, rendering a size
+   smaller than the buttons it sits beside. */
 .btn-play-again,
-.btn-share {
+.btn-share,
+.btn-challenge,
+.btn-tournament-share {
   padding: var(--space-3) var(--space-8);
   font-size: var(--font-size-base);
 }
@@ -1205,11 +1199,6 @@ body {
   .legend-swatch { width: 10px; height: 10px; }
 }
 
-@media (max-width: 480px) and (max-height: 640px) {
-  .game-main { gap: var(--space-2); padding: var(--space-1) var(--space-1); }
-  .grid      { gap: var(--space-1); }
-}
-
 /* Laptops — the board and keyboard have to fit without scrolling.
    At the full 62px tile the keyboard ended 50px below the fold on a 1280x800
    screen (130px on 1280x720), so the bottom row needed a scroll to reach.
@@ -1246,7 +1235,6 @@ body {
   .tile      { width: 44px; height: 44px; font-size: var(--font-size-base); }
   .key       { height: 40px; font-size: 0.6rem; }
   .game-legend { display: none; }
-  .game-rule   { display: none; }
   .btn-howto   { display: none; }
   .howto-details { display: none; }
 }

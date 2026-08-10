@@ -754,10 +754,19 @@
 
   // ── English game ───────────────────────────────────────────────
   let COLS = 5;
-  const FLIP_MS        = 250;
+  // Flip and bounce are timed by CSS, so read the durations from the tokens
+  // rather than restating them here — two copies of 250 drift the moment one
+  // side is tuned. The fallbacks cover a stylesheet that has not parsed yet.
+  const cssMs = (name, fallback) => {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const n = parseFloat(raw);
+    if (!Number.isFinite(n)) return fallback;
+    return raw.endsWith('ms') ? n : n * 1000;
+  };
+  const FLIP_MS        = cssMs('--duration-flip', 250);
   const FLIP_STAGGER   = 50;
   const POST_FLIP_MS   = 400;
-  const BOUNCE_MS      = 500;
+  const BOUNCE_MS      = cssMs('--duration-bounce', 500);
   const BOUNCE_STAGGER = 80;
 
   const KB_LAYOUT = [
