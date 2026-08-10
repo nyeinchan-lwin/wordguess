@@ -351,7 +351,8 @@ body {
 .challenge-banner[hidden] { display: none; }
 
 /* ── Word length selector ───────────────────────────────────── */
-.word-length-selector {
+.word-length-selector,
+.difficulty-selector {
   display: flex;
   gap: var(--space-2);
   justify-content: center;
@@ -359,7 +360,8 @@ body {
   max-width: var(--menu-max-width);
 }
 
-.word-length-chip {
+.word-length-chip,
+.difficulty-chip {
   background: transparent;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -374,10 +376,14 @@ body {
   min-width: var(--touch-target);
 }
 
-.word-length-chip:hover  { filter: brightness(1.1); }
-.word-length-chip:active { filter: brightness(0.95); }
-.word-length-chip:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
-.word-length-chip.active {
+.word-length-chip:hover,
+.difficulty-chip:hover  { filter: brightness(1.1); }
+.word-length-chip:active,
+.difficulty-chip:active { filter: brightness(0.95); }
+.word-length-chip:focus-visible,
+.difficulty-chip:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+.word-length-chip.active,
+.difficulty-chip.active {
   background: var(--color-accent);
   color: var(--color-state-text);
   border-color: var(--color-accent);

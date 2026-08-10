@@ -160,6 +160,79 @@ const modalOpen = page => page.$eval('[data-modal]', el => !el.hidden);
   await ctx.close();
 }
 
+// ── Letter difficulty (#30) ──────────────────────────────────────
+{
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto(base + '/', { waitUntil: 'networkidle' });
+
+  // the score has to rank the obvious cases the obvious way
+  const eases = await page.evaluate(() =>
+    ['STARE', 'AROSE', 'SLATE', 'QUIRK', 'JAZZY', 'FUZZY']
+      .map(w => [w, window.WG.wordEase(w)]));
+  const byWord = Object.fromEntries(eases);
+  check('difficulty: common-letter words score above rare-letter ones',
+    Math.min(byWord.STARE, byWord.AROSE, byWord.SLATE) > Math.max(byWord.QUIRK, byWord.JAZZY, byWord.FUZZY),
+    JSON.stringify(eases));
+  const doubled = await page.evaluate(() => [window.WG.wordEase('LEVER'), window.WG.wordEase('LEVEL')]);
+  check('difficulty: a repeated letter costs something', doubled[0] > doubled[1], doubled.join(' vs '));
+
+  const split = await page.evaluate(() => {
+    const pool = ['STARE', 'AROSE', 'SLATE', 'RAISE', 'JAZZY', 'QUIRK', 'FUZZY', 'WALTZ'];
+    return { easier: window.WG.narrowByDifficulty(pool, 'easier'),
+             trickier: window.WG.narrowByDifficulty(pool, 'trickier'),
+             any: window.WG.narrowByDifficulty(pool, 'any').length };
+  });
+  check('difficulty: "easier" keeps the common-letter half',
+    split.easier.every(w => ['STARE', 'AROSE', 'SLATE', 'RAISE'].includes(w)), split.easier.join(','));
+  check('difficulty: "trickier" keeps the rare-letter half',
+    split.trickier.every(w => ['JAZZY', 'QUIRK', 'FUZZY', 'WALTZ'].includes(w)), split.trickier.join(','));
+  check('difficulty: "any" narrows nothing', split.any === 8, `${split.any}`);
+
+  // The reason this splits at the median rather than a fixed score: a fixed
+  // threshold empties the pool for a small theme, which is the failure #44 was.
+  const empties = await page.evaluate(() => {
+    const out = [];
+    for (const n of [1, 2, 3, 4, 5, 8, 15]) {
+      const pool = Array.from({ length: n }, (_, i) => 'WORD' + i);
+      for (const d of ['easier', 'trickier', 'any']) {
+        if (window.WG.narrowByDifficulty(pool, d).length === 0) out.push(`${n}/${d}`);
+      }
+    }
+    return out;
+  });
+  check('difficulty: never narrows a pool to nothing', empties.length === 0, empties.join(','));
+
+  // and it has to reach the game, not just sit in settings
+  await page.evaluate(() => localStorage.setItem('wg_settings', JSON.stringify(
+    { theme: 'all', wordLength: 5, wordDifficulty: 'trickier', dark: false, hc: false, easy: false, hard: false, sound: false })));
+  await page.goto(base + '/', { waitUntil: 'networkidle' });
+  const pressed = await page.$eval('[data-difficulty="trickier"]', el =>
+    el.getAttribute('aria-pressed') + '/' + el.classList.contains('active'));
+  check('difficulty: the saved choice is reflected on the chip', pressed === 'true/true', pressed);
+
+  await page.click('button[data-target="en"]:not([data-daily]):not([data-tournament]):not([data-practice]):not([data-timed])');
+  await page.waitForSelector('[data-screen="en"]:not([hidden])');
+  await page.waitForTimeout(300);
+  const badge = await page.$eval('[data-mode-badge]', el => el.hidden ? '' : el.textContent.trim());
+  check('difficulty: the game badge names it', /trickier|ခက်သော/i.test(badge), `badge "${badge}"`);
+  // The difficulty chips first shipped reusing `.word-length-chip`, which broke
+  // the a11y suite's "exactly one pressed chip per group" assertion. Separate
+  // classes, separate groups.
+  const groups = await page.evaluate(() => ({
+    lengthPressed: [...document.querySelectorAll('.word-length-chip')].filter(e => e.getAttribute('aria-pressed') === 'true').length,
+    diffPressed: [...document.querySelectorAll('.difficulty-chip')].filter(e => e.getAttribute('aria-pressed') === 'true').length,
+    overlap: [...document.querySelectorAll('.word-length-chip')].filter(e => e.dataset.difficulty).length,
+  }));
+  check('difficulty: exactly one length chip is pressed', groups.lengthPressed === 1, `${groups.lengthPressed}`);
+  check('difficulty: exactly one difficulty chip is pressed', groups.diffPressed === 1, `${groups.diffPressed}`);
+  check('difficulty: the two chip groups do not share a class', groups.overlap === 0, `${groups.overlap} shared`);
+  check('difficulty: no page errors', errors.length === 0, errors.join(' | '));
+  await ctx.close();
+}
+
 await browser.close();
 
 let failed = 0;

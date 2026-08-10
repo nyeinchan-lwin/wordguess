@@ -514,6 +514,37 @@
   // EXTRA_* lists are the common-word lists the validator already accepts.
   const ANSWER_POOLS = { 4: EXTRA_4, 5: ANSWERS, 6: EXTRA_6, 7: EXTRA_7 };
 
+  // Relative frequency of each letter in English, per hundred. The project has
+  // no word-frequency data and adding a corpus would dwarf the word lists, so
+  // difficulty is approximated from the letters a word is built out of: a word
+  // full of E, T, A and O is easier to reach for than one carrying J, Q or Z.
+  // Repeated letters cost extra — they are a well-known source of wrong guesses,
+  // because the feedback for a doubled letter reads as if it were single.
+  const LETTER_FREQ = {
+    E: 12.7, T: 9.1, A: 8.2, O: 7.5, I: 7.0, N: 6.7, S: 6.3, H: 6.1, R: 6.0,
+    D: 4.3,  L: 4.0, C: 2.8, U: 2.8, M: 2.4, W: 2.4, F: 2.2, G: 2.0, Y: 2.0,
+    P: 1.9,  B: 1.5, V: 1.0, K: 0.8, J: 0.15, X: 0.15, Q: 0.10, Z: 0.07,
+  };
+
+  // Higher is easier. Exported on WG for the test suite to check the ordering.
+  function wordEase(word) {
+    const letters = String(word).toUpperCase().split('');
+    if (!letters.length) return 0;
+    const mean = letters.reduce((sum, c) => sum + (LETTER_FREQ[c] ?? 1), 0) / letters.length;
+    const repeats = letters.length - new Set(letters).size;
+    return mean - repeats * 1.2;
+  }
+
+  // Split the candidates at their own median rather than at a fixed score. A
+  // fixed threshold empties the pool for a small theme — the failure #44 was
+  // about — whereas half of a pool is never empty while the pool is not.
+  function narrowByDifficulty(pool, difficulty) {
+    if (!difficulty || difficulty === 'any' || pool.length < 4) return pool;
+    const ranked = [...pool].sort((a, b) => wordEase(b) - wordEase(a));
+    const half = Math.max(1, Math.floor(ranked.length / 2));
+    return difficulty === 'easier' ? ranked.slice(0, half) : ranked.slice(-half);
+  }
+
   function pickWord(theme) {
     const settings = loadSettings();
     const len = settings.wordLength || 5;
@@ -532,6 +563,7 @@
       pool = allThemed.length > 0 ? allThemed : ANSWERS.filter(w => w.length === len);
     }
 
+    pool = narrowByDifficulty(pool, settings.wordDifficulty);
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
@@ -852,7 +884,7 @@
 
   function defaultSettings() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return { dark: prefersDark, hc: false, easy: false, hard: false, theme: 'all', wordLength: 5, sound: true };
+    return { dark: prefersDark, hc: false, easy: false, hard: false, theme: 'all', wordLength: 5, wordDifficulty: 'any', sound: true };
   }
 
   function loadSettings() {
@@ -930,12 +962,17 @@
     });
   }
 
+  // CLAUDE.md allows one global, `window.WG`. Exposed so the suites can check
+  // the difficulty ordering directly instead of inferring it from samples.
+  window.WG = Object.assign(window.WG || {}, { wordEase, narrowByDifficulty });
+
   // Apply on load
   applySettings();
   applyTranslations();
   syncLangButtons();
   syncThemeButtons();
   syncWordLengthButtons();
+  syncDifficultyButtons();
   updateDailyThemeBanner();
 
   // Settings overlay open/close
@@ -1026,6 +1063,24 @@
     s.wordLength = Number(btn.dataset.wordLength);
     saveSettings(s);
     syncWordLengthButtons();
+  });
+
+  function syncDifficultyButtons() {
+    const settings = loadSettings();
+    document.querySelectorAll('[data-difficulty]').forEach(btn => {
+      const isActive = btn.dataset.difficulty === (settings.wordDifficulty || 'any');
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive);
+    });
+  }
+
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('[data-difficulty]');
+    if (!btn) return;
+    const s = loadSettings();
+    s.wordDifficulty = btn.dataset.difficulty;
+    saveSettings(s);
+    syncDifficultyButtons();
   });
 
   document.addEventListener('click', e => {
@@ -1321,6 +1376,9 @@
       if (isPractice) parts.push(t('practice_mode'));
       if (settings.easy && !isDaily && !isPractice) parts.push('Easy (8/8)');
       if (settings.hard) parts.push('Hard');
+      if (settings.wordDifficulty && settings.wordDifficulty !== 'any' && !isDaily && !isTournament) {
+        parts.push(t('diff_' + settings.wordDifficulty));
+      }
       if (settings.theme && settings.theme !== 'all' && !isDaily && !isTournament) {
         const emoji = THEME_EMOJI[settings.theme] || '';
         parts.push(`${emoji} ${t('theme_' + settings.theme)}`);

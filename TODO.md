@@ -173,7 +173,7 @@ agent's report and should be reproduced before being acted on.
 | 1 | ~~**Themed daily challenges**~~ | ~~Small~~ | ~~Use selected theme for daily word, not just random~~ ✅ |
 | 2 | ~~**Statistics per theme**~~ | ~~Medium~~ | ~~Track win rate/distribution per category~~ ✅ |
 | 3 | ~~**Streak tracking by theme**~~ | ~~Small~~ | ~~Already done — verified 2026-08-10~~ ✅ — delivered by #2 and never ticked off. `emptyThemeStats()` carries `currentStreak`/`bestStreak` per theme, `updateStats` maintains them per theme, and `renderStats` reads `statsData[activeStatsTheme]`. Confirmed in a browser with seeded stats: all 2🔥/best 5, animals 4🔥/best 4, food 0/best 1 |
-| 4 | **Guess limit by theme** | Small | Some themes could have fewer words → adjust difficulty |
+| 4 | ~~**Guess limit by theme**~~ | ~~Small~~ | ~~Closed 2026-08-11~~ ✅ — premise no longer holds. It rested on 'some themes could have fewer words', but #43/#44 took the pools from 235 to 662 with a floor of 8 per theme+length. Varying the guess count per theme would also make the per-theme distribution charts incomparable, which costs more than it buys. #30 covers deliberate difficulty instead |
 
 ### Visual / UX
 | # | Feature | Effort | Notes |
@@ -230,7 +230,7 @@ agent's report and should be reproduced before being acted on.
 | 27 | **Custom word lists** | Medium | Import your own word list via URL or file |
 | 28 | ~~**Theme of the day**~~ | ~~Small~~ | ~~Featured theme rotates daily~~ ✅ |
 | 29 | **Seasonal themes** | Small | Holiday-specific word lists |
-| 30 | **Difficulty levels** | Small | Easy (common words) vs Hard (rare words) |
+| 30 | ~~**Difficulty levels**~~ | ~~Small~~ | ~~Done 2026-08-11~~ ✅ — `Any / Easier letters / Trickier letters` chips on the menu. There is no word-frequency data and a corpus would dwarf the word lists, so difficulty is scored from the letters a word is built from — mean English letter frequency, minus a penalty for repeats, which are a known source of wrong guesses. The pool splits at its own **median** rather than a fixed score: a fixed threshold empties the pool for a small theme, which is exactly the failure #44 was. Labelled for what it measures, not what it approximates — a sample of the 'trickier' half returned TOOTH, LIGHT, FLOOR, SHELL, all common words with awkward letters, so calling them 'Rare' would have been a lie |
 
 ### Social
 | # | Feature | Effort | Notes |
