@@ -13,6 +13,7 @@ const SUITE = [
   'test/screens.mjs',
   'test/visual-a11y.mjs',
   'test/game-modes.mjs',
+  'test/offline.mjs',
 ];
 
 function runSuite(script, base, cwd) {

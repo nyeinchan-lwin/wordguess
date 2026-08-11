@@ -205,8 +205,8 @@ agent's report and should be reproduced before being acted on.
 ### Technical
 | # | Feature | Effort | Notes |
 |---|---------|--------|-------|
-| 17 | **Service worker update** | Small | Cache theme word lists for offline play |
-| 18 | **Performance audit** | Medium | Check bundle size, lazy-load themes |
+| 17 | ~~**Service worker update**~~ | ~~Small~~ | ~~Done 2026-08-11~~ ✅ — the item asked to cache theme word lists, which was already true (they live in `script.js`). Reading the file turned up two real defects instead. **`i18n.js` was absent from `ASSETS`** despite `index.html:246` loading it — Chromium's own HTTP cache covers for it in practice, so the offline assertions still pass without the fix, but it was never actually guaranteed offline. **The worker answered everything cache-first under a name that never changed**, so a returning visitor kept the files they first received: `wordguess-v1` was written in `3bd3809` and 64 commits shipped behind it. Now `v2`, network-first for the document (which decides what assets are asked for) and stale-while-revalidate for the rest. Guarded by `test/offline.mjs`, including a static check that whatever `index.html` references locally is in `ASSETS` — that is the class of bug, not just the instance |
+| 18 | ~~**Performance audit**~~ | ~~Medium~~ | ~~Closed 2026-08-11~~ ✅ — measured rather than done. Core payload is 169,075 B raw / **45,355 B gzipped** with no framework and no dependencies, so there is nothing to chase. The suggested fix aims at the wrong target: word data is 28,363 B of `script.js` (29%) and `THEMES` alone is only 6,390 B, so lazy-loading themes saves a few KB gzipped in exchange for an extra request and a load-order dependency. No minification, which is the no-build-step architecture working as intended and mostly recovered by gzip |
 | 19 | **Unit tests** | Medium | Test theme filtering, validation, stats |
 | 20 | ~~**E2E tests**~~ | ~~Medium~~ | ~~`npm test` runs `test/run.mjs`, which serves the project and runs both suites (game flow + ARIA)~~ ✅ |
 
