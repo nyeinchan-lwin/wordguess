@@ -884,7 +884,7 @@
 
   function defaultSettings() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    return { dark: prefersDark, hc: false, easy: false, hard: false, theme: 'all', wordLength: 5, wordDifficulty: 'any', sound: true };
+    return { dark: prefersDark, hc: false, easy: false, hard: false, theme: 'all', wordLength: 5, wordDifficulty: 'any', sound: true, haptics: true };
   }
 
   function loadSettings() {
@@ -961,6 +961,50 @@
       el.textContent = base;
     });
   }
+
+  // ── Haptics (#11) ───────────────────────────────────────────────
+  // navigator.vibrate is Android-and-Chromium only; iOS Safari has never
+  // supported it. Feature-detected rather than assumed, and the settings row
+  // stays hidden where it would do nothing.
+  const CAN_VIBRATE = typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+
+  function buzz(pattern) {
+    if (!CAN_VIBRATE || !loadSettings().haptics) return;
+    try { navigator.vibrate(pattern); } catch { /* some browsers gate this */ }
+  }
+
+  (function revealHapticsSetting() {
+    const row = document.querySelector('[data-haptics-row]');
+    if (row) row.hidden = !CAN_VIBRATE;
+  })();
+
+  // ── Install prompt (#13) ────────────────────────────────────────
+  // Chromium fires this instead of showing its own bar once the app qualifies;
+  // the banner stays hidden unless it does, so browsers that never fire it
+  // (Safari, Firefox) simply never see it.
+  let deferredInstall = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredInstall = e;
+    const banner = document.querySelector('[data-install-banner]');
+    if (banner) banner.hidden = false;
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstall = null;
+    const banner = document.querySelector('[data-install-banner]');
+    if (banner) banner.hidden = true;
+  });
+
+  document.addEventListener('click', async e => {
+    if (!e.target.closest('[data-install]')) return;
+    const banner = document.querySelector('[data-install-banner]');
+    if (!deferredInstall) { if (banner) banner.hidden = true; return; }
+    deferredInstall.prompt();
+    await deferredInstall.userChoice.catch(() => {});
+    deferredInstall = null;
+    if (banner) banner.hidden = true;
+  });
 
   // CLAUDE.md allows one global, `window.WG`. Exposed so the suites can check
   // the difficulty ordering directly instead of inferring it from samples.
@@ -1632,6 +1676,7 @@
       shakeRow(eng.currentRow);
       toast(t('not_enough'));
       if (loadSettings().sound) Sound.buzz();
+      buzz([30, 40, 30]);
       return;
     }
 
@@ -1639,12 +1684,14 @@
       shakeRow(eng.currentRow);
       toast(t('not_valid'));
       if (loadSettings().sound) Sound.buzz();
+      buzz([30, 40, 30]);
       return;
     }
 
     if (!validateHardMode(eng.currentInput)) {
       shakeRow(eng.currentRow);
       if (loadSettings().sound) Sound.buzz();
+      buzz([30, 40, 30]);
       return;
     }
 
@@ -1652,6 +1699,7 @@
 
     const guess   = eng.currentInput;
     const states  = evaluate(guess, eng.answer);
+    buzz(20);
     eng.history.push(states);
     revealRow(eng.currentRow, guess, states);
 
@@ -1670,7 +1718,7 @@
       if (eng.tournament) updateTournamentStats(true);
       submitting = false;
       if (eng.daily) saveDaily({ date: todayStr(), done: true, won: true, guesses: eng.history.map((_, i) => getGuessText(i)), history: eng.history });
-      setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); if (loadSettings().sound) Sound.ding(); }, flipDone);
+      setTimeout(() => { bounceRow(eng.currentRow); fireConfetti(); if (loadSettings().sound) Sound.ding(); buzz([40, 60, 120]); }, flipDone);
       const winDelay = flipDone + (COLS - 1) * BOUNCE_STAGGER + BOUNCE_MS + 200;
       if (eng.timed) {
         // The run continues: bank the word and deal another.

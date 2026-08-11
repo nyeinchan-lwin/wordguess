@@ -353,6 +353,25 @@ body {
 /* ── Word length selector ───────────────────────────────────── */
 /* Sits between the theme chips and the length chips, so it must hold its height
    whether or not it has text — otherwise every theme change nudges the layout. */
+.install-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: var(--menu-max-width);
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.install-banner[hidden] { display: none; }
+
+.btn-install { width: 100%; }
+
 .theme-preview {
   margin: 0;
   min-height: 1.2em;
@@ -1262,4 +1281,43 @@ body {
   .game-legend { display: none; }
   .btn-howto   { display: none; }
   .howto-details { display: none; }
+}
+
+/* Landscape phones. The stacked layout needs 524px of height on a viewport
+   around 390px, so the page loads already scrolled and the header — Back,
+   title and settings — sits off-screen above. There is plenty of width going
+   spare at these sizes, so the board and keyboard go side by side and the
+   500px content cap comes off. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .game-main {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    max-width: none;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-4);
+  }
+
+  /* The toolbar keeps a line of its own above the two columns. */
+  .game-toolbar {
+    flex: 0 0 100%;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .grid     { flex: 0 0 auto; gap: 3px; }
+  /* Tiles are not interactive, so `--touch-target` does not apply to them and
+     they can go below it to buy back the height the six rows need. */
+  .tile     { width: 40px; height: 40px; font-size: var(--font-size-base); }
+
+  /* Shrinkable, so the narrowest landscape phones do not wrap it back under
+     the board and reintroduce the scrolling this tier exists to remove. */
+  .keyboard {
+    flex: 1 1 300px;
+    width: auto;
+    min-width: 0;
+    max-width: 460px;
+    padding-bottom: 0;
+  }
 }

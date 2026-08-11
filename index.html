@@ -75,6 +75,10 @@
         <button class="btn btn-primary btn-lang btn-practice" data-target="en" data-practice data-i18n="practice">Practice</button>
         <button class="btn btn-ghost btn-lang" data-stats-open data-i18n="stats">Stats</button>
       </div>
+      <div class="install-banner" data-install-banner hidden>
+        <span data-i18n="install_hint">Add WordGuess to your home screen</span>
+        <button class="btn btn-primary btn-install" data-install data-i18n="install">Install</button>
+      </div>
       <div class="lang-switcher" data-lang-switcher>
         <button class="lang-btn active" data-lang="en">English</button>
         <button class="lang-btn" data-lang="my">မြန်မာ</button>
@@ -233,6 +237,10 @@
         <label class="setting-row">
           <span class="setting-label" data-i18n="sound">Sound Effects</span>
           <input type="checkbox" class="toggle" data-setting="sound">
+        </label>
+        <label class="setting-row" data-haptics-row hidden>
+          <span class="setting-label" data-i18n="haptics">Vibration</span>
+          <input type="checkbox" class="toggle" data-setting="haptics">
         </label>
         <div class="setting-row">
           <span class="setting-label" data-i18n="language">Language</span>
