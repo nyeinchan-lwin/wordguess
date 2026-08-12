@@ -194,6 +194,42 @@ for (const [label, iso, expected] of [
   await ctx.close();
 }
 
+// ── the docs must not drift from what the app offers ─────────────
+// Prose goes stale silently: README claimed "Two game modes" while the menu
+// offered five, and it had been wrong since Weekly Tournament shipped. This
+// pins the counts it states to the things it is counting. It cannot police the
+// descriptions themselves — a number is what is mechanically checkable here.
+{
+  const readme = readFileSync(fileURLToPath(new URL('../README.md', import.meta.url)), 'utf8');
+  const report = readFileSync(fileURLToPath(new URL('../report.md', import.meta.url)), 'utf8');
+  const html = readFileSync(fileURLToPath(new URL('../index.html', import.meta.url)), 'utf8');
+
+  const WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 };
+  const modeButtons = (html.match(/data-target="en"/g) || []).length;
+  const claimed = (readme.match(/\*\*(\w+) game modes:\*\*/i) || [])[1];
+  check('README names as many game modes as the menu offers',
+    WORDS[String(claimed).toLowerCase()] === modeButtons,
+    `README says "${claimed}", menu has ${modeButtons}`);
+
+  const themeCount = THEME_NAMES.length;
+  const readmeThemes = Number((readme.match(/\*\*(\d+) themes:\*\*/) || [])[1]);
+  check('README names as many themes as the data holds',
+    readmeThemes === themeCount, `README says ${readmeThemes}, data has ${themeCount}`);
+
+  const reportThemes = Number((report.match(/(\d+) themed word lists/) || [])[1]);
+  check('report.md names as many themes as the data holds',
+    reportThemes === themeCount, `report says ${reportThemes}, data has ${themeCount}`);
+
+  // every screenshot either doc points at has to exist
+  const shots = [...readme.matchAll(/\((screenshots\/[^)]+)\)/g), ...report.matchAll(/\((screenshots\/[^)]+)\)/g)]
+    .map(m => m[1]);
+  const missing = [...new Set(shots)].filter(rel => {
+    try { readFileSync(fileURLToPath(new URL('../' + rel, import.meta.url))); return false; }
+    catch { return true; }
+  });
+  check('every screenshot the docs reference exists', missing.length === 0, missing.join(', '));
+}
+
 await browser.close();
 
 let failed = 0;

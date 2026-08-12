@@ -5,7 +5,7 @@
 - **Repo URL:** https://github.com/nyeinchan-lwin/wordguess
 - **Live / download URL:** https://nyeinchan-lwin.github.io/wordguess/
 - **License:** MIT
-- **One-line summary:** A browser-based Wordle-style game — guess the hidden word from colour-coded letter feedback, across 11 themed word lists, 4 to 7 letters, with a daily challenge that is the same puzzle for everyone.
+- **One-line summary:** A browser-based Wordle-style game — guess the hidden word from colour-coded letter feedback, across 13 themed word lists (two of them seasonal) or one you import yourself, 4 to 7 letters, in five modes including a daily challenge that is the same puzzle for everyone.
 
 ## Product-Intro Slides
 - **Slides path:** slides/intro.md
@@ -28,4 +28,10 @@
 Built in plain HTML, CSS, and JavaScript — no framework, no build step, no runtime
 dependencies. Open the live link and start guessing; both the on-screen and physical
 keyboard work. Playwright is a dev dependency only, for the test suites in `test/`
-(`npm test`).
+(`npm test` — 11 suites).
+
+Accessibility was treated as a requirement rather than a pass: every text/background
+pair meets WCAG AA in all four colour modes, every tappable control clears 44×44,
+the tab order never reaches a hidden screen, and `prefers-reduced-motion` is honoured
+down to the confetti. Those properties are asserted rather than assumed — the suites
+sweep every visible text node and every button rather than checking named examples.
