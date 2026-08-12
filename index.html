@@ -42,18 +42,6 @@
       </section>
       <div class="daily-theme-banner" data-daily-theme-banner></div>
       <div class="theme-selector" data-theme-selector role="group" data-i18n-aria-label="theme_group" aria-label="Word theme">
-        <button class="theme-chip active" data-theme="all" aria-pressed="true" data-i18n="theme_all">All</button>
-        <button class="theme-chip" data-theme="animals" aria-pressed="false" data-i18n="theme_animals">Animals</button>
-        <button class="theme-chip" data-theme="countries" aria-pressed="false" data-i18n="theme_countries">Countries</button>
-        <button class="theme-chip" data-theme="food" aria-pressed="false" data-i18n="theme_food">Food</button>
-        <button class="theme-chip" data-theme="sports" aria-pressed="false" data-i18n="theme_sports">Sports</button>
-        <button class="theme-chip" data-theme="science" aria-pressed="false" data-i18n="theme_science">Science</button>
-        <button class="theme-chip" data-theme="nature" aria-pressed="false" data-i18n="theme_nature">Nature</button>
-        <button class="theme-chip" data-theme="music" aria-pressed="false" data-i18n="theme_music">Music</button>
-        <button class="theme-chip" data-theme="movies" aria-pressed="false" data-i18n="theme_movies">Movies</button>
-        <button class="theme-chip" data-theme="tech" aria-pressed="false" data-i18n="theme_tech">Technology</button>
-        <button class="theme-chip" data-theme="history" aria-pressed="false" data-i18n="theme_history">History</button>
-        <button class="theme-chip" data-theme="art" aria-pressed="false" data-i18n="theme_art">Art</button>
       </div>
       <p class="theme-preview" data-theme-preview></p>
       <div class="word-length-selector" data-word-length-selector role="group" data-i18n-aria-label="word_length_group" aria-label="Word length">
@@ -165,18 +153,6 @@
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="stats-title">
       <p class="modal-message" id="stats-title" data-i18n="stats">Statistics</p>
       <div class="stats-theme-bar" role="tablist" data-stats-tablist data-i18n-aria-label="stats_tablist" aria-label="Theme statistics">
-        <button class="stats-theme-chip active" id="stats-tab-all" data-stats-theme="all" role="tab" aria-selected="true" aria-controls="stats-panel" tabindex="0" data-i18n="theme_all">All</button>
-        <button class="stats-theme-chip" id="stats-tab-animals" data-stats-theme="animals" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1" data-i18n="theme_animals">Animals</button>
-        <button class="stats-theme-chip" id="stats-tab-countries" data-stats-theme="countries" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1" data-i18n="theme_countries">Countries</button>
-        <button class="stats-theme-chip" id="stats-tab-food" data-stats-theme="food" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1" data-i18n="theme_food">Food</button>
-        <button class="stats-theme-chip" id="stats-tab-sports" data-stats-theme="sports" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1" data-i18n="theme_sports">Sports</button>
-        <button class="stats-theme-chip" id="stats-tab-science" data-stats-theme="science" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1" data-i18n="theme_science">Science</button>
-        <button class="stats-theme-chip" id="stats-tab-nature" data-stats-theme="nature" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1" data-i18n="theme_nature">Nature</button>
-        <button class="stats-theme-chip" id="stats-tab-music" data-stats-theme="music" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1" data-i18n="theme_music">Music</button>
-        <button class="stats-theme-chip" id="stats-tab-movies" data-stats-theme="movies" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1" data-i18n="theme_movies">Movies</button>
-        <button class="stats-theme-chip" id="stats-tab-tech" data-stats-theme="tech" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1" data-i18n="theme_tech">Technology</button>
-        <button class="stats-theme-chip" id="stats-tab-history" data-stats-theme="history" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1" data-i18n="theme_history">History</button>
-        <button class="stats-theme-chip" id="stats-tab-art" data-stats-theme="art" role="tab" aria-selected="false" aria-controls="stats-panel" tabindex="-1" data-i18n="theme_art">Art</button>
       </div>
       <div class="stats-panel" id="stats-panel" role="tabpanel" data-stats-panel aria-labelledby="stats-tab-all" tabindex="0">
         <div class="stats-row">
@@ -242,6 +218,17 @@
           <span class="setting-label" data-i18n="haptics">Vibration</span>
           <input type="checkbox" class="toggle" data-setting="haptics">
         </label>
+        <div class="setting-row setting-row--stack">
+          <span class="setting-label" data-i18n="custom_words">Custom word list</span>
+          <p class="setting-hint" data-custom-status></p>
+          <div class="custom-actions">
+            <label class="btn btn-ghost btn-custom">
+              <span data-i18n="custom_import">Import .txt</span>
+              <input type="file" accept=".txt,text/plain" data-custom-file hidden>
+            </label>
+            <button class="btn btn-ghost" data-custom-clear data-i18n="custom_clear">Clear</button>
+          </div>
+        </div>
         <div class="setting-row">
           <span class="setting-label" data-i18n="language">Language</span>
           <div class="lang-switcher-inline" data-lang-switcher>

@@ -227,9 +227,9 @@ agent's report and should be reproduced before being acted on.
 | # | Feature | Effort | Notes |
 |---|---------|--------|-------|
 | 26 | ~~**More themes**~~ | ~~Small~~ | ~~Music, Movies, Technology, History, Art~~ ✅ |
-| 27 | **Custom word lists** | Medium | Import your own word list via URL or file |
+| 27 | ~~**Custom word lists**~~ | ~~Medium~~ | ~~Done 2026-08-11~~ ✅ — import a `.txt` from settings or arrive with `?list=WORD,WORD`. Both routes share one validator built on the #48 lesson: A–Z only, a length the UI plays, de-duplicated, capped at 500, and every accepted word joins `VALID_SET` so it is guessable as well as answerable. A list that yields nothing usable leaves the existing one alone rather than wiping it, and the `?list=` route announces itself instead of swapping the list out silently. The chip and its stats tab exist only while a list does; clearing resets the selected theme so nobody is stranded on an empty pool |
 | 28 | ~~**Theme of the day**~~ | ~~Small~~ | ~~Featured theme rotates daily~~ ✅ |
-| 29 | **Seasonal themes** | Small | Holiday-specific word lists |
+| 29 | ~~**Seasonal themes**~~ | ~~Small~~ | ~~Done 2026-08-11~~ ✅ — Halloween and Winter, held to the same floors as every other theme (five per length, fifteen at five letters) so a seasonal game is never thinner. Windows are inclusive month/day pairs and may wrap the year end, which Winter does — Dec 1 to Jan 6 — so the comparison works on month/day rather than dates. Deliberately absent from `DAILY_THEMES`: the daily is one shared puzzle and a pumpkin in June would be a surprise, not a treat. Out of season the chip goes but the stats tab stays, and a theme selected in season falls back to `all` once it closes |
 | 30 | ~~**Difficulty levels**~~ | ~~Small~~ | ~~Done 2026-08-11~~ ✅ — `Any / Easier letters / Trickier letters` chips on the menu. There is no word-frequency data and a corpus would dwarf the word lists, so difficulty is scored from the letters a word is built from — mean English letter frequency, minus a penalty for repeats, which are a known source of wrong guesses. The pool splits at its own **median** rather than a fixed score: a fixed threshold empties the pool for a small theme, which is exactly the failure #44 was. Labelled for what it measures, not what it approximates — a sample of the 'trickier' half returned TOOTH, LIGHT, FLOOR, SHELL, all common words with awkward letters, so calling them 'Rare' would have been a lie |
 
 ### Social
@@ -285,6 +285,6 @@ agent's report and should be reproduced before being acted on.
   It also enforces the pool floors — ≥5 answers per theme per length, ≥15 five-letter per theme
   (the daily draws from those), no entry outside 4–7 letters, no duplicates, and an `ANSWER_POOLS`
   entry per length whose words are all in `VALID_SET`.
-- Theme word lists could be expanded (currently ~20–30 words each, aim for 50+) — see 43/44
+- ~~Theme word lists could be expanded~~ ✅ Done by #43/#44 and measured 2026-08-11: every theme now holds 47–83 words (countries 83, food 74, movies the thinnest at 47), plus 2,519 unthemed answers across the four length pools.
 - Consider lazy-loading theme word lists to reduce initial bundle size
 - All new features should maintain i18n support (EN + MY)

@@ -496,13 +496,59 @@
       'STATUE','MARBLE',
       'GALLERY','POTTERY','PATTERN','TEXTILE','PALETTE','ARTWORK','CERAMIC','DRAWING','ETCHING','PAINTER','REALISM',
     ],
+
+    // ── Seasonal (#29) ──────────────────────────────────────────
+    // Held to the same floors as every other theme — five per length, fifteen
+    // at five letters — so a seasonal game is never thinner than a normal one.
+    // They are deliberately absent from DAILY_THEMES: the daily is one shared
+    // puzzle, and a pumpkin in June would be a surprise, not a treat.
+    halloween: [
+      'BATS','MASK','CAPE','MOON','WEBS','TOMB','DARK','OWLS',
+      'GHOST','WITCH','CANDY','BROOM','HAUNT','CREEP','SPOOK','GHOUL','MUMMY','DEVIL',
+      'SKULL','GRAVE','NIGHT','TREAT','SCARE','EERIE','CRYPT','FANGS',
+      'GOBLIN','SPIDER','CASKET','SHRIEK','COFFIN','HOLLOW','POTION','SPOOKY',
+      'PUMPKIN','MONSTER','VAMPIRE','COSTUME','HAUNTED','LANTERN','PHANTOM',
+    ],
+    winter: [
+      'SNOW','GIFT','STAR','BELL','PINE','SLED','COLD','WRAP',
+      'FROST','HOLLY','CAROL','MERRY','ELVES','SPICE','CIDER','SCARF','COCOA',
+      'BERRY','FEAST','LIGHT','ANGEL','GIFTS','SNOWY','ICING','ROAST',
+      'WREATH','SLEIGH','TINSEL','WINTER','MITTEN','RIBBON','CANDLE','FROSTY',
+      'GARLAND','HOLIDAY','CHIMNEY','SNOWMAN','PRESENT','ICICLES','FESTIVE',
+    ],
   };
 
   // One map, used by the badge, the menu banner and both share texts.
   const THEME_EMOJI = {
     animals: '🐾', countries: '🌍', food: '🍽️', sports: '⚽', science: '🔬', nature: '🌿',
     music: '🎵', movies: '🎬', tech: '💻', history: '📜', art: '🎨',
+    halloween: '🎃', winter: '❄️',
   };
+
+  // ── Seasonal windows (#29) ──────────────────────────────────────
+  // Inclusive [month, day] bounds. A window may wrap the year end, which is
+  // why the comparison below works on month/day pairs rather than dates.
+  const SEASONS = {
+    halloween: { from: [10, 18], to: [11, 2] },
+    winter:    { from: [12, 1],  to: [1, 6]  },
+  };
+
+  function inSeason(key, now = new Date()) {
+    const s = SEASONS[key];
+    if (!s) return true;                       // not seasonal: always available
+    const md = (now.getMonth() + 1) * 100 + now.getDate();
+    const from = s.from[0] * 100 + s.from[1];
+    const to   = s.to[0]   * 100 + s.to[1];
+    return from <= to ? (md >= from && md <= to) : (md >= from || md <= to);
+  }
+
+  // Every theme, seasonal or not. Stats keep a bucket per key so a seasonal
+  // record stays readable out of season; the menu only offers what is in.
+  const THEME_KEYS = ['all', ...Object.keys(THEMES), 'custom'];
+  const MENU_THEME_KEYS = () =>
+    THEME_KEYS.filter(k => k === 'all' ? true
+                         : k === 'custom' ? loadCustomWords().length > 0
+                         : inSeason(k));
 
   // Themed answers have to be guessable as well, or a themed game cannot be
   // won: the player is refused the very word they are being asked for.
@@ -551,7 +597,9 @@
 
     // Build candidate pool filtered by length
     let pool;
-    if (theme && theme !== 'all' && THEMES[theme]) {
+    if (theme === 'custom') {
+      pool = loadCustomWords().filter(w => w.length === len);
+    } else if (theme && theme !== 'all' && THEMES[theme]) {
       pool = THEMES[theme].filter(w => w.length === len);
     } else {
       pool = (ANSWER_POOLS[len] || ANSWERS).filter(w => w.length === len);
@@ -879,6 +927,15 @@
     }
   }
 
+  // Declared here rather than beside toast() itself: the init block below runs
+  // before that point in the file, and a `let` is not hoisted the way the
+  // function is.
+  let toastTimer = null;
+
+  function safeRemove(key) {
+    try { localStorage.removeItem(key); return true; } catch { return false; }
+  }
+
   // ── Settings (localStorage) ─────────────────────────────────────
   const SETTINGS_KEY = 'wg_settings';
 
@@ -1008,15 +1065,117 @@
 
   // CLAUDE.md allows one global, `window.WG`. Exposed so the suites can check
   // the difficulty ordering directly instead of inferring it from samples.
-  window.WG = Object.assign(window.WG || {}, { wordEase, narrowByDifficulty });
+  window.WG = Object.assign(window.WG || {}, { wordEase, narrowByDifficulty, parseCustomWords, inSeason });
+
+  // ── Custom word lists (#27) ─────────────────────────────────────
+  // #48 taught this lesson once already: a link that supplies words without
+  // validation builds a board no guess can match. A whole imported list is the
+  // same failure multiplied, so nothing enters the pool that the game could
+  // not also accept as a guess.
+  const CUSTOM_KEY = 'wg_custom_words';
+  const CUSTOM_MAX = 500;   // localStorage is finite and so is the player's patience
+
+  function parseCustomWords(text) {
+    const seen = new Set();
+    let skipped = 0;
+    for (const raw of String(text).split(/[\s,;]+/)) {
+      const w = raw.trim().toUpperCase();
+      if (!w) continue;
+      // A-Z only and a length the UI actually plays. Anything else would be
+      // dead weight at best and an unwinnable board at worst.
+      if (!/^[A-Z]+$/.test(w) || !PLAYABLE_LENGTHS.includes(w.length)) { skipped++; continue; }
+      if (seen.has(w)) { skipped++; continue; }
+      if (seen.size >= CUSTOM_MAX) { skipped++; continue; }
+      seen.add(w);
+    }
+    return { words: [...seen], skipped };
+  }
+
+  function loadCustomWords() {
+    const raw = safeGet(CUSTOM_KEY);
+    return Array.isArray(raw) ? raw : [];
+  }
+
+  function saveCustomWords(words) {
+    if (words && words.length) safeSet(CUSTOM_KEY, words);
+    else safeRemove(CUSTOM_KEY);
+    registerCustomWords();
+  }
+
+  // Imported answers must be guessable too, exactly as themed answers are.
+  function registerCustomWords() {
+    for (const w of loadCustomWords()) VALID_SET.add(w);
+  }
+
+  function customStatus() {
+    const el = document.querySelector('[data-custom-status]');
+    if (!el) return;
+    const n = loadCustomWords().length;
+    el.textContent = n ? t('custom_loaded', { n, skipped: el.dataset.skipped || 0 }) : t('custom_none');
+  }
+
+  document.addEventListener('change', e => {
+    const input = e.target.closest('[data-custom-file]');
+    if (!input || !input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const { words, skipped } = parseCustomWords(reader.result);
+      const status = document.querySelector('[data-custom-status]');
+      if (!words.length) {
+        if (status) { status.dataset.skipped = skipped; status.textContent = t('custom_empty'); }
+        return;
+      }
+      if (status) status.dataset.skipped = skipped;
+      saveCustomWords(words);
+      customStatus();
+      renderThemeControls();
+      syncThemeButtons();
+      showThemePreview(null);
+    };
+    reader.readAsText(input.files[0]);
+    input.value = '';   // so re-importing the same file fires again
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-custom-clear]')) return;
+    const settings = loadSettings();
+    if (settings.theme === 'custom') { settings.theme = 'all'; saveSettings(settings); }
+    saveCustomWords([]);
+    const status = document.querySelector('[data-custom-status]');
+    if (status) delete status.dataset.skipped;
+    customStatus();
+    renderThemeControls();
+    syncThemeButtons();
+    showThemePreview(null);
+  });
+
+
+  // `?list=PLUM,GRAPE,...` — the "or URL" half of #27. Same validation as the
+  // file route, and it announces itself: a link should not be able to swap the
+  // player's list out from under them silently. Nothing here is trusted; the
+  // words are filtered exactly as an imported file would be.
+  (function importListFromUrl() {
+    const raw = new URLSearchParams(window.location.search).get('list');
+    if (!raw) return;
+    const { words, skipped } = parseCustomWords(decodeURIComponent(raw));
+    if (!words.length) { toast(t('custom_empty')); return; }
+    saveCustomWords(words);
+    const status = document.querySelector('[data-custom-status]');
+    if (status) status.dataset.skipped = skipped;
+    toast(t('custom_loaded', { n: words.length, skipped }));
+  })();
 
   // Apply on load
+  registerCustomWords();
+  ensureThemeAvailable();
+  renderThemeControls();   // before applyTranslations, which fills the labels
   applySettings();
   applyTranslations();
   syncLangButtons();
   syncThemeButtons();
   syncWordLengthButtons();
   syncDifficultyButtons();
+  customStatus();
   showThemePreview(null);
   updateDailyThemeBanner();
 
@@ -1060,14 +1219,73 @@
   }
 
   // ── Theme selector ─────────────────────────────────────────────
+  // The chips and the stats tabs are built from THEME_KEYS rather than written
+  // out by hand. Twenty-four elements had to be edited in step with the data
+  // before this, across index.html and two lists in script.js, and that
+  // duplication is what let theme/length combos ship empty (#44).
+  function renderThemeControls() {
+    const menu = document.querySelector('[data-theme-selector]');
+    if (menu) {
+      menu.innerHTML = '';
+      for (const key of MENU_THEME_KEYS()) {
+        const b = document.createElement('button');
+        b.className = 'theme-chip';
+        b.dataset.theme = key;
+        b.setAttribute('aria-pressed', 'false');
+        b.setAttribute('data-i18n', 'theme_' + key);
+        b.textContent = t('theme_' + key);
+        menu.appendChild(b);
+      }
+    }
+
+    // Every theme keeps a tab, in season or not, so a seasonal record does not
+    // vanish for eleven months. Roving tabindex is set up here and maintained
+    // by renderStats().
+    const tabs = document.querySelector('[data-stats-tablist]');
+    if (tabs) {
+      tabs.innerHTML = '';
+      // Seasonal themes keep a tab all year so their record stays readable;
+      // "custom" only earns one once a list actually exists.
+      const statsKeys = THEME_KEYS.filter(k => k !== 'custom' || loadCustomWords().length > 0);
+      statsKeys.forEach((key, i) => {
+        const b = document.createElement('button');
+        b.className = 'stats-theme-chip' + (i === 0 ? ' active' : '');
+        b.id = 'stats-tab-' + key;
+        b.dataset.statsTheme = key;
+        b.setAttribute('role', 'tab');
+        b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+        b.setAttribute('aria-controls', 'stats-panel');
+        b.tabIndex = i === 0 ? 0 : -1;
+        b.setAttribute('data-i18n', 'theme_' + key);
+        b.textContent = t('theme_' + key);
+        tabs.appendChild(b);
+      });
+    }
+  }
+
+  // A theme saved while in season must not strand the player on a chip that is
+  // no longer offered — fall back to "all" rather than silently playing it.
+  function ensureThemeAvailable() {
+    const settings = loadSettings();
+    if (settings.theme === 'custom' && loadCustomWords().length === 0) {
+      settings.theme = 'all';
+      saveSettings(settings);
+      return;
+    }
+    if (settings.theme && settings.theme !== 'all' && THEMES[settings.theme] && !inSeason(settings.theme)) {
+      settings.theme = 'all';
+      saveSettings(settings);
+    }
+  }
+
   // How many answers a theme actually offers at the length currently selected.
   // Mirrors the pool pickWord() builds, so the number shown is the number the
   // game will draw from — difficulty is left out on purpose, since it halves
   // whatever this reports rather than changing what the theme contains.
   function themeWordCount(theme) {
     const len = loadSettings().wordLength || 5;
-    const pool = (theme && theme !== 'all' && THEMES[theme])
-      ? THEMES[theme]
+    const pool = theme === 'custom' ? loadCustomWords()
+      : (theme && theme !== 'all' && THEMES[theme]) ? THEMES[theme]
       : (ANSWER_POOLS[len] || ANSWERS);
     return pool.filter(w => w.length === len).length;
   }
@@ -1210,7 +1428,6 @@
 
   // ── Stats (localStorage) ───────────────────────────────────────
   const STATS_KEY = 'wg_stats';
-  const THEME_KEYS = ['all', 'animals', 'countries', 'food', 'sports', 'science', 'nature', 'music', 'movies', 'tech', 'history', 'art'];
 
   function emptyThemeStats() {
     return { played: 0, won: 0, currentStreak: 0, bestStreak: 0, distribution: [0, 0, 0, 0, 0, 0] };
@@ -1883,18 +2100,26 @@
   }
 
   // ── Toast notification ─────────────────────────────────────────
+  // The timer used to hang off `eng`, which is declared far below this and is
+  // only populated when a game starts. Any toast raised before then — a
+  // storage failure during startup, an imported `?list=` — threw
+  // "Cannot access 'eng' before initialization" and took the rest of the init
+  // script down with it. It owns its own handle now.
   function toast(msg) {
     const el = document.querySelector('[data-toast]');
     if (!el) return;
     el.textContent = msg;
     el.hidden = false;
     live(msg);
-    clearTimeout(eng.toastTimer);
-    eng.toastTimer = setTimeout(() => { el.hidden = true; }, 1200);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.hidden = true; }, 1200);
   }
 
   // ── Confetti ───────────────────────────────────────────────────
-  const CONFETTI_COLORS = ['#538d4e', '#8a7000', '#d4a017', '#e85d3a', '#4a90d9', '#9b59b6'];
+  // Read from the tokens rather than restated, so a palette change carries.
+  const CONFETTI_COLORS = ['--color-correct', '--color-present', '--color-accent']
+    .map(v => getComputedStyle(document.documentElement).getPropertyValue(v).trim() || '#4a7f46')
+    .concat(['#d4a017', '#e85d3a', '#4a90d9', '#9b59b6']);
 
   function fireConfetti() {
     const container = document.querySelector('[data-confetti]');

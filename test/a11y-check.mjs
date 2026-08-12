@@ -77,11 +77,16 @@ let focused = await page.evaluate(() => document.activeElement.dataset.statsThem
 check('ArrowRight moves selection to next tab', r.find(x => x.sel === 'true').t === 'animals', r.find(x => x.sel === 'true').t);
 check('ArrowRight moves DOM focus too', focused === 'animals', focused);
 
+// Derived, not named: the tab list is rendered from the theme data now, so
+// hardcoding "art" made every new theme look like an accessibility regression.
+const lastTab = await page.$$eval('[data-stats-theme]',
+  els => els[els.length - 1].dataset.statsTheme);
+
 await page.keyboard.press('ArrowLeft');
 await page.keyboard.press('ArrowLeft');
 await page.waitForTimeout(120);
 focused = await page.evaluate(() => document.activeElement.dataset.statsTheme);
-check('ArrowLeft wraps to last tab', focused === 'art', focused);
+check('ArrowLeft wraps to last tab', focused === lastTab, `${focused} (last is ${lastTab})`);
 
 await page.keyboard.press('Home');
 await page.waitForTimeout(120);
@@ -91,10 +96,10 @@ check('Home jumps to first tab', focused === 'all', focused);
 await page.keyboard.press('End');
 await page.waitForTimeout(120);
 focused = await page.evaluate(() => document.activeElement.dataset.statsTheme);
-check('End jumps to last tab', focused === 'art', focused);
+check('End jumps to last tab', focused === lastTab, `${focused} (last is ${lastTab})`);
 
 const panelAfter = await page.$eval('[data-stats-panel]', el => el.getAttribute('aria-labelledby'));
-check('panel label follows arrow-key selection', panelAfter === 'stats-tab-art', panelAfter);
+check('panel label follows arrow-key selection', panelAfter === 'stats-tab-' + lastTab, panelAfter);
 
 // ── layout not broken by the wrapper ───────────────────────────
 const widths = await page.evaluate(() => {

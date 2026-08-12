@@ -18,6 +18,7 @@
     "test:modes": "node test/game-modes.mjs",
     "test:offline": "node test/offline.mjs",
     "test:mobile": "node test/mobile.mjs",
+    "test:content": "node test/content.mjs",
     "test:browsers": "playwright install chromium",
     "screenshots": "node tools/screenshots.mjs"
   },

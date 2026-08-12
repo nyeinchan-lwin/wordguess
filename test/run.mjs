@@ -15,6 +15,7 @@ const SUITE = [
   'test/game-modes.mjs',
   'test/offline.mjs',
   'test/mobile.mjs',
+  'test/content.mjs',
 ];
 
 function runSuite(script, base, cwd) {
