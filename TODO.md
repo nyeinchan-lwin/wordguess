@@ -243,9 +243,9 @@ agent's report and should be reproduced before being acted on.
 ### Analytics
 | # | Feature | Effort | Notes |
 |---|---------|--------|-------|
-| 35 | **Theme popularity stats** | Small | Which themes are played most |
+| 35 | ~~**Theme popularity stats**~~ | ~~Small~~ | ~~Done 2026-08-11~~ ✅ — the per-theme `played` counts already existed; nothing had ever put them side by side. A ranked bar list in the stats overlay, sorted by games played, themes never played omitted and the `all` aggregate excluded so it cannot dwarf everything. It is a cross-theme view, so it does not follow the selected tab |
 | 36 | ~~**Win rate by theme**~~ | ~~Small~~ | ~~Already done — verified 2026-08-10~~ ✅ — delivered by #2. The stats overlay's theme tabs show played, win %, streak and best per theme |
-| 37 | **Time per theme** | Small | Average solve time per category |
+| 37 | ~~**Time per theme**~~ | ~~Small~~ | ~~Done 2026-08-11~~ ✅ — solve time existed only as a transient used by the `speed_demon` achievement and was never persisted. `solveMs`/`solveCount` are now kept per theme as a running total, so a new result folds in without re-deriving from history the game does not keep. `solveCount` is deliberately not `won`: a win with no reliable clock adds to one and not the other, and an average over nothing renders as an em dash rather than a fake zero. Practice and timed contribute nothing, like every other stat |
 
 ---
 

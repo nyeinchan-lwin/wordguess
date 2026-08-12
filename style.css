@@ -353,6 +353,54 @@ body {
 /* ── Word length selector ───────────────────────────────────── */
 /* Sits between the theme chips and the length chips, so it must hold its height
    whether or not it has text — otherwise every theme change nudges the layout. */
+.popularity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  margin-top: var(--space-4);
+}
+
+.popularity-title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.pop-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+}
+
+.pop-label {
+  flex: 0 0 5.5em;
+  color: var(--color-text-muted);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-bar-wrap { flex: 1; background: var(--color-border); border-radius: var(--radius-xs); }
+
+.pop-bar {
+  height: 0.9em;
+  min-width: 2px;
+  background: var(--color-accent);
+  border-radius: var(--radius-xs);
+  transition: width 0.3s ease;
+}
+
+.pop-count {
+  flex: 0 0 2.2em;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
 .setting-row--stack {
   flex-direction: column;
   align-items: stretch;
@@ -809,6 +857,13 @@ body {
   gap: var(--space-6);
   transform: scale(0.9);
   transition: transform 0.2s ease;
+  /* The stats card outgrew the viewport once it carried theme tabs, a
+     distribution chart, achievements and a popularity ranking — 962px against
+     720px — and with `overflow: visible` and no cap the tab bar sat at
+     top: -42 with no way to reach it. Cap it and let it scroll. */
+  max-height: calc(100vh - var(--space-8));
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .modal-overlay:not([hidden]) .modal-card {

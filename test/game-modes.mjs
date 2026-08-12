@@ -317,6 +317,101 @@ const modalOpen = page => page.$eval('[data-modal]', el => !el.hidden);
   await ctx.close();
 }
 
+// ── Analytics: popularity ranking (#35) and average time (#37) ───
+{
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto(base + '/', { waitUntil: 'networkidle' });
+
+  // `all` is written the way records looked before solveMs existed, so this
+  // exercises the per-bucket migration as well as the rendering.
+  await page.evaluate(() => localStorage.setItem('wg_stats', JSON.stringify({
+    all:       { played: 12, won: 9, currentStreak: 2, bestStreak: 5, distribution: [0,1,3,3,2,0] },
+    animals:   { played: 7, won: 6, currentStreak: 3, bestStreak: 3, distribution: [0,1,2,2,1,0], solveMs: 420000, solveCount: 6 },
+    food:      { played: 3, won: 1, currentStreak: 0, bestStreak: 1, distribution: [0,0,1,0,0,0], solveMs: 300000, solveCount: 1 },
+    countries: { played: 9, won: 5, currentStreak: 1, bestStreak: 2, distribution: [0,0,2,2,1,0], solveMs: 540000, solveCount: 5 },
+  })));
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.click('[data-stats-open]');
+  await page.waitForTimeout(400);
+
+  const ranking = () => page.$$eval('[data-popularity] .pop-row',
+    rows => rows.map(r => [r.querySelector('.pop-label').textContent.trim(),
+                           Number(r.querySelector('.pop-count').textContent)]));
+  const avg = () => page.$eval('[data-stat="avg-time"]', el => el.textContent.trim());
+
+  const rank = await ranking();
+  check('popularity: ranks themes by games played',
+    JSON.stringify(rank.map(r => r[1])) === JSON.stringify([9, 7, 3]), JSON.stringify(rank));
+  check('popularity: leaves out themes never played',
+    rank.length === 3, `${rank.length} rows`);
+  check('popularity: excludes the "all" aggregate', !rank.some(r => /^all$/i.test(r[0])), JSON.stringify(rank));
+
+  check('avg time: an em dash where nothing has been timed', await avg() === '—', await avg());
+
+  await page.click('[data-stats-theme="animals"]');
+  await page.waitForTimeout(250);
+  check('avg time: 420s over 6 solves reads 1:10', await avg() === '1:10', await avg());
+
+  await page.click('[data-stats-theme="food"]');
+  await page.waitForTimeout(250);
+  check('avg time: 300s over 1 solve reads 5:00', await avg() === '5:00', await avg());
+
+  await page.click('[data-stats-theme="sports"]');
+  await page.waitForTimeout(250);
+  check('avg time: an unplayed theme shows no average', await avg() === '—', await avg());
+
+  // the ranking is a cross-theme view; it must not follow the selected tab
+  check('popularity: the ranking does not change with the tab',
+    JSON.stringify(await ranking()) === JSON.stringify(rank));
+
+  // the card outgrew the viewport once it carried all this
+  const fits = await page.evaluate(() => {
+    const card = document.querySelector('[data-stats-overlay] .modal-card');
+    const tab = document.querySelector('[data-stats-theme="animals"]').getBoundingClientRect();
+    return { overflow: getComputedStyle(card).overflowY,
+             cardH: Math.round(card.getBoundingClientRect().height), vh: window.innerHeight,
+             tabOnScreen: tab.top >= 0 && tab.bottom <= window.innerHeight };
+  });
+  check('stats card: never taller than the viewport', fits.cardH <= fits.vh, `${fits.cardH} vs ${fits.vh}`);
+  check('stats card: scrolls rather than clipping', fits.overflow === 'auto', fits.overflow);
+  check('stats card: the theme tabs stay reachable', fits.tabOnScreen);
+  check('analytics: no page errors', errors.length === 0, errors.join(' | '));
+  await ctx.close();
+}
+
+// a real win records its own duration; practice does not
+{
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  await page.goto(`${base}/?w=${GOOD6}&t=all&l=${GOOD6.length}`, { waitUntil: 'networkidle' });
+  await page.click('button[data-target="en"]:not([data-daily]):not([data-tournament]):not([data-practice]):not([data-timed])');
+  await page.waitForSelector('[data-screen="en"]:not([hidden])');
+  await page.waitForTimeout(2200);
+  for (const ch of GOOD6) await page.keyboard.press(ch);
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(3400);
+
+  const bucket = await page.evaluate(() => JSON.parse(localStorage.getItem('wg_stats')).all);
+  check('avg time: a win records one solve', bucket.solveCount === 1, JSON.stringify(bucket));
+  check('avg time: the duration recorded is the real one',
+    bucket.solveMs > 1500 && bucket.solveMs < 20000, `${bucket.solveMs}ms`);
+
+  const before = JSON.stringify(bucket);
+  await page.goto(`${base}/?w=${GOOD6}&t=all&l=${GOOD6.length}`, { waitUntil: 'networkidle' });
+  await page.click('[data-practice]');
+  await page.waitForSelector('[data-screen="en"]:not([hidden])');
+  await page.waitForTimeout(1200);
+  for (const ch of GOOD6) await page.keyboard.press(ch);
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(3400);
+  check('avg time: practice contributes no time',
+    JSON.stringify(await page.evaluate(() => JSON.parse(localStorage.getItem('wg_stats')).all)) === before);
+  await ctx.close();
+}
+
 await browser.close();
 
 let failed = 0;

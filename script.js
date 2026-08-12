@@ -1430,7 +1430,12 @@
   const STATS_KEY = 'wg_stats';
 
   function emptyThemeStats() {
-    return { played: 0, won: 0, currentStreak: 0, bestStreak: 0, distribution: [0, 0, 0, 0, 0, 0] };
+    // solveMs/solveCount are kept as a running total rather than an average, so
+    // a new result folds in without re-deriving from history the game does not
+    // keep. solveCount is not `won`: a win with no reliable clock (a restored
+    // daily, say) adds to one and not the other.
+    return { played: 0, won: 0, currentStreak: 0, bestStreak: 0,
+             distribution: [0, 0, 0, 0, 0, 0], solveMs: 0, solveCount: 0 };
   }
 
   function defaultStats() {
@@ -1448,7 +1453,14 @@
       saveStats(migrated);
       return migrated;
     }
-    return Object.assign(defaultStats(), raw || {});
+    // Merge per bucket, not just at the top level: a stored theme object
+    // replaces the default wholesale, so records written before solveMs
+    // existed would come back missing it and read as NaN.
+    const merged = defaultStats();
+    for (const [key, value] of Object.entries(raw || {})) {
+      merged[key] = Object.assign(emptyThemeStats(), value);
+    }
+    return merged;
   }
 
   function saveStats(s) {
@@ -1457,7 +1469,7 @@
 
   let activeStatsTheme = 'all';
 
-  function updateStats(won) {
+  function updateStats(won, solveMs) {
     const s = loadStats();
     const settings = loadSettings();
     const themeKey = settings.theme && settings.theme !== 'all' ? settings.theme : 'all';
@@ -1472,6 +1484,10 @@
         s[key].won++;
         s[key].currentStreak++;
         if (s[key].currentStreak > s[key].bestStreak) s[key].bestStreak = s[key].currentStreak;
+        if (Number.isFinite(solveMs) && solveMs > 0) {
+          s[key].solveMs += solveMs;
+          s[key].solveCount++;
+        }
         const guessNum = eng.history.length;
         const maxGuesses = eng.rows || 6;
         if (guessNum >= 1 && guessNum <= maxGuesses) {
@@ -1498,6 +1514,59 @@
       el.textContent = themeStats.currentStreak > 0 ? `${themeStats.currentStreak} 🔥` : themeStats.currentStreak;
     });
     document.querySelectorAll('[data-stat="best"]').forEach(el => { el.textContent = themeStats.bestStreak; });
+
+    // #37 — average solve time for this theme. An em dash until there is a
+    // solved game with a clock behind it; an average over nothing is a lie.
+    const avgSecs = themeStats.solveCount ? Math.round(themeStats.solveMs / themeStats.solveCount / 1000) : 0;
+    const avgText = avgSecs
+      ? `${Math.floor(avgSecs / 60)}:${String(avgSecs % 60).padStart(2, '0')}`
+      : '—';
+    document.querySelectorAll('[data-stat="avg-time"]').forEach(el => { el.textContent = avgText; });
+
+    // #35 — which themes get played, ranked. The per-theme counts already
+    // existed; nothing had ever put them side by side.
+    document.querySelectorAll('[data-popularity]').forEach(container => {
+      container.innerHTML = '';
+      const ranked = THEME_KEYS
+        .filter(k => k !== 'all')
+        .map(k => ({ key: k, played: (statsData[k] && statsData[k].played) || 0 }))
+        .filter(r => r.played > 0)
+        .sort((a, b) => b.played - a.played);
+
+      const title = document.createElement('p');
+      title.className = 'popularity-title';
+      title.textContent = t('popularity');
+      container.appendChild(title);
+
+      if (!ranked.length) {
+        const empty = document.createElement('p');
+        empty.className = 'popularity-title';
+        empty.textContent = t('no_games_yet');
+        container.appendChild(empty);
+        return;
+      }
+
+      const top = ranked[0].played;
+      for (const { key, played } of ranked) {
+        const row = document.createElement('div');
+        row.className = 'pop-row';
+        const pct = Math.round((played / top) * 100);
+        const label = document.createElement('span');
+        label.className = 'pop-label';
+        label.textContent = t('theme_' + key);
+        const wrap = document.createElement('div');
+        wrap.className = 'pop-bar-wrap';
+        const bar = document.createElement('div');
+        bar.className = 'pop-bar';
+        bar.style.width = `${pct}%`;
+        wrap.appendChild(bar);
+        const count = document.createElement('span');
+        count.className = 'pop-count';
+        count.textContent = played;
+        row.append(label, wrap, count);
+        container.appendChild(row);
+      }
+    });
 
     // Distribution chart
     const maxDist = Math.max(...themeStats.distribution, 1);
@@ -1930,7 +1999,8 @@
       if (!eng.timed) stopTimer();
       updateHintButton();
       const scoring = eng.practice || eng.timed;
-      const stats = scoring ? loadStats() : updateStats(true);
+      const solveMs = eng.startTime ? Date.now() - eng.startTime : 0;
+      const stats = scoring ? loadStats() : updateStats(true, solveMs);
       if (!scoring) checkAchievements(true);
       if (eng.tournament) updateTournamentStats(true);
       submitting = false;
